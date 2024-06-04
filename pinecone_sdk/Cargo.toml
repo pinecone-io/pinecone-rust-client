@@ -9,3 +9,4 @@ edition = "2021"
 openapi = { path = "../openapi" }
 tokio = { version = "1", features = ["full"] }
 mockito = "0.30"
+regex = "1.10.4"
