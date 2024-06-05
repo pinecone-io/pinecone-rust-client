@@ -2,6 +2,7 @@
 pub struct Config {
     pub api_key: String,
     pub controller_url: String,
+    pub source_tag: Option<String>,
 }
 
 impl Config {
@@ -9,6 +10,7 @@ impl Config {
         Config {
             api_key,
             controller_url: "https://api.pinecone.io".to_string(),
+            source_tag: None,
         }
     }
 }
