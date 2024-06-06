@@ -15,16 +15,14 @@ impl Pinecone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockito::mock;
-    use tokio;
-    use crate::control::list_indexes::models::index_model::Metric;
     use crate::config::Config;
-    use openapi::models::IndexList;
-    use openapi::apis::configuration::Configuration;
+    use crate::control::list_indexes::models::index_model::Metric;
+    use mockito::mock;
     use openapi::apis::configuration::ApiKey;
+    use openapi::apis::configuration::Configuration;
+    use openapi::models::IndexList;
     use openapi::models::IndexModel;
-
-
+    use tokio;
 
     #[tokio::test]
     async fn test_list_indexes() {
@@ -66,7 +64,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let api_key = "test_api_key".to_string();
-        let pinecone = Pinecone::new(api_key, Some(mockito::server_url()), None);
+        let pinecone = Pinecone::new(Some(api_key), Some(mockito::server_url()), None, None)
+            .expect("Failed to create Pinecone instance");
 
         // Call list_indexes and verify the result
         let result = pinecone.list_indexes().await;
