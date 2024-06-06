@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::utils::errors::{PineconeError, PineconeErrorKind};
+use crate::utils::errors::PineconeError;
 use crate::utils::user_agent::get_user_agent;
 use openapi::apis::configuration::ApiKey;
 use openapi::apis::configuration::Configuration;
@@ -25,10 +25,7 @@ impl Pinecone {
             None => match std::env::var("PINECONE_API_KEY") {
                 Ok(key) => key,
                 Err(_) => {
-                    return Err(PineconeError {
-                        kind: PineconeErrorKind::CofigurationError,
-                        message: "API key not found. Pass an API key as an argument or set PINECONE_API_KEY in env.".to_string(),
-                    });
+                    return Err(PineconeError::APIKeyMissingError);
                 }
             },
         };
@@ -43,11 +40,8 @@ impl Pinecone {
             None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
                 Ok(headers) => match serde_json::from_str(&headers) {
                     Ok(headers) => headers,
-                    Err(_) => {
-                        return Err(PineconeError {
-                            kind: PineconeErrorKind::CofigurationError,
-                            message: "Failed to parse PINECONE_ADDITIONAL_HEADERS.".to_string(),
-                        });
+                    Err(json_error) => {
+                        return Err(PineconeError::InvalidHeadersError { json_error });
                     }
                 },
                 Err(_) => HashMap::new(),
@@ -153,6 +147,10 @@ mod tests {
         );
 
         assert!(pinecone.is_err());
+        assert!(matches!(
+            pinecone.err().unwrap(),
+            PineconeError::APIKeyMissingError
+        ));
     }
 
     #[tokio::test]
@@ -274,6 +272,10 @@ mod tests {
         );
 
         assert!(pinecone.is_err());
+        assert!(matches!(
+            pinecone.err().unwrap(),
+            PineconeError::InvalidHeadersError { .. }
+        ));
     }
 
     #[tokio::test]

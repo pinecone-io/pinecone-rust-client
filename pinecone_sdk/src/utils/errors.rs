@@ -1,20 +1,10 @@
-use std::error::Error;
+use snafu::prelude::*;
 
-#[derive(Debug)]
-pub struct PineconeError {
-    pub kind: PineconeErrorKind,
-    pub message: String,
-}
+#[derive(Debug, Snafu)]
+pub enum PineconeError {
+    #[snafu(display("API key missing."))]
+    APIKeyMissingError,
 
-impl Error for PineconeError {}
-
-impl std::fmt::Display for PineconeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "PineconeError: {}", self.message)
-    }
-}
-
-#[derive(Debug)]
-pub enum PineconeErrorKind {
-    CofigurationError,
+    #[snafu(display("Failed to parse headers: {}", json_error))]
+    InvalidHeadersError { json_error: serde_json::Error },
 }
