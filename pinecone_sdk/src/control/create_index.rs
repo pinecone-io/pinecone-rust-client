@@ -24,7 +24,7 @@ impl Pinecone {
                 "cosine" => Some(Metric::Cosine),
                 "euclidean" => Some(Metric::Euclidean),
                 "dotproduct" => Some(Metric::Dotproduct),
-                _ => panic!("Invalid metric"),
+                _ => panic!("Invalid metric"), // TODO: handle error better
             },
             None => None,
         };
@@ -35,7 +35,7 @@ impl Pinecone {
                 "gcp" => Cloud::Gcp,
                 "aws" => Cloud::Aws,
                 "azure" => Cloud::Azure,
-                _ => panic!("Invalid cloud type"),
+                _ => panic!("Invalid cloud type"), // TODO: handle error better
             },
             None => Cloud::default(),
         };
