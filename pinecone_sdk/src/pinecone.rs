@@ -10,8 +10,8 @@ pub struct Pinecone {
 }
 
 impl Pinecone {
-    pub fn new(api_key: String, control_plane_host: Option<String>) -> Self {
-        let config = Config::new(api_key.clone());
+    pub fn new(api_key: String, control_plane_host: Option<String>, source_tag: Option<String>) -> Self {
+        let config = Config::new(api_key.clone(), source_tag);
 
         let user_agent = get_user_agent(&config);
 

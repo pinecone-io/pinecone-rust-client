@@ -66,7 +66,7 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let api_key = "test_api_key".to_string();
-        let pinecone = Pinecone::new(api_key, Some(mockito::server_url()));
+        let pinecone = Pinecone::new(api_key, Some(mockito::server_url()), None);
 
         // Call list_indexes and verify the result
         let result = pinecone.list_indexes().await;
