@@ -38,11 +38,21 @@ impl Pinecone {
                 .unwrap_or("https://api.pinecone.io".to_string()),
         );
 
-        let additional_headers =
-            additional_headers.unwrap_or(match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
-                Ok(headers) => serde_json::from_str(&headers).unwrap_or(HashMap::new()),
+        let additional_headers = match additional_headers {
+            Some(headers) => headers,
+            None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
+                Ok(headers) => match serde_json::from_str(&headers) {
+                    Ok(headers) => headers,
+                    Err(_) => {
+                        return Err(PineconeError {
+                            kind: PineconeErrorKind::CofigurationError,
+                            message: "Failed to parse PINECONE_ADDITIONAL_HEADERS.".to_string(),
+                        });
+                    }
+                },
                 Err(_) => HashMap::new(),
-            });
+            },
+        };
 
         let config = Config {
             api_key: api_key.clone(),
@@ -215,6 +225,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_env_headers() {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
@@ -245,6 +256,25 @@ mod tests {
             pinecone.unwrap().config.additional_headers,
             mock_headers.clone()
         );
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_invalid_env_headers() {
+        let mock_api_key = "mock-arg-api-key".to_string();
+        let mock_controller_host = "mock-arg-controller-host".to_string();
+
+        env::set_var("PINECONE_ADDITIONAL_HEADERS", "} some invalid json {");
+        assert!(env::var("PINECONE_ADDITIONAL_HEADERS").is_ok());
+
+        let pinecone = Pinecone::new(
+            Some(mock_api_key.clone()),
+            Some(mock_controller_host.clone()),
+            None,
+            None,
+        );
+
+        assert!(pinecone.is_err());
     }
 
     #[tokio::test]
