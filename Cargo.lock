@@ -725,12 +725,9 @@ dependencies = [
  "mockito",
  "openapi",
  "regex",
-<<<<<<< HEAD
-=======
  "serde_json",
  "serial_test",
  "snafu",
->>>>>>> origin/main
  "tokio",
 ]
 

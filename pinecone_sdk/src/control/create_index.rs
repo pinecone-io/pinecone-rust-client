@@ -66,11 +66,13 @@ mod tests {
     use core::panic;
     use mockito::mock;
     use openapi::models::serverless_spec;
+    use serial_test::serial;
     use tokio;
 
     #[tokio::test]
+    #[serial]
     async fn test_create_serverless_index_req() {
-        let pinecone = Pinecone::new("api_key".to_string(), Some("controller_url".to_string()));
+        let pinecone = Pinecone::new(Some("api_key".to_string()), Some("controller_url".to_string()), None, None);
         let params = CreateServerlessIndexRequest {
             name: "index_name".to_string(),
             dimension: 10,
@@ -79,7 +81,7 @@ mod tests {
             region: "us-east-1".to_string(),
         };
 
-        let create_index_request = pinecone.create_serverless_index_req(params);
+        let create_index_request = pinecone.expect("REASON").create_serverless_index_req(params);
         assert_eq!(create_index_request.name, "index_name");
         assert_eq!(create_index_request.dimension, 10);
         assert_eq!(create_index_request.metric, Some(Metric::Cosine));
@@ -118,7 +120,7 @@ mod tests {
             )
             .create();
 
-        let pinecone = Pinecone::new("api_key".to_string(), Some(mockito::server_url()));
+        let pinecone = Pinecone::new(Some("api_key".to_string()), Some(mockito::server_url()), None, None);
         let params = CreateServerlessIndexRequest {
             name: "index_name".to_string(),
             dimension: 10,
@@ -127,7 +129,7 @@ mod tests {
             region: "us-east-1".to_string(),
         };
 
-        let result = pinecone.create_serverless_index(params).await;
+        let result = pinecone.expect("REASON").create_serverless_index(params).await;
         
         match result {
             Ok(index) => {

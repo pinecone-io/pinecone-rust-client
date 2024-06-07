@@ -278,6 +278,7 @@ mod tests {
             pinecone.err().unwrap(),
             PineconeError::InvalidHeadersError { .. }
         ));
+        remove_env_var("PINECONE_ADDITIONAL_HEADERS");
     }
 
     #[tokio::test]
@@ -345,5 +346,6 @@ mod tests {
             pinecone.as_ref().unwrap().config.additional_headers,
             mock_arg_headers.clone()
         );
+        
     }
 }
