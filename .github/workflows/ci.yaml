@@ -20,6 +20,6 @@ jobs:
         - name: Build
           run: cargo build
         - name: Run tests
-	  env:
-	    PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          env:
+            PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           run: cargo test --verbose
