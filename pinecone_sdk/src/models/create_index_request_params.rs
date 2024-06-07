@@ -1,20 +1,50 @@
 
-pub struct CreateServerlessIndexRequest {
+#[derive(Debug)]
+pub struct CreateIndexParams {
     pub name: String,
-    pub dimension: i32,
-    pub metric: Option<String>,
-    pub cloud: Option<String>,
-    pub region: String,
+    pub dimension: u32,
+    pub metric: Metric,
+    pub spec: Spec,
 }
 
-impl CreateServerlessIndexRequest {
-    pub fn new(name: &str, dimension: i32, metric: Option<&str>, cloud: Option<&str>, region: &str) -> CreateServerlessIndexRequest {
-        CreateServerlessIndexRequest {
+impl CreateIndexParams {
+    pub fn new(name: &str, dimension: u32, metric: Option<Metric>, spec: Spec) -> CreateIndexParams {
+        CreateIndexParams {
             name: name.to_string(),
             dimension,
-            metric: if let Some(metric) = metric { Some(metric.to_string()) } else { None },
-            cloud: if let Some(cloud) = cloud { Some(cloud.to_string()) } else { None },
-            region: region.to_string(),
+            metric: metric.map(|x| x).unwrap_or(Metric::Cosine),
+            spec,
         }
     }
+}
+
+#[derive(Debug)]
+pub enum Spec {
+    Serverless {
+        cloud: Cloud,
+        region: String,
+    },
+    Pod {
+        environment: String,
+        replicas: Option<i32>,
+        shards: Option<i32>,
+        pod_type: String,
+        pods: i32,
+        metadata_config: Option<String>,
+        source_collection: Option<String>,
+    },
+}
+
+#[derive(Debug)]
+pub enum Metric {
+    Cosine,
+    Euclidean,
+    Dotproduct,
+}
+
+#[derive(Debug)]
+pub enum Cloud {
+    Aws,
+    Gcp,
+    Azure,
 }
