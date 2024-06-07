@@ -1,44 +1,55 @@
-use core::panic;
-use openapi::apis::manage_indexes_api::CreateIndexError;
-use openapi::apis::Error;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
+use crate::models::create_index_request_params::CreateServerlessIndexRequest;
+use crate::pinecone::Pinecone;
+use crate::utils::errors::PineconeError;
 use openapi::models::create_index_request::Metric;
 use openapi::models::serverless_spec::Cloud;
-use crate::pinecone::Pinecone;
-use crate::models::create_index_request_params::CreateServerlessIndexRequest;
+use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
 
 impl Pinecone {
-    pub async fn create_serverless_index(&self, params: CreateServerlessIndexRequest) -> Result<IndexModel, Error<CreateIndexError>> {
+    pub async fn create_serverless_index(
+        &self,
+        params: CreateServerlessIndexRequest,
+    ) -> Result<IndexModel, PineconeError> {
         let create_index_request = self.create_serverless_index_req(params);
-        let response = openapi::apis::manage_indexes_api::create_index(
+        match openapi::apis::manage_indexes_api::create_index(
             &self.openapi_config(),
-            create_index_request
-        ).await?;
-        Ok(response)
+            create_index_request?,
+        )
+        .await
+        {
+            Ok(index) => Ok(index),
+            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
+        }
     }
 
-    pub fn create_serverless_index_req(&self, params: CreateServerlessIndexRequest) -> CreateIndexRequest {
-        // clean metric string
+    pub fn create_serverless_index_req(
+        &self,
+        params: CreateServerlessIndexRequest,
+    ) -> Result<CreateIndexRequest, PineconeError> {
         let metric_enum = match &params.metric {
             Some(metric) => match metric.as_str() {
-                "cosine" => Some(Metric::Cosine),
-                "euclidean" => Some(Metric::Euclidean),
-                "dotproduct" => Some(Metric::Dotproduct),
-                _ => panic!("Invalid metric"), // TODO: handle error better
+                "cosine" => Ok(Some(Metric::Cosine)),
+                "euclidean" => Ok(Some(Metric::Euclidean)),
+                "dotproduct" => Ok(Some(Metric::Dotproduct)),
+                _ => Err(PineconeError::InvalidMetricError {
+                    metric: metric.clone(),
+                }),
             },
-            None => None,
-        };
+            None => Ok(Some(Metric::Cosine)),
+        }?;
 
         // clean cloud string
         let cloud_enum = match &params.cloud {
             Some(cloud) => match cloud.as_str() {
-                "gcp" => Cloud::Gcp,
-                "aws" => Cloud::Aws,
-                "azure" => Cloud::Azure,
-                _ => panic!("Invalid cloud type"), // TODO: handle error better
+                "gcp" => Ok(Cloud::Gcp),
+                "aws" => Ok(Cloud::Aws),
+                "azure" => Ok(Cloud::Azure),
+                _ => Err(PineconeError::InvalidCloudError {
+                    cloud: cloud.clone(),
+                }),
             },
-            None => Cloud::default(),
-        };
+            None => Ok(Cloud::default()),
+        }?;
 
         // create request specs
         let create_index_request_spec = CreateIndexRequestSpec {
@@ -48,15 +59,13 @@ impl Pinecone {
             })),
             pod: None,
         };
-        
-        let create_index_request = CreateIndexRequest {
+
+        Ok(CreateIndexRequest {
             name: params.name,
             dimension: params.dimension,
             metric: metric_enum,
             spec: Some(Box::new(create_index_request_spec)),
-        };
-
-        return create_index_request;
+        })
     }
 }
 
@@ -72,7 +81,12 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_create_serverless_index_req() {
-        let pinecone = Pinecone::new(Some("api_key".to_string()), Some("controller_url".to_string()), None, None);
+        let pinecone = Pinecone::new(
+            Some("api_key".to_string()),
+            Some("controller_url".to_string()),
+            None,
+            None,
+        );
         let params = CreateServerlessIndexRequest {
             name: "index_name".to_string(),
             dimension: 10,
@@ -81,7 +95,10 @@ mod tests {
             region: "us-east-1".to_string(),
         };
 
-        let create_index_request = pinecone.expect("REASON").create_serverless_index_req(params);
+        let create_index_request = pinecone.unwrap().create_serverless_index_req(params);
+        assert!(create_index_request.is_ok());
+
+        let create_index_request = create_index_request.unwrap();
         assert_eq!(create_index_request.name, "index_name");
         assert_eq!(create_index_request.dimension, 10);
         assert_eq!(create_index_request.metric, Some(Metric::Cosine));
@@ -120,7 +137,12 @@ mod tests {
             )
             .create();
 
-        let pinecone = Pinecone::new(Some("api_key".to_string()), Some(mockito::server_url()), None, None);
+        let pinecone = Pinecone::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        );
         let params = CreateServerlessIndexRequest {
             name: "index_name".to_string(),
             dimension: 10,
@@ -129,18 +151,24 @@ mod tests {
             region: "us-east-1".to_string(),
         };
 
-        let result = pinecone.expect("REASON").create_serverless_index(params).await;
-        
+        let result = pinecone.unwrap().create_serverless_index(params).await;
+
         match result {
             Ok(index) => {
                 assert_eq!(index.name, "index_name");
                 assert_eq!(index.dimension, 10);
-                assert_eq!(index.metric, openapi::models::index_model::Metric::Euclidean);
+                assert_eq!(
+                    index.metric,
+                    openapi::models::index_model::Metric::Euclidean
+                );
                 let spec = *index.spec;
                 let serverless_spec = spec.serverless.unwrap();
-                assert_eq!(serverless_spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
+                assert_eq!(
+                    serverless_spec.cloud,
+                    openapi::models::serverless_spec::Cloud::Aws
+                );
                 assert_eq!(serverless_spec.region, "us-east-1");
-            },
+            }
             Err(e) => panic!("{}", e),
         }
     }
