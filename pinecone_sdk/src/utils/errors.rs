@@ -7,4 +7,10 @@ pub enum PineconeError {
 
     #[snafu(display("Failed to parse headers: {}", json_error))]
     InvalidHeadersError { json_error: serde_json::Error },
+
+    #[snafu(display("Invalid region."))]
+    InvalidRegionError,
+
+    #[snafu(display("Invalid cloud."))]
+    InvalidCloudError,
 }

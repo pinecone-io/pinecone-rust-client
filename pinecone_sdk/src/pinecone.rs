@@ -54,9 +54,7 @@ impl Pinecone {
             additional_headers,
             source_tag,
         };
-
-        let user_agent = get_user_agent(&config);
-
+        
         let user_agent = get_user_agent(&config);
 
         let openapi_config = Configuration {
