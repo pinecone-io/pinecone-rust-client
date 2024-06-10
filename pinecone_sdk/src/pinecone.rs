@@ -73,6 +73,7 @@ impl Pinecone {
         })
     }
 
+    // constructs a PineconeBuilder instance
     pub fn builder() -> PineconeBuilder {
         PineconeBuilder::new()
     }
@@ -122,6 +123,7 @@ impl PineconeBuilder {
         self
     }
 
+    // Constructs Pinecone instance from PineconeBuilder fields
     pub fn build(self) -> Result<Pinecone, PineconeError> {
         Pinecone::new(
             self.api_key,
