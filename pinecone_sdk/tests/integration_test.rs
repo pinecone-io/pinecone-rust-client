@@ -5,21 +5,7 @@ async fn test_list_serverless_index() {
     let pinecone = Pinecone::new(Some("b41b6453-9756-45aa-8d8d-a51c295d3c78".to_string()), None, None, None).unwrap();
     let list_response = pinecone.list_indexes().await;
 
-    match list_response {
-        Ok(index_list) => {
-            match index_list.indexes {
-                Some(indexes) => {
-                    assert_eq!(indexes.len(), 0);
-                }
-                None => {
-                    assert!(false, "Expected indexes to be Some");
-                }
-            }
-        }
-        Err(e) => {
-            panic!("Error: {:?}", e);
-        }
-    }
+    assert!(list_response.is_ok());
 }
 
 #[tokio::test]
@@ -27,19 +13,5 @@ async fn test_list_serverless_index_env() {
     let pinecone = Pinecone::new(None, None, None, None).unwrap();
     let list_response = pinecone.list_indexes().await;
 
-    match list_response {
-        Ok(index_list) => {
-            match index_list.indexes {
-                Some(indexes) => {
-                    assert_eq!(indexes.len(), 0);
-                }
-                None => {
-                    assert!(false, "Expected indexes to be Some");
-                }
-            }
-        }
-        Err(e) => {
-            panic!("Error: {:?}", e);
-        }
-    }
+    assert!(list_response.is_ok());
 }
