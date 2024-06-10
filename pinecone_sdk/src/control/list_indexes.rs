@@ -5,6 +5,17 @@ use openapi::apis::Error;
 use openapi::models;
 
 impl Pinecone {
+    /// Lists all indexes.
+    ///
+    /// The results include a description of all indexes in your project, including the
+    /// index name, dimension, metric, status, and spec.
+    ///
+    /// :return: Returns an `IndexList` object, which is iterable and contains a
+    ///     list of `IndexDescription` objects. It also has a convenience method `names()`
+    ///     which returns a list of index names.
+    ///
+    /// TODO: Add example
+
     pub async fn list_indexes(&self) -> Result<models::IndexList, Error<ListIndexesError>> {
         let response = manage_indexes_api::list_indexes(self.openapi_config()).await?;
         println!("{:?}", response);
@@ -15,11 +26,8 @@ impl Pinecone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::Config;
     use crate::control::list_indexes::models::index_model::Metric;
     use mockito::mock;
-    use openapi::apis::configuration::ApiKey;
-    use openapi::apis::configuration::Configuration;
     use openapi::models::IndexList;
     use openapi::models::IndexModel;
     use tokio;

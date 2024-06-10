@@ -6,13 +6,28 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
+/// The `Pinecone` class is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct Pinecone {
+    /// Configuration for the Pinecone SDK object.
     config: Config,
+
+    /// OpenAPI configuration object.
     openapi_config: Configuration,
 }
 
 impl Pinecone {
+    /// The `Pinecone` class is the main entry point for interacting with Pinecone via this Rust SDK.
+    /// It is used to create, delete, and manage your indexes and collections.
+    ///
+    /// ### Configuration with environment variables
+    ///
+    /// If arguments are not provided, the SDK will attempt to read the following environment variables:
+    /// - `PINECONE_API_KEY`: The API key used for authentication. If not passed as an argument, it will be read from the environment variable.
+    /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
+    /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
+    ///
+    /// TODO: add examples
     pub fn new(
         api_key: Option<String>,
         control_plane_host: Option<String>,
@@ -73,6 +88,7 @@ impl Pinecone {
         })
     }
 
+    /// Returns the OpenAPI configuration object.
     pub fn openapi_config(&self) -> &Configuration {
         &self.openapi_config
     }
