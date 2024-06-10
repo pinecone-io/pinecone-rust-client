@@ -122,9 +122,10 @@ pub enum Cloud {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio;
 
-    #[test]
-    fn test_create_index_params() {
+    #[tokio::test]
+    async fn test_create_index_params() {
         let create_index_params = CreateIndexParams::new("test_index", 10, None, Spec::Serverless {
             cloud: Cloud::Aws,
             region: "us-west-2".to_string(),
@@ -139,8 +140,8 @@ mod tests {
         });
     }
 
-    #[test]
-    fn test_create_index_params_builder() {
+    #[tokio::test]
+    async fn test_create_index_params_builder() {
         let create_index_params = CreateIndexParams::builder()
             .with_name("test_index")
             .with_dimension(10)
@@ -161,8 +162,8 @@ mod tests {
         });
     }
 
-    #[test]
-    fn test_builder_missing_metric() {
+    #[tokio::test]
+    async fn test_builder_missing_metric() {
         let create_index_params = CreateIndexParams::builder()
             .with_name("test_index")
             .with_dimension(10)
@@ -182,8 +183,8 @@ mod tests {
         });
     }
 
-    #[test]
-    fn test_missing_name() {
+    #[tokio::test]
+    async fn test_missing_name() {
         let create_index_params = CreateIndexParams::builder()
             .with_dimension(10)
             .with_metric(Metric::Cosine)
@@ -193,8 +194,8 @@ mod tests {
         assert_eq!(create_index_params, Err(PineconeError::MissingNameError));
     }
 
-    #[test]
-    fn test_missing_dimension() {
+    #[tokio::test]
+    async fn test_missing_dimension() {
         let create_index_params = CreateIndexParams::builder()
             .with_name("test_index")
             .with_metric(Metric::Cosine)
@@ -204,8 +205,8 @@ mod tests {
         assert_eq!(create_index_params, Err(PineconeError::MissingDimensionError));
     }
 
-    #[test]
-    fn test_missing_spec() {
+    #[tokio::test]
+    async fn test_missing_spec() {
         let create_index_params = CreateIndexParams::builder()
             .with_name("test_index")
             .with_dimension(10)
