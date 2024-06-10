@@ -1,6 +1,5 @@
 use crate::utils::errors::PineconeError;
 
-
 #[derive(Debug, PartialEq)]
 pub struct CreateIndexParams {
     pub name: String,
@@ -10,7 +9,12 @@ pub struct CreateIndexParams {
 }
 
 impl CreateIndexParams {
-    pub fn new(name: &str, dimension: u32, metric: Option<Metric>, spec: Spec) -> CreateIndexParams {
+    pub fn new(
+        name: &str,
+        dimension: u32,
+        metric: Option<Metric>,
+        spec: Spec,
+    ) -> CreateIndexParams {
         CreateIndexParams {
             name: name.to_string(),
             dimension,
@@ -65,18 +69,10 @@ impl CreateIndexParamsBuilder {
 
     // constructs CreateIndexParams from CreateIndexParamsBuilder fields
     pub fn build(self) -> Result<CreateIndexParams, PineconeError> {
-        let name = match self.name {
-            Some(name) => name,
-            None => Err(PineconeError::MissingNameError)?,
-        };
-        let dimension = match self.dimension {
-            Some(dimension) => dimension,
-            None => Err(PineconeError::MissingDimensionError)?,
-        };
-        let spec = match self.spec {
-            Some(spec) => spec,
-            None => Err(PineconeError::MissingSpecError)?,
-        };
+        // required parameters
+        let name = self.name.ok_or(PineconeError::MissingNameError)?;
+        let dimension = self.dimension.ok_or(PineconeError::MissingDimensionError)?;
+        let spec = self.spec.ok_or(PineconeError::MissingSpecError)?;
 
         Ok(CreateIndexParams {
             name,
@@ -118,7 +114,6 @@ pub enum Cloud {
     Azure,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -126,18 +121,26 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_index_params() {
-        let create_index_params = CreateIndexParams::new("test_index", 10, None, Spec::Serverless {
-            cloud: Cloud::Aws,
-            region: "us-west-2".to_string(),
-        });
+        let create_index_params = CreateIndexParams::new(
+            "test_index",
+            10,
+            None,
+            Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            },
+        );
 
         assert_eq!(create_index_params.name, "test_index");
         assert_eq!(create_index_params.dimension, 10);
         assert_eq!(create_index_params.metric, Metric::Cosine);
-        assert_eq!(create_index_params.spec, Spec::Serverless {
-            cloud: Cloud::Aws,
-            region: "us-west-2".to_string(),
-        });
+        assert_eq!(
+            create_index_params.spec,
+            Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            }
+        );
     }
 
     #[tokio::test]
@@ -156,10 +159,13 @@ mod tests {
         assert_eq!(create_index_params.name, "test_index");
         assert_eq!(create_index_params.dimension, 10);
         assert_eq!(create_index_params.metric, Metric::Cosine);
-        assert_eq!(create_index_params.spec, Spec::Serverless {
-            cloud: Cloud::Aws,
-            region: "us-west-2".to_string(),
-        });
+        assert_eq!(
+            create_index_params.spec,
+            Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            }
+        );
     }
 
     #[tokio::test]
@@ -177,10 +183,13 @@ mod tests {
         assert_eq!(create_index_params.name, "test_index");
         assert_eq!(create_index_params.dimension, 10);
         assert_eq!(create_index_params.metric, Metric::Cosine);
-        assert_eq!(create_index_params.spec, Spec::Serverless {
-            cloud: Cloud::Aws,
-            region: "us-west-2".to_string(),
-        });
+        assert_eq!(
+            create_index_params.spec,
+            Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            }
+        );
     }
 
     #[tokio::test]
@@ -189,7 +198,7 @@ mod tests {
             .with_dimension(10)
             .with_metric(Metric::Cosine)
             .build();
-        
+
         assert!(create_index_params.is_err());
         assert_eq!(create_index_params, Err(PineconeError::MissingNameError));
     }
@@ -200,9 +209,12 @@ mod tests {
             .with_name("test_index")
             .with_metric(Metric::Cosine)
             .build();
-        
+
         assert!(create_index_params.is_err());
-        assert_eq!(create_index_params, Err(PineconeError::MissingDimensionError));
+        assert_eq!(
+            create_index_params,
+            Err(PineconeError::MissingDimensionError)
+        );
     }
 
     #[tokio::test]
@@ -211,9 +223,8 @@ mod tests {
             .with_name("test_index")
             .with_dimension(10)
             .build();
-        
+
         assert!(create_index_params.is_err());
         assert_eq!(create_index_params, Err(PineconeError::MissingSpecError));
     }
-
 }
