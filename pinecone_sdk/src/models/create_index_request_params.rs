@@ -1,5 +1,7 @@
+use crate::utils::errors::PineconeError;
 
-#[derive(Debug)]
+
+#[derive(Debug, PartialEq)]
 pub struct CreateIndexParams {
     pub name: String,
     pub dimension: u32,
@@ -12,7 +14,7 @@ impl CreateIndexParams {
         CreateIndexParams {
             name: name.to_string(),
             dimension,
-            metric: metric.map(|x| x).unwrap_or(Metric::Cosine),
+            metric: metric.unwrap_or(Metric::Cosine),
             spec,
         }
     }
@@ -24,8 +26,8 @@ impl CreateIndexParams {
 }
 
 pub struct CreateIndexParamsBuilder {
-    name: String,
-    dimension: u32,
+    name: Option<String>,
+    dimension: Option<u32>,
     metric: Option<Metric>,
     spec: Option<Spec>,
 }
@@ -33,21 +35,21 @@ pub struct CreateIndexParamsBuilder {
 impl CreateIndexParamsBuilder {
     pub fn new() -> CreateIndexParamsBuilder {
         CreateIndexParamsBuilder {
-            name: "".to_string(),
-            dimension: 0,
+            name: None,
+            dimension: None,
             metric: None,
             spec: None,
         }
     }
 
     pub fn with_name(mut self, name: &str) -> CreateIndexParamsBuilder {
-        self.name = name.to_string();
+        self.name = Some(name.to_string());
         self
     }
 
     pub fn with_dimension(mut self, dimension: u32) -> CreateIndexParamsBuilder {
         // want to eventually throw an error if dimension is 0?
-        self.dimension = dimension;
+        self.dimension = Some(dimension);
         self
     }
 
@@ -62,13 +64,26 @@ impl CreateIndexParamsBuilder {
     }
 
     // constructs CreateIndexParams from CreateIndexParamsBuilder fields
-    pub fn build(self) -> CreateIndexParams {
-        CreateIndexParams {
-            name: self.name,
-            dimension: self.dimension,
-            metric: self.metric.map(|x| x).unwrap_or(Metric::Cosine),
-            spec: self.spec.map(|x| x).unwrap(),
-        }
+    pub fn build(self) -> Result<CreateIndexParams, PineconeError> {
+        let name = match self.name {
+            Some(name) => name,
+            None => Err(PineconeError::MissingNameError)?,
+        };
+        let dimension = match self.dimension {
+            Some(dimension) => dimension,
+            None => Err(PineconeError::MissingDimensionError)?,
+        };
+        let spec = match self.spec {
+            Some(spec) => spec,
+            None => Err(PineconeError::MissingSpecError)?,
+        };
+
+        Ok(CreateIndexParams {
+            name,
+            dimension,
+            metric: self.metric.unwrap_or(Metric::Cosine),
+            spec,
+        })
     }
 }
 
@@ -134,7 +149,8 @@ mod tests {
                 cloud: Cloud::Aws,
                 region: "us-west-2".to_string(),
             })
-            .build();
+            .build()
+            .unwrap();
 
         assert_eq!(create_index_params.name, "test_index");
         assert_eq!(create_index_params.dimension, 10);
@@ -144,4 +160,59 @@ mod tests {
             region: "us-west-2".to_string(),
         });
     }
+
+    #[test]
+    fn test_builder_missing_metric() {
+        let create_index_params = CreateIndexParams::builder()
+            .with_name("test_index")
+            .with_dimension(10)
+            .with_spec(Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            })
+            .build()
+            .unwrap();
+
+        assert_eq!(create_index_params.name, "test_index");
+        assert_eq!(create_index_params.dimension, 10);
+        assert_eq!(create_index_params.metric, Metric::Cosine);
+        assert_eq!(create_index_params.spec, Spec::Serverless {
+            cloud: Cloud::Aws,
+            region: "us-west-2".to_string(),
+        });
+    }
+
+    #[test]
+    fn test_missing_name() {
+        let create_index_params = CreateIndexParams::builder()
+            .with_dimension(10)
+            .with_metric(Metric::Cosine)
+            .build();
+        
+        assert!(create_index_params.is_err());
+        assert_eq!(create_index_params, Err(PineconeError::MissingNameError));
+    }
+
+    #[test]
+    fn test_missing_dimension() {
+        let create_index_params = CreateIndexParams::builder()
+            .with_name("test_index")
+            .with_metric(Metric::Cosine)
+            .build();
+        
+        assert!(create_index_params.is_err());
+        assert_eq!(create_index_params, Err(PineconeError::MissingDimensionError));
+    }
+
+    #[test]
+    fn test_missing_spec() {
+        let create_index_params = CreateIndexParams::builder()
+            .with_name("test_index")
+            .with_dimension(10)
+            .build();
+        
+        assert!(create_index_params.is_err());
+        assert_eq!(create_index_params, Err(PineconeError::MissingSpecError));
+    }
+
 }
