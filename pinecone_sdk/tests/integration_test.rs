@@ -2,7 +2,10 @@ use pinecone_sdk::pinecone::Pinecone;
 
 #[tokio::test]
 async fn test_list_serverless_index() {
-    let pinecone = Pinecone::new("b41b6453-9756-45aa-8d8d-a51c295d3c78".to_string(), None);
+    let pinecone = Pinecone::builder()
+        .with_api_key("b41b6453-9756-45aa-8d8d-a51c295d3c78")
+        .build()
+        .unwrap();
     let list_response = pinecone.list_indexes().await;
 
     match list_response {
