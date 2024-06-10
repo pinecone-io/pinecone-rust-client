@@ -54,7 +54,7 @@ impl Pinecone {
             additional_headers,
             source_tag,
         };
-        
+
         let user_agent = get_user_agent(&config);
 
         let openapi_config = Configuration {
@@ -73,64 +73,8 @@ impl Pinecone {
         })
     }
 
-    // constructs a PineconeBuilder instance
-    pub fn builder() -> PineconeBuilder {
-        PineconeBuilder::new()
-    }
-
     pub fn openapi_config(&self) -> &Configuration {
         &self.openapi_config
-    }
-}
-
-pub struct PineconeBuilder {
-    api_key: Option<String>,
-    control_plane_host: Option<String>,
-    additional_headers: Option<HashMap<String, String>>,
-    source_tag: Option<String>,
-}
-
-impl PineconeBuilder {
-    pub fn new() -> PineconeBuilder {
-        PineconeBuilder {
-            api_key: None,
-            control_plane_host: None,
-            additional_headers: None,
-            source_tag: None,
-        }
-    }
-
-    pub fn with_api_key(mut self, api_key: &str) -> PineconeBuilder {
-        self.api_key = Some(api_key.to_string());
-        self
-    }
-
-    pub fn with_control_plane_host(mut self, control_plane_host: &str) -> PineconeBuilder {
-        self.control_plane_host = Some(control_plane_host.to_string());
-        self
-    }
-
-    pub fn with_additional_headers(
-        mut self,
-        additional_headers: HashMap<String, String>,
-    ) -> PineconeBuilder {
-        self.additional_headers = Some(additional_headers);
-        self
-    }
-
-    pub fn with_source_tag(mut self, source_tag: &str) -> PineconeBuilder {
-        self.source_tag = Some(source_tag.to_string());
-        self
-    }
-
-    // Constructs Pinecone instance from PineconeBuilder fields
-    pub fn build(self) -> Result<Pinecone, PineconeError> {
-        Pinecone::new(
-            self.api_key,
-            self.control_plane_host,
-            self.additional_headers,
-            self.source_tag,
-        )
     }
 }
 
@@ -203,10 +147,10 @@ mod tests {
         );
 
         assert!(pinecone.is_err());
-        assert_eq!(
+        assert!(matches!(
             pinecone.err().unwrap(),
             PineconeError::APIKeyMissingError
-        );
+        ));
     }
 
     #[tokio::test]
@@ -332,7 +276,6 @@ mod tests {
             pinecone.err().unwrap(),
             PineconeError::InvalidHeadersError { .. }
         ));
-        remove_env_var("PINECONE_ADDITIONAL_HEADERS");
     }
 
     #[tokio::test]
@@ -400,30 +343,5 @@ mod tests {
             pinecone.as_ref().unwrap().config.additional_headers,
             mock_arg_headers.clone()
         );
-    }
-
-    #[tokio::test]
-    async fn test_builder() {
-        let pinecone = Pinecone::builder()
-            .with_api_key("mock-api-key")
-            .build();
-        
-        assert_eq!(pinecone.unwrap().config.api_key, "mock-api-key");
-    }
-
-    #[tokio::test]
-    async fn test_builder_all_params() {
-        let pinecone = Pinecone::builder()
-            .with_api_key("mock-api-key")
-            .with_additional_headers(HashMap::from([("header1".to_string(), "value1".to_string())]))
-            .with_control_plane_host("mock-controller-host")
-            .with_source_tag("mock-source-tag")
-            .build()
-            .unwrap();
-
-        assert_eq!(pinecone.config.api_key, "mock-api-key");
-        assert_eq!(pinecone.config.additional_headers, HashMap::from([("header1".to_string(), "value1".to_string())]));
-        assert_eq!(pinecone.config.controller_url, "mock-controller-host");
-        assert_eq!(pinecone.config.source_tag, Some("mock-source-tag".to_string()));
     }
 }

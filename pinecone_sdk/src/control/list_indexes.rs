@@ -15,8 +15,11 @@ impl Pinecone {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::Config;
     use crate::control::list_indexes::models::index_model::Metric;
     use mockito::mock;
+    use openapi::apis::configuration::ApiKey;
+    use openapi::apis::configuration::Configuration;
     use openapi::models::IndexList;
     use openapi::models::IndexModel;
     use tokio;
