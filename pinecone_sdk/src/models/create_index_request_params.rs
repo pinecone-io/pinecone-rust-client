@@ -16,9 +16,63 @@ impl CreateIndexParams {
             spec,
         }
     }
+
+    // constructs builder for CreateIndexParams
+    pub fn builder() -> CreateIndexParamsBuilder {
+        CreateIndexParamsBuilder::new()
+    }
 }
 
-#[derive(Debug)]
+pub struct CreateIndexParamsBuilder {
+    name: String,
+    dimension: u32,
+    metric: Option<Metric>,
+    spec: Option<Spec>,
+}
+
+impl CreateIndexParamsBuilder {
+    pub fn new() -> CreateIndexParamsBuilder {
+        CreateIndexParamsBuilder {
+            name: "".to_string(),
+            dimension: 0,
+            metric: None,
+            spec: None,
+        }
+    }
+
+    pub fn with_name(mut self, name: &str) -> CreateIndexParamsBuilder {
+        self.name = name.to_string();
+        self
+    }
+
+    pub fn with_dimension(mut self, dimension: u32) -> CreateIndexParamsBuilder {
+        // want to eventually throw an error if dimension is 0?
+        self.dimension = dimension;
+        self
+    }
+
+    pub fn with_metric(mut self, metric: Metric) -> CreateIndexParamsBuilder {
+        self.metric = Some(metric);
+        self
+    }
+
+    pub fn with_spec(mut self, spec: Spec) -> CreateIndexParamsBuilder {
+        self.spec = Some(spec);
+        self
+    }
+
+    // constructs CreateIndexParams from CreateIndexParamsBuilder fields
+    pub fn build(self) -> CreateIndexParams {
+        CreateIndexParams {
+            name: self.name,
+            dimension: self.dimension,
+            metric: self.metric.map(|x| x).unwrap_or(Metric::Cosine),
+            spec: self.spec.map(|x| x).unwrap(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Spec {
     Serverless {
         cloud: Cloud,
@@ -35,16 +89,59 @@ pub enum Spec {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Metric {
     Cosine,
     Euclidean,
     Dotproduct,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Cloud {
     Aws,
     Gcp,
     Azure,
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_index_params() {
+        let create_index_params = CreateIndexParams::new("test_index", 10, None, Spec::Serverless {
+            cloud: Cloud::Aws,
+            region: "us-west-2".to_string(),
+        });
+
+        assert_eq!(create_index_params.name, "test_index");
+        assert_eq!(create_index_params.dimension, 10);
+        assert_eq!(create_index_params.metric, Metric::Cosine);
+        assert_eq!(create_index_params.spec, Spec::Serverless {
+            cloud: Cloud::Aws,
+            region: "us-west-2".to_string(),
+        });
+    }
+
+    #[test]
+    fn test_create_index_params_builder() {
+        let create_index_params = CreateIndexParams::builder()
+            .with_name("test_index")
+            .with_dimension(10)
+            .with_metric(Metric::Cosine)
+            .with_spec(Spec::Serverless {
+                cloud: Cloud::Aws,
+                region: "us-west-2".to_string(),
+            })
+            .build();
+
+        assert_eq!(create_index_params.name, "test_index");
+        assert_eq!(create_index_params.dimension, 10);
+        assert_eq!(create_index_params.metric, Metric::Cosine);
+        assert_eq!(create_index_params.spec, Spec::Serverless {
+            cloud: Cloud::Aws,
+            region: "us-west-2".to_string(),
+        });
+    }
 }
