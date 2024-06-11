@@ -405,7 +405,7 @@ mod tests {
     #[tokio::test]
     async fn test_builder() {
         let pinecone = Pinecone::builder()
-            .with_api_key("mock-api-key")
+            .api_key("mock-api-key")
             .build();
         
         assert_eq!(pinecone.unwrap().config.api_key, "mock-api-key");
@@ -414,10 +414,10 @@ mod tests {
     #[tokio::test]
     async fn test_builder_all_params() {
         let pinecone = Pinecone::builder()
-            .with_api_key("mock-api-key")
-            .with_additional_headers(HashMap::from([("header1".to_string(), "value1".to_string())]))
-            .with_control_plane_host("mock-controller-host")
-            .with_source_tag("mock-source-tag")
+            .api_key("mock-api-key")
+            .additional_headers(HashMap::from([("header1".to_string(), "value1".to_string())]))
+            .control_plane_host("mock-controller-host")
+            .source_tag("mock-source-tag")
             .build()
             .unwrap();
 
