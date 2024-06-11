@@ -6,10 +6,10 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
-/// The `Pinecone` class is the main entry point for interacting with Pinecone via this Rust SDK.
+/// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct Pinecone {
-    /// Configuration for the Pinecone SDK object.
+    /// Configuration for the Pinecone SDK struct.
     config: Config,
 
     /// OpenAPI configuration object.
@@ -17,7 +17,7 @@ pub struct Pinecone {
 }
 
 impl Pinecone {
-    /// The `Pinecone` class is the main entry point for interacting with Pinecone via this Rust SDK.
+    /// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
     /// It is used to create, delete, and manage your indexes and collections.
     ///
     /// ### Configuration with environment variables
