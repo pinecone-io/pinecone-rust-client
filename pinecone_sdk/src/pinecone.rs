@@ -100,17 +100,17 @@ impl PineconeBuilder {
         }
     }
 
-    pub fn with_api_key(mut self, api_key: &str) -> PineconeBuilder {
+    pub fn api_key(mut self, api_key: &str) -> PineconeBuilder {
         self.api_key = Some(api_key.to_string());
         self
     }
 
-    pub fn with_control_plane_host(mut self, control_plane_host: &str) -> PineconeBuilder {
+    pub fn control_plane_host(mut self, control_plane_host: &str) -> PineconeBuilder {
         self.control_plane_host = Some(control_plane_host.to_string());
         self
     }
 
-    pub fn with_additional_headers(
+    pub fn additional_headers(
         mut self,
         additional_headers: HashMap<String, String>,
     ) -> PineconeBuilder {
@@ -118,7 +118,7 @@ impl PineconeBuilder {
         self
     }
 
-    pub fn with_source_tag(mut self, source_tag: &str) -> PineconeBuilder {
+    pub fn source_tag(mut self, source_tag: &str) -> PineconeBuilder {
         self.source_tag = Some(source_tag.to_string());
         self
     }
