@@ -22,4 +22,6 @@ jobs:
         - name: Build documentation
           run: cargo doc --no-deps
         - name: Run tests
+          env:
+            PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           run: cargo test --verbose
