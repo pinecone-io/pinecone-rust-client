@@ -14,7 +14,21 @@ impl Pinecone {
     ///     list of `IndexDescription` objects. It also has a convenience method `names()`
     ///     which returns a list of index names.
     ///
-    /// TODO: Add example
+    /// ### Example
+    ///
+    /// ```
+    /// # use pinecone_sdk::pinecone::Pinecone;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// # // Create a Pinecone client with the API key and controller host.
+    /// # let pinecone = Pinecone::new(None, None, None, None).unwrap();
+    /// #
+    /// // List all indexes in the project.
+    /// let index_list = pinecone.list_indexes();
+    /// # Ok(())
+    /// # }
+    /// ```
 
     pub async fn list_indexes(&self) -> Result<models::IndexList, Error<ListIndexesError>> {
         let response = manage_indexes_api::list_indexes(self.openapi_config()).await?;
