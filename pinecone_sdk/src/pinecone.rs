@@ -27,7 +27,14 @@ impl Pinecone {
     /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
     /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
     ///
-    /// TODO: add examples
+    /// ### Example
+    ///
+    /// ```
+    /// use pinecone_sdk::pinecone::Pinecone;
+    ///
+    /// // Create a Pinecone client with the API key and controller host.
+    /// let pinecone = Pinecone::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
+    /// ```
     pub fn new(
         api_key: Option<String>,
         control_plane_host: Option<String>,
