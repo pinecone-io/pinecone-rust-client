@@ -95,11 +95,9 @@ mod tests {
     use super::*;
     use core::panic;
     use mockito::mock;
-    use serial_test::serial;
     use tokio;
 
     #[tokio::test]
-    #[serial]
     async fn test_create_serverless_index() {
         let _m = mock("POST", "/indexes")
             .with_status(201)

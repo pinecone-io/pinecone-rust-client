@@ -136,25 +136,11 @@ impl PineconeBuilder {
 
 #[cfg(test)]
 mod tests {
-    use std::env;
-
     use super::*;
-    use serial_test::serial;
     use tokio;
 
-    fn set_env_var(key: &str, value: &str) {
-        env::set_var(key, value);
-        assert!(env::var(key).is_ok());
-        assert!(env::var(key).unwrap() == value);
-    }
-
-    fn remove_env_var(key: &str) {
-        env::remove_var(key);
-        assert!(env::var(key).is_err());
-    }
-
     #[tokio::test]
-    async fn test_arg_api_key() {
+    async fn test_arg_api_key() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
@@ -163,54 +149,55 @@ mod tests {
             Some(mock_controller_host.clone()),
             Some(HashMap::new()),
             None,
-        );
+        )
+        .expect("Expected to successfully create Pinecone instance");
 
-        assert!(pinecone.is_ok());
-        assert_eq!(pinecone.unwrap().config.api_key, mock_api_key.clone());
+        assert_eq!(pinecone.config.api_key, mock_api_key.clone());
+
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_env_api_key() {
+    async fn test_env_api_key() -> Result<(), PineconeError> {
         let mock_api_key = "mock-env-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
-        set_env_var("PINECONE_API_KEY", mock_api_key.as_str());
+        temp_env::with_var("PINECONE_API_KEY", Some(mock_api_key.as_str()), || {
+            let pinecone = Pinecone::new(
+                None,
+                Some(mock_controller_host.clone()),
+                Some(HashMap::new()),
+                None,
+            )
+            .expect("Expected to successfully create Pinecone instance");
 
-        let pinecone = Pinecone::new(
-            None,
-            Some(mock_controller_host.clone()),
-            Some(HashMap::new()),
-            None,
-        );
+            assert_eq!(pinecone.config.api_key, mock_api_key.clone());
+        });
 
-        assert!(pinecone.is_ok());
-        assert_eq!(pinecone.unwrap().config.api_key, mock_api_key.clone());
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_no_api_key() {
+    async fn test_no_api_key() -> Result<(), PineconeError> {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
-        remove_env_var("PINECONE_API_KEY");
+        temp_env::with_var_unset("PINECONE_API_KEY", || {
+            let pinecone = Pinecone::new(
+                None,
+                Some(mock_controller_host.clone()),
+                Some(HashMap::new()),
+                None,
+            )
+            .expect_err("Expected to fail creating Pinecone instance due to missing API key");
 
-        let pinecone = Pinecone::new(
-            None,
-            Some(mock_controller_host.clone()),
-            Some(HashMap::new()),
-            None,
-        );
+            assert!(matches!(pinecone, PineconeError::APIKeyMissingError));
+        });
 
-        assert!(pinecone.is_err());
-        assert_eq!(
-            pinecone.err().unwrap(),
-            PineconeError::APIKeyMissingError
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_arg_host() {
+    async fn test_arg_host() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let pinecone = Pinecone::new(
@@ -218,50 +205,60 @@ mod tests {
             Some(mock_controller_host.clone()),
             Some(HashMap::new()),
             None,
-        );
+        )
+        .expect("Expected to successfully create Pinecone instance");
 
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.unwrap().config.controller_url,
-            mock_controller_host.clone()
-        );
+        assert_eq!(pinecone.config.controller_url, mock_controller_host.clone());
+
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_env_host() {
+    async fn test_env_host() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-env-controller-host".to_string();
 
-        set_env_var("PINECONE_CONTROLLER_HOST", mock_controller_host.as_str());
+        temp_env::with_var(
+            "PINECONE_CONTROLLER_HOST",
+            Some(mock_controller_host.as_str()),
+            || {
+                let pinecone =
+                    Pinecone::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None)
+                        .expect("Expected to successfully create Pinecone instance with env host");
 
-        let pinecone = Pinecone::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None);
-
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.unwrap().config.controller_url,
-            mock_controller_host.clone()
+                assert_eq!(pinecone.config.controller_url, mock_controller_host.clone());
+            },
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_default_host() {
+    async fn test_default_host() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
 
-        remove_env_var("PINECONE_CONTROLLER_HOST");
+        temp_env::with_var_unset("PINECONE_CONTROLLER_HOST", || {
+            let pinecone = Pinecone::new(
+                Some(mock_api_key.clone()),
+                None,
+                Some(HashMap::new()),
+                None,
+            )
+            .expect(
+                "Expected to successfully create Pinecone instance with default controller host",
+            );
 
-        let pinecone = Pinecone::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None);
+            assert_eq!(
+                pinecone.config.controller_url,
+                "https://api.pinecone.io".to_string()
+            );
+        });
 
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.unwrap().config.controller_url,
-            "https://api.pinecone.io".to_string()
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_arg_headers() {
+    async fn test_arg_headers() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let mock_headers = HashMap::from([
@@ -274,18 +271,16 @@ mod tests {
             Some(mock_controller_host.clone()),
             Some(mock_headers.clone()),
             None,
-        );
+        )
+        .expect("Expected to successfully create Pinecone instance");
 
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.unwrap().config.additional_headers,
-            mock_headers.clone()
-        );
+        assert_eq!(pinecone.config.additional_headers, mock_headers.clone());
+
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_env_headers() {
+    async fn test_env_headers() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let mock_headers = HashMap::from([
@@ -293,70 +288,70 @@ mod tests {
             ("envheader2".to_string(), "value2".to_string()),
         ]);
 
-        set_env_var(
+        temp_env::with_var(
             "PINECONE_ADDITIONAL_HEADERS",
-            serde_json::to_string(&mock_headers).unwrap().as_str(),
+            Some(serde_json::to_string(&mock_headers).unwrap().as_str()),
+            || {
+                let pinecone = Pinecone::new(
+                    Some(mock_api_key.clone()),
+                    Some(mock_controller_host.clone()),
+                    None,
+                    None,
+                )
+                .expect("Expected to successfully create Pinecone instance with env headers");
+
+                assert_eq!(pinecone.config.additional_headers, mock_headers.clone());
+            },
         );
 
-        let pinecone = Pinecone::new(
-            Some(mock_api_key.clone()),
-            Some(mock_controller_host.clone()),
-            None,
-            None,
-        );
-
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.unwrap().config.additional_headers,
-            mock_headers.clone()
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_invalid_env_headers() {
+    async fn test_invalid_env_headers() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
-        set_env_var("PINECONE_ADDITIONAL_HEADERS", "invalid-json");
+        temp_env::with_var("PINECONE_ADDITIONAL_HEADERS", Some("invalid-json"), || {
+            let pinecone = Pinecone::new(
+                Some(mock_api_key.clone()),
+                Some(mock_controller_host.clone()),
+                None,
+                None,
+            )
+            .expect_err("Expected to fail creating Pinecone instance due to invalid headers");
 
-        let pinecone = Pinecone::new(
-            Some(mock_api_key.clone()),
-            Some(mock_controller_host.clone()),
-            None,
-            None,
-        );
+            assert!(matches!(
+                pinecone,
+                PineconeError::InvalidHeadersError { .. }
+            ));
+        });
 
-        assert!(pinecone.is_err());
-        assert!(matches!(
-            pinecone.err().unwrap(),
-            PineconeError::InvalidHeadersError { .. }
-        ));
-        remove_env_var("PINECONE_ADDITIONAL_HEADERS");
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_default_headers() {
+    async fn test_default_headers() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
-        remove_env_var("PINECONE_ADDITIONAL_HEADERS");
+        temp_env::with_var_unset("PINECONE_ADDITIONAL_HEADERS", || {
+            let pinecone = Pinecone::new(
+                Some(mock_api_key.clone()),
+                Some(mock_controller_host.clone()),
+                Some(HashMap::new()),
+                None,
+            )
+            .expect("Expected to successfully create Pinecone instance");
 
-        let pinecone = Pinecone::new(
-            Some(mock_api_key.clone()),
-            Some(mock_controller_host.clone()),
-            Some(HashMap::new()),
-            None,
-        );
+            assert_eq!(pinecone.config.additional_headers, HashMap::new());
+        });
 
-        assert!(pinecone.is_ok());
-        assert_eq!(pinecone.unwrap().config.additional_headers, HashMap::new());
+        Ok(())
     }
 
     #[tokio::test]
-    #[serial]
-    async fn test_arg_overrides_env() {
+    async fn test_arg_overrides_env() -> Result<(), PineconeError> {
         let mock_arg_api_key = "mock-arg-api-key".to_string();
         let mock_arg_controller_host = "mock-arg-controller-host".to_string();
         let mock_arg_headers = HashMap::from([
@@ -370,36 +365,37 @@ mod tests {
             ("envheader2".to_string(), "value2".to_string()),
         ]);
 
-        set_env_var("PINECONE_API_KEY", mock_env_api_key.as_str());
-        set_env_var(
-            "PINECONE_CONTROLLER_HOST",
-            mock_env_controller_host.as_str(),
-        );
-        env::set_var(
-            "PINECONE_ADDITIONAL_HEADERS",
-            serde_json::to_string(&mock_env_headers).unwrap(),
+        temp_env::with_vars(
+            [
+                ("PINECONE_API_KEY", Some(mock_env_api_key.as_str())),
+                (
+                    "PINECONE_CONTROLLER_HOST",
+                    Some(mock_env_controller_host.as_str()),
+                ),
+                (
+                    "PINECONE_ADDITIONAL_HEADERS",
+                    Some(serde_json::to_string(&mock_env_headers).unwrap().as_str()),
+                ),
+            ],
+            || {
+                let pinecone = Pinecone::new(
+                    Some(mock_arg_api_key.clone()),
+                    Some(mock_arg_controller_host.clone()),
+                    Some(mock_arg_headers.clone()),
+                    None,
+                )
+                .expect("Expected to successfully create Pinecone instance");
+
+                assert_eq!(pinecone.config.api_key, mock_arg_api_key.clone());
+                assert_eq!(
+                    pinecone.config.controller_url,
+                    mock_arg_controller_host.clone()
+                );
+                assert_eq!(pinecone.config.additional_headers, mock_arg_headers.clone());
+            },
         );
 
-        let pinecone = Pinecone::new(
-            Some(mock_arg_api_key.clone()),
-            Some(mock_arg_controller_host.clone()),
-            Some(mock_arg_headers.clone()),
-            None,
-        );
-
-        assert!(pinecone.is_ok());
-        assert_eq!(
-            pinecone.as_ref().unwrap().config.api_key,
-            mock_arg_api_key.clone()
-        );
-        assert_eq!(
-            pinecone.as_ref().unwrap().config.controller_url,
-            mock_arg_controller_host.clone()
-        );
-        assert_eq!(
-            pinecone.as_ref().unwrap().config.additional_headers,
-            mock_arg_headers.clone()
-        );
+        Ok(())
     }
 
     #[tokio::test]
