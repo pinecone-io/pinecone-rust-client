@@ -15,17 +15,15 @@ impl Pinecone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::Config;
     use crate::control::list_indexes::models::index_model::Metric;
+    use crate::utils::errors::PineconeError;
     use mockito::mock;
-    use openapi::apis::configuration::ApiKey;
-    use openapi::apis::configuration::Configuration;
     use openapi::models::IndexList;
     use openapi::models::IndexModel;
     use tokio;
 
     #[tokio::test]
-    async fn test_list_indexes() {
+    async fn test_list_indexes() -> Result<(), PineconeError> {
         // Create a mock server
         let _m = mock("GET", "/indexes")
             .with_status(200)
@@ -68,34 +66,34 @@ mod tests {
             .expect("Failed to create Pinecone instance");
 
         // Call list_indexes and verify the result
-        let result = pinecone.list_indexes().await;
+        let index_list = pinecone
+            .list_indexes()
+            .await
+            .expect("Failed to list indexes");
 
-        match result {
-            Ok(index_list) => {
-                let expected = IndexList {
-                    // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
-                    indexes: Some(vec![
-                        IndexModel::new(
-                            "index1".to_string(),
-                            1536,
-                            Metric::Cosine,
-                            "host1".to_string(),
-                            models::IndexModelSpec::default(),
-                            models::IndexModelStatus::default(),
-                        ),
-                        IndexModel::new(
-                            "index2".to_string(),
-                            1536,
-                            Metric::Cosine,
-                            "host2".to_string(),
-                            models::IndexModelSpec::default(),
-                            models::IndexModelStatus::default(),
-                        ),
-                    ]),
-                };
-                assert_eq!(index_list, expected);
-            }
-            Err(err) => panic!("Expected Ok, got Err: {:?}", err),
-        }
+        let expected = IndexList {
+            // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
+            indexes: Some(vec![
+                IndexModel::new(
+                    "index1".to_string(),
+                    1536,
+                    Metric::Cosine,
+                    "host1".to_string(),
+                    models::IndexModelSpec::default(),
+                    models::IndexModelStatus::default(),
+                ),
+                IndexModel::new(
+                    "index2".to_string(),
+                    1536,
+                    Metric::Cosine,
+                    "host2".to_string(),
+                    models::IndexModelSpec::default(),
+                    models::IndexModelStatus::default(),
+                ),
+            ]),
+        };
+        assert_eq!(index_list, expected);
+
+        Ok(())
     }
 }
