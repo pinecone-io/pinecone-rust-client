@@ -17,8 +17,10 @@ jobs:
         - uses: hecrj/setup-rust-action@v2
           with:
             rust-version: ${{ matrix.rust }}
-        - name: Build
+        - name: Build SDK
           run: cargo build
+        - name: Build documentation
+          run: cargo doc --no-deps
         - name: Run tests
           env:
             PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}

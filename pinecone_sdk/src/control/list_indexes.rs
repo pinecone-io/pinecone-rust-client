@@ -5,6 +5,31 @@ use openapi::apis::Error;
 use openapi::models;
 
 impl Pinecone {
+    /// Lists all indexes.
+    ///
+    /// The results include a description of all indexes in your project, including the
+    /// index name, dimension, metric, status, and spec.
+    ///
+    /// :return: Returns an `IndexList` object, which is iterable and contains a
+    ///     list of `IndexDescription` objects. It also has a convenience method `names()`
+    ///     which returns a list of index names.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// # use pinecone_sdk::pinecone::Pinecone;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// # // Create a Pinecone client with the API key and controller host.
+    /// # let pinecone = Pinecone::new(None, None, None, None).unwrap();
+    /// #
+    /// // List all indexes in the project.
+    /// let index_list = pinecone.list_indexes();
+    /// # Ok(())
+    /// # }
+    /// ```
+
     pub async fn list_indexes(&self) -> Result<models::IndexList, Error<ListIndexesError>> {
         let response = manage_indexes_api::list_indexes(self.openapi_config()).await?;
         println!("{:?}", response);

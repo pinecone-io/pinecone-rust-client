@@ -6,13 +6,35 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
+/// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct Pinecone {
+    /// Configuration for the Pinecone SDK struct.
     config: Config,
+
+    /// OpenAPI configuration object.
     openapi_config: Configuration,
 }
 
 impl Pinecone {
+    /// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
+    /// It is used to create, delete, and manage your indexes and collections.
+    ///
+    /// ### Configuration with environment variables
+    ///
+    /// If arguments are not provided, the SDK will attempt to read the following environment variables:
+    /// - `PINECONE_API_KEY`: The API key used for authentication. If not passed as an argument, it will be read from the environment variable.
+    /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
+    /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use pinecone_sdk::pinecone::Pinecone;
+    ///
+    /// // Create a Pinecone client with the API key and controller host.
+    /// let pinecone = Pinecone::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
+    /// ```
     pub fn new(
         api_key: Option<String>,
         control_plane_host: Option<String>,
@@ -54,7 +76,7 @@ impl Pinecone {
             additional_headers,
             source_tag,
         };
-        
+
         let user_agent = get_user_agent(&config);
 
         let openapi_config = Configuration {
@@ -78,6 +100,7 @@ impl Pinecone {
         PineconeBuilder::new()
     }
 
+    /// Returns the OpenAPI configuration object.
     pub fn openapi_config(&self) -> &Configuration {
         &self.openapi_config
     }
@@ -400,10 +423,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_builder() {
-        let pinecone = Pinecone::builder()
-            .api_key("mock-api-key")
-            .build();
-        
+        let pinecone = Pinecone::builder().api_key("mock-api-key").build();
+
         assert_eq!(pinecone.unwrap().config.api_key, "mock-api-key");
     }
 
@@ -411,15 +432,24 @@ mod tests {
     async fn test_builder_all_params() {
         let pinecone = Pinecone::builder()
             .api_key("mock-api-key")
-            .additional_headers(HashMap::from([("header1".to_string(), "value1".to_string())]))
+            .additional_headers(HashMap::from([(
+                "header1".to_string(),
+                "value1".to_string(),
+            )]))
             .control_plane_host("mock-controller-host")
             .source_tag("mock-source-tag")
             .build()
             .unwrap();
 
         assert_eq!(pinecone.config.api_key, "mock-api-key");
-        assert_eq!(pinecone.config.additional_headers, HashMap::from([("header1".to_string(), "value1".to_string())]));
+        assert_eq!(
+            pinecone.config.additional_headers,
+            HashMap::from([("header1".to_string(), "value1".to_string())])
+        );
         assert_eq!(pinecone.config.controller_url, "mock-controller-host");
-        assert_eq!(pinecone.config.source_tag, Some("mock-source-tag".to_string()));
+        assert_eq!(
+            pinecone.config.source_tag,
+            Some("mock-source-tag".to_string())
+        );
     }
 }
