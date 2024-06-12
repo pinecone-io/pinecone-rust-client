@@ -95,7 +95,7 @@ impl Pinecone {
         })
     }
 
-    // constructs a PineconeBuilder instance
+    /// Constructs a PineconeBuilder instance
     pub fn builder() -> PineconeBuilder {
         PineconeBuilder::new()
     }
@@ -106,6 +106,7 @@ impl Pinecone {
     }
 }
 
+/// The `PineconeBuilder` struct is used to construct a `Pinecone` instance with a builder pattern.
 pub struct PineconeBuilder {
     api_key: Option<String>,
     control_plane_host: Option<String>,
@@ -114,6 +115,7 @@ pub struct PineconeBuilder {
 }
 
 impl PineconeBuilder {
+    /// Constructs a new PineconeBuilder instance.
     pub fn new() -> PineconeBuilder {
         PineconeBuilder {
             api_key: None,
@@ -123,16 +125,19 @@ impl PineconeBuilder {
         }
     }
 
+    /// Sets the API key for the Pinecone instance.
     pub fn api_key(mut self, api_key: &str) -> PineconeBuilder {
         self.api_key = Some(api_key.to_string());
         self
     }
 
+    /// Sets the control plane host for the Pinecone instance.
     pub fn control_plane_host(mut self, control_plane_host: &str) -> PineconeBuilder {
         self.control_plane_host = Some(control_plane_host.to_string());
         self
     }
 
+    /// Sets additional headers for the Pinecone instance.
     pub fn additional_headers(
         mut self,
         additional_headers: HashMap<String, String>,
@@ -141,12 +146,13 @@ impl PineconeBuilder {
         self
     }
 
+    /// Sets the source tag for the Pinecone instance.
     pub fn source_tag(mut self, source_tag: &str) -> PineconeBuilder {
         self.source_tag = Some(source_tag.to_string());
         self
     }
 
-    // Constructs Pinecone instance from PineconeBuilder fields
+    /// Constructs Pinecone instance from PineconeBuilder fields.
     pub fn build(self) -> Result<Pinecone, PineconeError> {
         Pinecone::new(
             self.api_key,

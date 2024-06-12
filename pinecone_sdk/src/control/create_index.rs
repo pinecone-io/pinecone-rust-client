@@ -6,7 +6,7 @@ use openapi::models::serverless_spec;
 use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
 
 impl Pinecone {
-    // Creates a new index based on the provided parameters
+    /// Creates a new index based on the provided parameters
     pub async fn create_index(
         &self,
         params: CreateIndexParams
