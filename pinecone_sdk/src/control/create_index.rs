@@ -47,25 +47,14 @@ impl Pinecone {
         cloud: Cloud, 
         region: String
     ) -> Result<IndexModel, PineconeError> {
-
-        // clean metric enum
-        let metric_enum = match metric {
-            Metric::Cosine => Some(create_index_request::Metric::Cosine),
-            Metric::Dotproduct => Some(create_index_request::Metric::Dotproduct),
-            Metric::Euclidean => Some(create_index_request::Metric::Euclidean),
-        };
-
-        // clean cloud enum
-        let cloud_enum = match cloud {
-            Cloud::Aws => serverless_spec::Cloud::Aws,
-            Cloud::Gcp => serverless_spec::Cloud::Gcp,
-            Cloud::Azure => serverless_spec::Cloud::Azure,
-        };
+        // convert to openapi types
+        let openapi_metric: create_index_request::Metric = metric.into();
+        let openapi_cloud: serverless_spec::Cloud = cloud.into();
 
         // create request specs
         let create_index_request_spec = CreateIndexRequestSpec {
             serverless: Some(Box::new(ServerlessSpec {
-                cloud: cloud_enum,
+                cloud: openapi_cloud,
                 region,
             })),
             pod: None,
@@ -74,7 +63,7 @@ impl Pinecone {
         let create_index_request = CreateIndexRequest {
             name,
             dimension: dimension.try_into().unwrap(),
-            metric: metric_enum,
+            metric: Some(openapi_metric),
             spec: Some(Box::new(create_index_request_spec)),
         };
 

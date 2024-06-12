@@ -1,3 +1,5 @@
+use openapi::models::create_index_request;
+use openapi::models::serverless_spec;
 
 #[derive(Debug, PartialEq)]
 pub struct CreateIndexParams {
@@ -47,11 +49,31 @@ pub enum Metric {
     Dotproduct,
 }
 
+impl Into<create_index_request::Metric> for Metric {
+    fn into(self) -> create_index_request::Metric {
+        match self {
+            Metric::Cosine => create_index_request::Metric::Cosine,
+            Metric::Euclidean => create_index_request::Metric::Euclidean,
+            Metric::Dotproduct => create_index_request::Metric::Dotproduct,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Cloud {
     Aws,
     Gcp,
     Azure,
+}
+
+impl Into<serverless_spec::Cloud> for Cloud {
+    fn into(self) -> serverless_spec::Cloud {
+        match self {
+            Cloud::Aws => serverless_spec::Cloud::Aws,
+            Cloud::Gcp => serverless_spec::Cloud::Gcp,
+            Cloud::Azure => serverless_spec::Cloud::Azure,
+        }
+    }
 }
 
 #[cfg(test)]
