@@ -31,7 +31,7 @@ impl PineconeClient {
     /// ```
 
     pub async fn list_indexes(&self) -> Result<models::IndexList, Error<ListIndexesError>> {
-        let response = manage_indexes_api::list_indexes(self.openapi_config()).await?;
+        let response = manage_indexes_api::list_indexes(&self.openapi_config()).await?;
         println!("{:?}", response);
         Ok(response)
     }
