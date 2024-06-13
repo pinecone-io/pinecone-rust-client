@@ -11,9 +11,13 @@ impl PineconeClient {
         name: &str,
         dimension: u32, 
         metric: Option<Metric>, 
-        cloud: Cloud,
+        cloud: Option<Cloud>,
         region: &str
     ) -> Result<IndexModel, PineconeError> {
+        // use defaults
+        let metric = metric.unwrap_or(Default::default());
+        let cloud = cloud.unwrap_or(Default::default());
+
         // create request specs
         let create_index_request_spec = CreateIndexRequestSpec {
             serverless: Some(Box::new(ServerlessSpec {
@@ -26,7 +30,7 @@ impl PineconeClient {
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
             dimension: dimension.try_into().unwrap(),
-            metric: metric,
+            metric: Some(metric),
             spec: Some(Box::new(create_index_request_spec)),
         };
 
@@ -87,7 +91,7 @@ mod tests {
             "index_name",
             10,
             Some(Metric::Cosine),
-            Cloud::Aws,
+            Some(Cloud::Aws),
             "us-east-1"
         ).await;
         assert!(create_index_request.is_ok());
@@ -146,7 +150,7 @@ mod tests {
             name,
             10,
             Some(metric), 
-            cloud, 
+            Some(cloud),
             region).await;
 
         match result {
