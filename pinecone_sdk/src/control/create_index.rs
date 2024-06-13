@@ -1,69 +1,32 @@
-use crate::models::create_index_request_params::{CreateIndexParams, Spec, Metric, Cloud};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
-use openapi::models::create_index_request;
-use openapi::models::serverless_spec;
+use openapi::models::serverless_spec::Cloud;
+use openapi::models::create_index_request::Metric;
 use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
 
 impl PineconeClient {
-    /// Creates a new index based on the provided parameters
-    pub async fn create_index(
+    /// Creates serverless index
+    pub async fn create_serverless_index(
         &self,
-        params: CreateIndexParams
-    ) -> Result<IndexModel, PineconeError> {
-        
-        // Check if creating serverless or pod-based index and call respective builder function
-        match params.spec {
-            Spec::Serverless { cloud, region } => {
-                self.create_serverless_index(
-                    params.name,
-                    params.dimension,
-                    params.metric,
-                    cloud,
-                    region
-                ).await
-            }
-            Spec::Pod {
-                environment: _,
-                replicas: _,
-                shards: _,
-                pod_type: _,
-                pods: _,
-                metadata_config: _,
-                source_collection: _,
-            } => {
-                // eventually change this to be pod index
-                self.create_serverless_index(params.name, params.dimension, params.metric, Cloud::Aws, "".to_string()).await
-            }
-        }
-    }
-
-    // Creates serverless index
-    async fn create_serverless_index(
-        &self,
-        name: String,
+        name: &str,
         dimension: u32, 
-        metric: Metric, 
-        cloud: Cloud, 
-        region: String
+        metric: Option<Metric>, 
+        cloud: Cloud,
+        region: &str
     ) -> Result<IndexModel, PineconeError> {
-        // convert to openapi types
-        let openapi_metric: create_index_request::Metric = metric.into();
-        let openapi_cloud: serverless_spec::Cloud = cloud.into();
-
         // create request specs
         let create_index_request_spec = CreateIndexRequestSpec {
             serverless: Some(Box::new(ServerlessSpec {
-                cloud: openapi_cloud,
-                region,
+                cloud,
+                region: region.to_string(),
             })),
             pod: None,
         };
 
         let create_index_request = CreateIndexRequest {
-            name,
+            name: name.to_string(),
             dimension: dimension.try_into().unwrap(),
-            metric: Some(openapi_metric),
+            metric: metric,
             spec: Some(Box::new(create_index_request_spec)),
         };
 
@@ -119,15 +82,13 @@ mod tests {
             None,
             None,
         );
-        let name = "index_name".to_string();
-        let dimension = 10;
         
         let create_index_request = pinecone.unwrap().create_serverless_index(
-            name,
-            dimension,
-            Metric::Cosine,
+            "index_name",
+            10,
+            Some(Metric::Cosine),
             Cloud::Aws,
-            "us-east-1".to_string()
+            "us-east-1"
         ).await;
         assert!(create_index_request.is_ok());
 
@@ -175,33 +136,31 @@ mod tests {
             None,
             None,
         );
-        let params = CreateIndexParams {
-            name: "index_name".to_string(),
-            dimension: 10,
-            metric: Metric::Euclidean,
-            spec: Spec::Serverless {
-                cloud: Cloud::Aws,
-                region: "us-east-1".to_string(),
-            },
-        };
 
-        let result = pinecone.unwrap().create_index(params).await;
+        let name = "index_name";
+        let metric = Metric::Euclidean;
+        let cloud = Cloud::Aws;
+        let region = "us-east-1";
+
+        let result = pinecone.unwrap().create_serverless_index(
+            name,
+            10,
+            Some(metric), 
+            cloud, 
+            region).await;
 
         match result {
             Ok(index) => {
-                assert_eq!(index.name, "index_name");
+                assert_eq!(index.name, name.to_string());
                 assert_eq!(index.dimension, 10);
-                assert_eq!(
-                    index.metric,
-                    openapi::models::index_model::Metric::Euclidean
-                );
+                assert_eq!(index.metric, openapi::models::index_model::Metric::Euclidean);
                 let spec = *index.spec;
                 let serverless_spec = spec.serverless.unwrap();
                 assert_eq!(
                     serverless_spec.cloud,
-                    openapi::models::serverless_spec::Cloud::Aws
+                    Cloud::Aws
                 );
-                assert_eq!(serverless_spec.region, "us-east-1");
+                assert_eq!(serverless_spec.region, region.to_string());
             }
             Err(e) => panic!("{}", e),
         }

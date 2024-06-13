@@ -17,6 +17,3 @@ pub mod pinecone;
 
 /// Utility modules.
 pub mod utils;
-
-/// Structure models.
-pub mod models;
