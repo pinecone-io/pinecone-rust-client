@@ -10,14 +10,10 @@ impl PineconeClient {
         &self,
         name: &str,
         dimension: u32, 
-        metric: Option<Metric>, 
-        cloud: Option<Cloud>,
+        metric: Metric,
+        cloud: Cloud,
         region: &str
     ) -> Result<IndexModel, PineconeError> {
-        // use defaults
-        let metric = metric.unwrap_or(Default::default());
-        let cloud = cloud.unwrap_or(Default::default());
-
         // create request specs
         let create_index_request_spec = CreateIndexRequestSpec {
             serverless: Some(Box::new(ServerlessSpec {
@@ -62,7 +58,7 @@ mod tests {
                 {
                     "name": "index_name",
                     "dimension": 10,
-                    "metric": "cosine",
+                    "metric": "euclidean",
                     "host": "host1",
                     "spec": {
                         "serverless": {
@@ -89,8 +85,61 @@ mod tests {
         let create_index_request = pinecone.unwrap().create_serverless_index(
             "index_name",
             10,
-            Some(Metric::Cosine),
-            Some(Cloud::Aws),
+            Metric::Cosine,
+            Cloud::Aws,
+            "us-east-1"
+        ).await;
+        assert!(create_index_request.is_ok());
+
+        let create_index_req = create_index_request.unwrap();
+        assert_eq!(create_index_req.name, "index_name");
+        assert_eq!(create_index_req.dimension, 10);
+        assert_eq!(create_index_req.metric, openapi::models::index_model::Metric::Euclidean);
+
+        let spec = create_index_req.spec.serverless.unwrap();
+        assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
+        assert_eq!(spec.region, "us-east-1");
+    }
+
+    #[tokio::test]
+    async fn test_create_serverless_index_defaults() {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "index_name",
+                    "dimension": 10,
+                    "metric": "cosine",
+                    "host": "host1",
+                    "spec": {
+                        "serverless": {
+                            "cloud": "gcp",
+                            "region": "us-east-1"
+                        }
+                    },
+                    "status": {
+                        "ready": true,
+                        "state": "Initializing"
+                    }
+                  }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        );
+        
+        let create_index_request = pinecone.unwrap().create_serverless_index(
+            "index_name",
+            10,
+            Default::default(),
+            Default::default(),
             "us-east-1"
         ).await;
         assert!(create_index_request.is_ok());
@@ -101,7 +150,7 @@ mod tests {
         assert_eq!(create_index_req.metric, openapi::models::index_model::Metric::Cosine);
 
         let spec = create_index_req.spec.serverless.unwrap();
-        assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
+        assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Gcp);
         assert_eq!(spec.region, "us-east-1");
     }
 }
