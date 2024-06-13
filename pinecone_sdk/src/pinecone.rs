@@ -42,7 +42,7 @@ impl PineconeClient {
         source_tag: Option<String>,
     ) -> Result<Self, PineconeError> {
         // get api key
-        let api_key_option = match api_key {
+        let api_key_str = match api_key {
             Some(key) => key,
             None => match std::env::var("PINECONE_API_KEY") {
                 Ok(key) => key,
@@ -70,11 +70,11 @@ impl PineconeClient {
             },
         };
 
-        let config = Config::new(api_key_option.clone(), None);
+        let config = Config::new(api_key_str.clone(), None);
         let user_agent = get_user_agent(&config);
         
         Ok(PineconeClient {
-            api_key: api_key_option,
+            api_key: api_key_str,
             controller_url: controller_host,
             additional_headers,
             source_tag,
