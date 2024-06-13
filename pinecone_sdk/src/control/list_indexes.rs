@@ -1,10 +1,10 @@
-use crate::pinecone::Pinecone;
+use crate::pinecone::PineconeClient;
 use openapi::apis::manage_indexes_api;
 use openapi::apis::manage_indexes_api::ListIndexesError;
 use openapi::apis::Error;
 use openapi::models;
 
-impl Pinecone {
+impl PineconeClient {
     /// Lists all indexes.
     ///
     /// The results include a description of all indexes in your project, including the
@@ -17,12 +17,12 @@ impl Pinecone {
     /// ### Example
     ///
     /// ```
-    /// # use pinecone_sdk::pinecone::Pinecone;
+    /// # use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// # // Create a Pinecone client with the API key and controller host.
-    /// # let pinecone = Pinecone::new(None, None, None, None).unwrap();
+    /// # let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     /// #
     /// // List all indexes in the project.
     /// let index_list = pinecone.list_indexes();
@@ -87,7 +87,7 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let api_key = "test_api_key".to_string();
-        let pinecone = Pinecone::new(Some(api_key), Some(mockito::server_url()), None, None)
+        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
             .expect("Failed to create Pinecone instance");
 
         // Call list_indexes and verify the result

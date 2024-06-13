@@ -1,11 +1,11 @@
 use crate::models::create_index_request_params::{CreateIndexParams, Spec, Metric, Cloud};
-use crate::pinecone::Pinecone;
+use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::models::create_index_request;
 use openapi::models::serverless_spec;
 use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
 
-impl Pinecone {
+impl PineconeClient {
     /// Creates a new index based on the provided parameters
     pub async fn create_index(
         &self,
@@ -113,7 +113,7 @@ mod tests {
             )
             .create();
 
-        let pinecone = Pinecone::new(
+        let pinecone = PineconeClient::new(
             Some("api_key".to_string()),
             Some(mockito::server_url()),
             None,
@@ -169,7 +169,7 @@ mod tests {
             )
             .create();
 
-        let pinecone = Pinecone::new(
+        let pinecone = PineconeClient::new(
             Some("api_key".to_string()),
             Some(mockito::server_url()),
             None,

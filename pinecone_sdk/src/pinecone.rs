@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 /// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
-pub struct Pinecone {
+pub struct PineconeClient {
     /// Configuration for the Pinecone SDK struct.
     config: Config,
 
@@ -16,7 +16,7 @@ pub struct Pinecone {
     openapi_config: Configuration,
 }
 
-impl Pinecone {
+impl PineconeClient {
     /// The `Pinecone` struct is the main entry point for interacting with Pinecone via this Rust SDK.
     /// It is used to create, delete, and manage your indexes and collections.
     ///
@@ -30,10 +30,10 @@ impl Pinecone {
     /// ### Example
     ///
     /// ```
-    /// use pinecone_sdk::pinecone::Pinecone;
+    /// use pinecone_sdk::pinecone::PineconeClient;
     ///
     /// // Create a Pinecone client with the API key and controller host.
-    /// let pinecone = Pinecone::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
+    /// let pinecone = PineconeClient::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
     /// ```
     pub fn new(
         api_key: Option<String>,
@@ -89,7 +89,7 @@ impl Pinecone {
             ..Default::default()
         };
 
-        Ok(Pinecone {
+        Ok(PineconeClient {
             config,
             openapi_config,
         })
@@ -153,8 +153,8 @@ impl PineconeBuilder {
     }
 
     /// Constructs Pinecone instance from PineconeBuilder fields.
-    pub fn build(self) -> Result<Pinecone, PineconeError> {
-        Pinecone::new(
+    pub fn build(self) -> Result<PineconeClient, PineconeError> {
+        PineconeClient::new(
             self.api_key,
             self.control_plane_host,
             self.additional_headers,
@@ -173,7 +173,7 @@ mod tests {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
-        let pinecone = Pinecone::new(
+        let pinecone = PineconeClient::new(
             Some(mock_api_key.clone()),
             Some(mock_controller_host.clone()),
             Some(HashMap::new()),
@@ -192,7 +192,7 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
         temp_env::with_var("PINECONE_API_KEY", Some(mock_api_key.as_str()), || {
-            let pinecone = Pinecone::new(
+            let pinecone = PineconeClient::new(
                 None,
                 Some(mock_controller_host.clone()),
                 Some(HashMap::new()),
@@ -211,7 +211,7 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
         temp_env::with_var_unset("PINECONE_API_KEY", || {
-            let pinecone = Pinecone::new(
+            let pinecone = PineconeClient::new(
                 None,
                 Some(mock_controller_host.clone()),
                 Some(HashMap::new()),
@@ -229,7 +229,7 @@ mod tests {
     async fn test_arg_host() -> Result<(), PineconeError> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
-        let pinecone = Pinecone::new(
+        let pinecone = PineconeClient::new(
             Some(mock_api_key.clone()),
             Some(mock_controller_host.clone()),
             Some(HashMap::new()),
@@ -252,7 +252,7 @@ mod tests {
             Some(mock_controller_host.as_str()),
             || {
                 let pinecone =
-                    Pinecone::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None)
+                    PineconeClient::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None)
                         .expect("Expected to successfully create Pinecone instance with env host");
 
                 assert_eq!(pinecone.config.controller_url, mock_controller_host.clone());
@@ -267,7 +267,7 @@ mod tests {
         let mock_api_key = "mock-arg-api-key".to_string();
 
         temp_env::with_var_unset("PINECONE_CONTROLLER_HOST", || {
-            let pinecone = Pinecone::new(
+            let pinecone = PineconeClient::new(
                 Some(mock_api_key.clone()),
                 None,
                 Some(HashMap::new()),
@@ -295,7 +295,7 @@ mod tests {
             ("argheader2".to_string(), "value2".to_string()),
         ]);
 
-        let pinecone = Pinecone::new(
+        let pinecone = PineconeClient::new(
             Some(mock_api_key.clone()),
             Some(mock_controller_host.clone()),
             Some(mock_headers.clone()),
@@ -321,7 +321,7 @@ mod tests {
             "PINECONE_ADDITIONAL_HEADERS",
             Some(serde_json::to_string(&mock_headers).unwrap().as_str()),
             || {
-                let pinecone = Pinecone::new(
+                let pinecone = PineconeClient::new(
                     Some(mock_api_key.clone()),
                     Some(mock_controller_host.clone()),
                     None,
@@ -342,7 +342,7 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
         temp_env::with_var("PINECONE_ADDITIONAL_HEADERS", Some("invalid-json"), || {
-            let pinecone = Pinecone::new(
+            let pinecone = PineconeClient::new(
                 Some(mock_api_key.clone()),
                 Some(mock_controller_host.clone()),
                 None,
@@ -365,7 +365,7 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
         temp_env::with_var_unset("PINECONE_ADDITIONAL_HEADERS", || {
-            let pinecone = Pinecone::new(
+            let pinecone = PineconeClient::new(
                 Some(mock_api_key.clone()),
                 Some(mock_controller_host.clone()),
                 Some(HashMap::new()),
@@ -407,7 +407,7 @@ mod tests {
                 ),
             ],
             || {
-                let pinecone = Pinecone::new(
+                let pinecone = PineconeClient::new(
                     Some(mock_arg_api_key.clone()),
                     Some(mock_arg_controller_host.clone()),
                     Some(mock_arg_headers.clone()),
@@ -429,14 +429,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_builder() {
-        let pinecone = Pinecone::builder().api_key("mock-api-key").build();
+        let pinecone = PineconeClient::builder().api_key("mock-api-key").build();
 
         assert_eq!(pinecone.unwrap().config.api_key, "mock-api-key");
     }
 
     #[tokio::test]
     async fn test_builder_all_params() {
-        let pinecone = Pinecone::builder()
+        let pinecone = PineconeClient::builder()
             .api_key("mock-api-key")
             .additional_headers(HashMap::from([(
                 "header1".to_string(),
