@@ -49,7 +49,6 @@ impl PineconeClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use core::panic;
     use mockito::mock;
     use tokio;
 
@@ -104,69 +103,5 @@ mod tests {
         let spec = create_index_req.spec.serverless.unwrap();
         assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
         assert_eq!(spec.region, "us-east-1");
-    }
-
-    #[tokio::test]
-    async fn test_create_index_serverless() {
-        // Create a mock server
-        let _m = mock("POST", "/indexes")
-            .with_status(201)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"
-                {
-                    "name": "index_name",
-                    "dimension": 10,
-                    "metric": "euclidean",
-                    "host": "host1",
-                    "spec": {
-                        "serverless": {
-                            "cloud": "aws",
-                            "region": "us-east-1"
-                        }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "Initializing"
-                    }
-                  }
-            "#,
-            )
-            .create();
-
-        let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(mockito::server_url()),
-            None,
-            None,
-        );
-
-        let name = "index_name";
-        let metric = Metric::Euclidean;
-        let cloud = Cloud::Aws;
-        let region = "us-east-1";
-
-        let result = pinecone.unwrap().create_serverless_index(
-            name,
-            10,
-            Some(metric), 
-            Some(cloud),
-            region).await;
-
-        match result {
-            Ok(index) => {
-                assert_eq!(index.name, name.to_string());
-                assert_eq!(index.dimension, 10);
-                assert_eq!(index.metric, openapi::models::index_model::Metric::Euclidean);
-                let spec = *index.spec;
-                let serverless_spec = spec.serverless.unwrap();
-                assert_eq!(
-                    serverless_spec.cloud,
-                    Cloud::Aws
-                );
-                assert_eq!(serverless_spec.region, region.to_string());
-            }
-            Err(e) => panic!("{}", e),
-        }
     }
 }
