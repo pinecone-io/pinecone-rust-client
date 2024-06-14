@@ -80,7 +80,27 @@ impl PineconeClient {
         }
     }
 
-    /// Deletes an index by name.
+    /// Deletes an index.
+    /// 
+    /// ### Arguments
+    /// * name - The name of the index to be deleted.
+    /// 
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    /// 
+    /// ### Example
+    /// ```
+    /// # use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::control::{Cloud, Metric};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// # let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// # let _ = pinecone.create_serverless_index("index-name", 2, Metric::Euclidean, Cloud::Aws, "us-west-2").await;
+    /// let response = pinecone.delete_index("index-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
         match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
@@ -279,6 +299,28 @@ mod tests {
             ]),
         };
         assert_eq!(index_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_index() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/index_name")
+            .with_status(204)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        );
+
+        let delete_index_request = pinecone
+            .unwrap()
+            .delete_index("index_name")
+            .await;
+        assert!(delete_index_request.is_ok());
 
         Ok(())
     }
