@@ -70,7 +70,12 @@ impl PineconeClient {
             },
         };
 
-        let config = Config::new(api_key_str.clone(), None);
+        let config = Config {
+            api_key: api_key_str.clone(),
+            controller_url: controller_host.clone(),
+            additional_headers: additional_headers.clone(),
+            source_tag: source_tag.clone(),
+        };
         let user_agent = get_user_agent(&config);
         
         Ok(PineconeClient {
