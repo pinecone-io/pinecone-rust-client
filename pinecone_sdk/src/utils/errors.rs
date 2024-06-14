@@ -1,4 +1,7 @@
-use openapi::apis::{manage_indexes_api::CreateIndexError, Error as OpenAPIError};
+use openapi::apis::{
+    manage_indexes_api::{CreateIndexError, DescribeIndexError},
+    Error as OpenAPIError,
+};
 use snafu::prelude::*;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
@@ -9,10 +12,17 @@ pub enum PineconeError {
     APIKeyMissingError,
 
     /// CreateIndexError: Failed to create an index.
-    #[snafu(display("API key missing."))]
+    #[snafu(display("Failed to create an index."))]
     CreateIndexError {
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<CreateIndexError>,
+    },
+
+    /// DescribeIndexError: Failed to create an index.
+    #[snafu(display("Failed to describe an index."))]
+    DescribeIndexError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DescribeIndexError>,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
@@ -36,13 +46,13 @@ pub enum PineconeError {
         metric: String,
     },
 
-    /// MissingNameError: Index name is missing.
-    #[snafu(display("Index name missing."))]
-    MissingNameError,
-
     /// MissingDimensionError: Index dimension is missing.
     #[snafu(display("Dimension missing."))]
     MissingDimensionError,
+
+    /// MissingNameError: Index name is missing.
+    #[snafu(display("Index name missing."))]
+    MissingNameError,
 
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
