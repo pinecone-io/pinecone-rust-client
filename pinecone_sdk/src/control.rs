@@ -12,14 +12,14 @@ impl PineconeClient {
     /// Creates a serverless index.
     ///
     /// ### Arguments
-    /// * `name` - Name of the index to create.
-    /// * `dimension` - Dimension of the vectors to be inserted in the index.
-    /// * `metric` - The distance metric to be used for similarity search.
-    /// * `cloud` - The public cloud where you would like your index hosted.
-    /// * `region` - The region where you would like your index to be created.
+    /// * `name: &str` - Name of the index to create.
+    /// * `dimension: u32` - Dimension of the vectors to be inserted in the index.
+    /// * `metric: Metric` - The distance metric to be used for similarity search.
+    /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
+    /// * `region: &str` - The region where you would like your index to be created.
     ///
     /// ### Return
-    /// * Returns an `IndexModel` object.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// TODO: need to delete the index after the test so it can be rerun
@@ -77,10 +77,10 @@ impl PineconeClient {
     /// Describes an index.
     ///
     /// ### Arguments
-    /// * `name` - Name of the index to describe.
+    /// * `name: &str` - Name of the index to describe.
     ///
     /// ### Return
-    /// * Returns an `IndexModel` object.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```
@@ -92,7 +92,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let index_list = pinecone.describe_index("describe-index").await.unwrap();
+    /// let index_list = pinecone.describe_index("index-name").await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -112,7 +112,7 @@ impl PineconeClient {
     /// index name, dimension, metric, status, and spec.
     ///
     /// ### Return
-    /// * Returns an `IndexModel` object.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```

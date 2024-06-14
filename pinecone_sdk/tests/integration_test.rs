@@ -5,7 +5,7 @@ use pinecone_sdk::utils::errors::PineconeError;
 async fn test_describe_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     let _ = pinecone
-        .describe_index("describe-index")
+        .describe_index("valid-index")
         .await
         .expect("Failed to describe index");
 
@@ -16,7 +16,7 @@ async fn test_describe_index() -> Result<(), PineconeError> {
 async fn test_describe_index_fail() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     let _ = pinecone
-        .describe_index("non-existent-index")
+        .describe_index("invalid-index")
         .await
         .expect_err("Expected to fail describing index");
 
