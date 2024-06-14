@@ -99,7 +99,10 @@ impl PineconeClient {
     pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
         match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
             Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::DescribeIndexError { openapi_error: e }),
+            Err(e) => Err(PineconeError::DescribeIndexError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
         }
     }
 
@@ -291,7 +294,7 @@ mod tests {
         let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
             .expect("Failed to create Pinecone instance");
 
-        // Call list_indexes and verify the result
+        // Call describe_index and verify the result
         let index = pinecone
             .describe_index("serverless-index")
             .await

@@ -18,9 +18,11 @@ pub enum PineconeError {
         openapi_error: OpenAPIError<CreateIndexError>,
     },
 
-    /// DescribeIndexError: Failed to create an index.
-    #[snafu(display("Failed to describe an index."))]
+    /// DescribeIndexError: Failed to describe an index.
+    #[snafu(display("Failed to describe the index '{}'", name))]
     DescribeIndexError {
+        /// name: Index name.
+        name: String,
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<DescribeIndexError>,
     },
