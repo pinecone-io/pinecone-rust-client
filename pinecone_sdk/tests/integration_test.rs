@@ -11,3 +11,5 @@ async fn test_list_index() -> Result<(), PineconeError> {
 
     Ok(())
 }
+
+// TODO: add integration test for create delete collection

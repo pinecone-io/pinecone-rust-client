@@ -1,7 +1,10 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
+use openapi::models::{
+    create_collection_request, CollectionModel, CreateIndexRequest, CreateIndexRequestSpec,
+    IndexList, IndexModel, ServerlessSpec,
+};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -32,12 +35,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        match manage_indexes_api::create_index(
-            &self.openapi_config(),
-            create_index_request,
-        )
-        .await
-        {
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
@@ -73,10 +71,54 @@ impl PineconeClient {
             Ok(response) => {
                 println!("{:?}", response);
                 Ok(response)
-            },
-            Err(e) => {
-                Err(PineconeError::ListIndexesError { openapi_error: e })
-            },
+            }
+            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
+        }
+    }
+    /// Creates a collection from an index.
+    ///
+    /// ### Arguments
+    /// * `name: &str` - Name of the collection to create.
+    /// * `source: &str` - Name of the index to be used as the source for the collection.
+    ///
+    /// ### Return
+    /// * `Result<CollectionModel, PineconeError>`
+    ///
+    /// ### Example
+    /// TODO: need to delete the collection after the test so it can be rerun
+    /// ```no_run
+    /// # use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// // Create a Pinecone client with the API key and controller host.
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// // Describe an index in the project.
+    /// let collection = pinecone.create_collection("temp-collection", "valid-index").await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn create_collection(
+        &self,
+        name: &str,
+        source: &str,
+    ) -> Result<CollectionModel, PineconeError> {
+        let create_collection_request = create_collection_request::CreateCollectionRequest {
+            name: name.to_string(),
+            source: source.to_string(),
+        };
+        match manage_indexes_api::create_collection(
+            &self.openapi_config(),
+            create_collection_request,
+        )
+        .await
+        {
+            Ok(collection) => Ok(collection),
+            Err(e) => Err(PineconeError::CreateCollectionError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
         }
     }
 }
@@ -85,7 +127,7 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::models;
+    use openapi::models::{self, collection_model::Status};
     use tokio;
 
     #[tokio::test]
@@ -271,6 +313,50 @@ mod tests {
             ]),
         };
         assert_eq!(index_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection() -> Result<(), PineconeError> {
+        // Create a mock server
+        let _m = mock("POST", "/collections")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "example-collection",
+                    "size": 10000000,
+                    "status": "Initializing",
+                    "dimension": 1536,
+                    "vector_count": 120000,
+                    "environment": "us-east1-gcp"
+                  }
+            "#,
+            )
+            .create();
+
+        // Construct Pinecone instance with the mock server URL
+        let api_key = "test_api_key".to_string();
+        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
+            .expect("Failed to create Pinecone instance");
+
+        // Call create_collection and verify the result
+        let collection = pinecone
+            .create_collection("collection1", "index1")
+            .await
+            .expect("Failed to create collection");
+
+        let expected = CollectionModel {
+            name: "example-collection".to_string(),
+            size: Some(10000000),
+            status: Status::Initializing,
+            dimension: Some(1536),
+            vector_count: Some(120000),
+            environment: "us-east1-gcp".to_string(),
+        };
+        assert_eq!(collection, expected);
 
         Ok(())
     }
