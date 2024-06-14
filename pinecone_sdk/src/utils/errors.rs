@@ -1,5 +1,5 @@
 use openapi::apis::{
-    manage_indexes_api::{CreateIndexError, DescribeIndexError},
+    manage_indexes_api::{CreateIndexError, DescribeIndexError, ListIndexesError},
     Error as OpenAPIError,
 };
 use snafu::prelude::*;
@@ -44,6 +44,13 @@ pub enum PineconeError {
     InvalidMetricError {
         /// metric: Metric name.
         metric: String,
+    },
+
+    /// ListIndexesError: Failed to list indexes.
+    #[snafu(display("Failed to list indexes."))]
+    ListIndexesError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ListIndexesError>,
     },
 
     /// MissingDimensionError: Index dimension is missing.
