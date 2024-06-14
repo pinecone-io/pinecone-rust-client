@@ -1,7 +1,10 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
+use openapi::models::{
+    CreateIndexRequest, CreateIndexRequestSpec, IndexList, IndexModel, PodSpec,
+    PodSpecMetadataConfig, ServerlessSpec,
+};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -32,12 +35,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        match manage_indexes_api::create_index(
-            &self.openapi_config(),
-            create_index_request,
-        )
-        .await
-        {
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
@@ -73,10 +71,65 @@ impl PineconeClient {
             Ok(response) => {
                 println!("{:?}", response);
                 Ok(response)
-            },
-            Err(e) => {
-                Err(PineconeError::ListIndexesError { openapi_error: e })
-            },
+            }
+            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
+        }
+    }
+
+    /// Creates a Pinecone pod index.
+    ///
+    /// ### Arguments
+    /// * `name` - The name of the index
+    ///
+    /// ### Return
+    /// * Returns a `Result<IndexModel, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```
+    /// // put a good example here of how the developer should use it
+    /// # // start the line like this if you don't want this to be shown to the dev
+    /// # // but it's needed to run properly during doc tests
+    /// ```
+    ///
+    /// Include any additional technical notes here.
+    pub async fn create_pod_index(
+        &self,
+        name: &str,
+        dimension: u32,
+        metric: Metric,
+        environment: &str,
+        replicas: Option<i32>,
+        shards: Option<i32>,
+        pod_type: String,
+        pods: i32,
+        metadata_config: Option<Box<PodSpecMetadataConfig>>,
+        source_collection: Option<String>,
+    ) -> Result<IndexModel, PineconeError> {
+        let pod_spec = PodSpec {
+            environment: environment.to_string(),
+            replicas,
+            shards,
+            pod_type,
+            pods,
+            metadata_config,
+            source_collection,
+        };
+
+        let spec = CreateIndexRequestSpec {
+            serverless: None,
+            pod: Some(Box::new(pod_spec)),
+        };
+
+        let create_index_request = CreateIndexRequest {
+            name: name.to_string(),
+            dimension: dimension.try_into().unwrap(),
+            metric: Some(metric),
+            spec: Some(Box::new(spec)),
+        };
+
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
+            Ok(response) => Ok(response),
+            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
     }
 }
