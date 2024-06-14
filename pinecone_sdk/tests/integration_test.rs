@@ -44,3 +44,12 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_delete_index_err() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    let name = "invalid-index";
+    let response = pinecone.delete_index(name).await;
+    assert!(response.is_err());
+    Ok(())
+}
