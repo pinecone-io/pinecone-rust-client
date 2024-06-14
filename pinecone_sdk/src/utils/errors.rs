@@ -1,4 +1,4 @@
-use openapi::apis::{manage_indexes_api::CreateIndexError, Error as OpenAPIError};
+use openapi::apis::{manage_indexes_api::{CreateIndexError, ListIndexesError}, Error as OpenAPIError};
 use snafu::prelude::*;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
@@ -34,6 +34,13 @@ pub enum PineconeError {
     InvalidMetricError {
         /// metric: Metric name.
         metric: String,
+    },
+
+    /// ListIndexesError: Failed to list indexes.
+    #[snafu(display("Failed to list indexes."))]
+    ListIndexesError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ListIndexesError>,
     },
 
     /// MissingNameError: Index name is missing.

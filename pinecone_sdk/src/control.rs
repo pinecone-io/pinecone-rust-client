@@ -4,7 +4,7 @@ use openapi::apis::manage_indexes_api;
 use openapi::apis::manage_indexes_api::ListIndexesError;
 use openapi::apis::Error;
 use openapi::models;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, ServerlessSpec};
+use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -35,7 +35,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        match openapi::apis::manage_indexes_api::create_index(
+        match manage_indexes_api::create_index(
             &self.openapi_config(),
             create_index_request,
         )
@@ -70,10 +70,17 @@ impl PineconeClient {
     /// # }
     /// ```
 
-    pub async fn list_indexes(&self) -> Result<models::IndexList, Error<ListIndexesError>> {
-        let response = manage_indexes_api::list_indexes(&self.openapi_config()).await?;
-        println!("{:?}", response);
-        Ok(response)
+    pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
+        let response = manage_indexes_api::list_indexes(&self.openapi_config()).await;
+        match response {
+            Ok(response) => {
+                println!("{:?}", response);
+                Ok(response)
+            },
+            Err(e) => {
+                Err(PineconeError::ListIndexesError { openapi_error: e })
+            },
+        }
     }
 }
 
@@ -81,7 +88,7 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
-    use models::IndexList;
+    use openapi::models::IndexList;
     use tokio;
 
     #[tokio::test]
