@@ -25,10 +25,9 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     let response = pinecone
         .create_serverless_index(name, dimension, metric, cloud, region)
-        .await;
+        .await
+        .expect("Failed to create index");
 
-    assert!(response.is_ok());
-    let response = response.unwrap();
     assert_eq!(response.name, name);
     assert_eq!(response.dimension, 2);
     assert_eq!(response.metric, openapi::models::index_model::Metric::Euclidean);
