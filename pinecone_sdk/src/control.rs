@@ -79,7 +79,15 @@ impl PineconeClient {
     /// Creates a Pinecone pod index.
     ///
     /// ### Arguments
-    /// * `name` - The name of the index
+    /// * `name: &str` - The name of the index
+    /// * `dimension: u32` - The dimension of the index
+    /// * `metric: Metric` - The metric to use for the index
+    /// * `environment: &str` - The environment to use for the index
+    /// * `replicas: Option<i32>` - The number of replicas to use for the index
+    /// * `shards: Option<i32>` - The number of shards to use for the index
+    /// * `pod_type: String` - The type of pod to use for the index
+    /// * `pods: i32` - The number of pods to use for the index
+    /// * `indexed: Option<Vec<String>>` - The metadata fields to index
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -94,24 +102,24 @@ impl PineconeClient {
     /// Include any additional technical notes here.
     pub async fn create_pod_index(
         &self,
-        name: &str,
+        name: String,
         dimension: u32,
         metric: Metric,
-        environment: &str,
+        environment: String,
         replicas: Option<i32>,
         shards: Option<i32>,
         pod_type: String,
         pods: i32,
-        metadata_config: Option<Box<PodSpecMetadataConfig>>,
+        indexed: Option<Vec<String>>,
         source_collection: Option<String>,
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
-            environment: environment.to_string(),
+            environment,
             replicas,
             shards,
             pod_type,
             pods,
-            metadata_config,
+            metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection,
         };
 
@@ -121,7 +129,7 @@ impl PineconeClient {
         };
 
         let create_index_request = CreateIndexRequest {
-            name: name.to_string(),
+            name,
             dimension: dimension.try_into().unwrap(),
             metric: Some(metric),
             spec: Some(Box::new(spec)),
