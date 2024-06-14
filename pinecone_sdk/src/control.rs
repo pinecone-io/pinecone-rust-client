@@ -82,7 +82,7 @@ impl PineconeClient {
     /// Deletes an index.
     /// 
     /// ### Arguments
-    /// * name - The name of the index to be deleted.
+    /// * name: &str - The name of the index to be deleted.
     /// 
     /// ### Return
     /// * Returns a `Result<(), PineconeError>` object.
