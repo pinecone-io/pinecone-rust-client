@@ -79,10 +79,10 @@ impl PineconeClient {
     /// Creates a Pinecone pod index.
     ///
     /// ### Arguments
-    /// * `name: &str` - The name of the index
+    /// * `name: String` - The name of the index
     /// * `dimension: u32` - The dimension of the index
     /// * `metric: Metric` - The metric to use for the index
-    /// * `environment: &str` - The environment to use for the index
+    /// * `environment: String` - The environment to use for the index
     /// * `replicas: Option<i32>` - The number of replicas to use for the index
     /// * `shards: Option<i32>` - The number of shards to use for the index
     /// * `pod_type: String` - The type of pod to use for the index
@@ -181,23 +181,22 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .unwrap();
 
-        let create_index_request = pinecone
-            .unwrap()
+        let create_index_response = pinecone
             .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
-            .await;
-        assert!(create_index_request.is_ok());
+            .await
+            .expect("Failed to create serverless index");
 
-        let create_index_req = create_index_request.unwrap();
-        assert_eq!(create_index_req.name, "index_name");
-        assert_eq!(create_index_req.dimension, 10);
+        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
-            create_index_req.metric,
+            create_index_response.metric,
             openapi::models::index_model::Metric::Euclidean
         );
 
-        let spec = create_index_req.spec.serverless.unwrap();
+        let spec = create_index_response.spec.serverless.unwrap();
         assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
         assert_eq!(spec.region, "us-east-1");
     }
@@ -234,10 +233,10 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .unwrap();
 
-        let create_index_request = pinecone
-            .unwrap()
+        let create_index_response = pinecone
             .create_serverless_index(
                 "index_name",
                 10,
@@ -245,18 +244,17 @@ mod tests {
                 Default::default(),
                 "us-east-1",
             )
-            .await;
-        assert!(create_index_request.is_ok());
+            .await
+            .expect("Failed to create serverless index");
 
-        let create_index_req = create_index_request.unwrap();
-        assert_eq!(create_index_req.name, "index_name");
-        assert_eq!(create_index_req.dimension, 10);
+        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
-            create_index_req.metric,
+            create_index_response.metric,
             openapi::models::index_model::Metric::Cosine
         );
 
-        let spec = create_index_req.spec.serverless.unwrap();
+        let spec = create_index_response.spec.serverless.unwrap();
         assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Gcp);
         assert_eq!(spec.region, "us-east-1");
     }
@@ -332,6 +330,172 @@ mod tests {
             ]),
         };
         assert_eq!(index_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_pod_index() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "test-index",
+                    "dimension": 1536,
+                    "metric": "euclidean",
+                    "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
+                    "spec": {
+                        "pod": {
+                        "environment": "us-east-1-aws",
+                        "metadata_config": {
+                            "indexed": [
+                                "genre",
+                                "title",
+                                "imdb_rating"
+                            ]
+                        },
+                        "pod_type": "p1.x1",
+                        "pods": 1,
+                        "replicas": 1,
+                        "shards": 1
+                        }
+                    },
+                    "status": {
+                        "ready": true,
+                        "state": "ScalingUpPodSize"
+                    }
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_pod_index(
+                "test-index".to_string(),
+                1536,
+                Metric::Euclidean,
+                "us-east-1-aws".to_string(),
+                Some(1),
+                Some(1),
+                "p1.x1".to_string(),
+                1,
+                Some(vec![
+                    "genre".to_string(),
+                    "title".to_string(),
+                    "imdb_rating".to_string(),
+                ]),
+                Some("example-collection".to_string()),
+            )
+            .await
+            .expect("Failed to create pod index");
+
+        assert_eq!(create_index_response.name, "test-index");
+        assert_eq!(create_index_response.dimension, 1536);
+        assert_eq!(
+            create_index_response.metric,
+            openapi::models::index_model::Metric::Euclidean
+        );
+
+        let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
+        assert_eq!(pod_spec.environment, "us-east-1-aws");
+        assert_eq!(pod_spec.pod_type, "p1.x1");
+        assert_eq!(
+            pod_spec.metadata_config.as_ref().unwrap().indexed,
+            Some(vec![
+                "genre".to_string(),
+                "title".to_string(),
+                "imdb_rating".to_string()
+            ])
+        );
+        assert_eq!(pod_spec.pods, 1);
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_pod_index_with_defaults() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "test-index",
+                    "dimension": 1536,
+                    "metric": "cosine",
+                    "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
+                    "spec": {
+                        "pod": {
+                        "environment": "us-east-1-aws",
+                        "metadata_config": {},
+                        "pod_type": "p1.x1",
+                        "pods": 1,
+                        "replicas": 1,
+                        "shards": 1
+                        }
+                    },
+                    "status": {
+                        "ready": true,
+                        "state": "ScalingUpPodSize"
+                    }
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_pod_index(
+                "test-index".to_string(),
+                1536,
+                Default::default(),
+                "us-east-1-aws".to_string(),
+                None,
+                None,
+                "p1.x1".to_string(),
+                1,
+                None,
+                None,
+            )
+            .await
+            .expect("Failed to create pod index");
+
+        assert_eq!(create_index_response.name, "test-index");
+        assert_eq!(create_index_response.dimension, 1536);
+        assert_eq!(
+            create_index_response.metric,
+            openapi::models::index_model::Metric::Cosine
+        );
+
+        let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
+        assert_eq!(pod_spec.environment, "us-east-1-aws");
+        assert_eq!(pod_spec.pod_type, "p1.x1");
+        assert_eq!(
+            pod_spec.metadata_config.as_ref().unwrap().indexed,
+            None
+        );
+        assert_eq!(pod_spec.pods, 1);
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
 
         Ok(())
     }
