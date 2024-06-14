@@ -1,7 +1,9 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
+use openapi::models::{
+    CreateIndexRequest, CreateIndexRequestSpec, IndexList, IndexModel, ServerlessSpec,
+};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -32,12 +34,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        match manage_indexes_api::create_index(
-            &self.openapi_config(),
-            create_index_request,
-        )
-        .await
-        {
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
@@ -72,21 +69,19 @@ impl PineconeClient {
             Ok(response) => {
                 println!("{:?}", response);
                 Ok(response)
-            },
-            Err(e) => {
-                Err(PineconeError::ListIndexesError { openapi_error: e })
-            },
+            }
+            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
         }
     }
 
     /// Deletes an index.
-    /// 
+    ///
     /// ### Arguments
     /// * name: &str - The name of the index to be deleted.
-    /// 
+    ///
     /// ### Return
     /// * Returns a `Result<(), PineconeError>` object.
-    /// 
+    ///
     /// ### Example
     /// ```
     /// # use pinecone_sdk::pinecone::PineconeClient;
@@ -103,7 +98,10 @@ impl PineconeClient {
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
         match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
-            Err(e) => Err(PineconeError::DeleteIndexError { name: name.to_string(), openapi_error: e }),
+            Err(e) => Err(PineconeError::DeleteIndexError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
         }
     }
 }
@@ -315,10 +313,7 @@ mod tests {
             None,
         );
 
-        let delete_index_request = pinecone
-            .unwrap()
-            .delete_index("index_name")
-            .await;
+        let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
         assert!(delete_index_request.is_ok());
 
         Ok(())
