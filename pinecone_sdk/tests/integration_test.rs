@@ -37,5 +37,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
     assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
     assert_eq!(spec.region, "us-west-2");
 
+    let _ = pinecone
+        .delete_index(name)
+        .await
+        .expect("Failed to delete index");
+
     Ok(())
 }
