@@ -1,9 +1,6 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::apis::manage_indexes_api::ListIndexesError;
-use openapi::apis::Error;
-use openapi::models;
 use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
 
 pub use openapi::models::create_index_request::Metric;
@@ -88,7 +85,7 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::models::IndexList;
+    use openapi::models;
     use tokio;
 
     #[tokio::test]
