@@ -1,4 +1,4 @@
-use openapi::apis::{manage_indexes_api::CreateIndexError, Error as OpenAPIError};
+use openapi::apis::{manage_indexes_api::{CreateIndexError, DeleteIndexError}, Error as OpenAPIError};
 use snafu::prelude::*;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
@@ -13,6 +13,15 @@ pub enum PineconeError {
     CreateIndexError {
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<CreateIndexError>,
+    },
+
+    /// DeleteIndexError: Failed to delete an index.
+    #[snafu(display("Failed to delete index '{}'.", name))]
+    DeleteIndexError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DeleteIndexError>,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.

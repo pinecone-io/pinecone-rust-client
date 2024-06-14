@@ -75,6 +75,14 @@ impl PineconeClient {
         println!("{:?}", response);
         Ok(response)
     }
+
+    /// Deletes an index by name.
+    pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
+        match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(PineconeError::DeleteIndexError { name: name.to_string(), openapi_error: e }),
+        }
+    }
 }
 
 #[cfg(test)]
