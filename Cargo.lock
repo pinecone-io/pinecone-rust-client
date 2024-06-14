@@ -686,6 +686,7 @@ version = "0.1.0"
 dependencies = [
  "mockito",
  "openapi",
+ "rand",
  "regex",
  "serde_json",
  "snafu",

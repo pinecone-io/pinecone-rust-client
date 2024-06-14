@@ -2,6 +2,19 @@ use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::control::{Cloud, Metric};
 use pinecone_sdk::utils::errors::PineconeError;
 
+fn generate_index_name() -> String {
+    use rand::distributions::Alphanumeric;
+    use rand::{thread_rng, Rng};
+
+    let rand_string: String = thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(10)
+        .map(char::from)
+        .collect();
+
+    format!("test-index-{}", rand_string.to_lowercase())
+}
+
 #[tokio::test]
 async fn test_list_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -17,7 +30,9 @@ async fn test_list_index() -> Result<(), PineconeError> {
 async fn test_create_delete_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     
-    let name = "test-index";
+    let name = &generate_index_name();
+    println!("Generated index name: {}", name);
+
     let dimension = 2;
     let metric = Metric::Euclidean;
     let cloud = Cloud::Aws;
@@ -28,7 +43,7 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
         .await
         .expect("Failed to create index");
 
-    assert_eq!(response.name, name);
+    assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
     assert_eq!(response.metric, openapi::models::index_model::Metric::Euclidean);
 
