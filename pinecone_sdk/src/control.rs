@@ -212,7 +212,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "euclidean",
                     "host": "host1",
@@ -240,11 +240,11 @@ mod tests {
 
         let create_index_request = pinecone
             .unwrap()
-            .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
+            .create_serverless_index("index-name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
             .await
             .expect("Failed to create index");
 
-        assert_eq!(create_index_request.name, "index_name");
+        assert_eq!(create_index_request.name, "index-name");
         assert_eq!(create_index_request.dimension, 10);
         assert_eq!(
             create_index_request.metric,
@@ -266,7 +266,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "cosine",
                     "host": "host1",
@@ -295,7 +295,7 @@ mod tests {
         let create_index_request = pinecone
             .unwrap()
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Default::default(),
                 Default::default(),
@@ -304,7 +304,7 @@ mod tests {
             .await
             .expect("Failed to create index");
 
-        assert_eq!(create_index_request.name, "index_name");
+        assert_eq!(create_index_request.name, "index-name");
         assert_eq!(create_index_request.dimension, 10);
         assert_eq!(
             create_index_request.metric,
@@ -456,7 +456,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
-        let _m = mock("DELETE", "/indexes/index_name")
+        let _m = mock("DELETE", "/indexes/index-name")
             .with_status(204)
             .create();
 
@@ -465,10 +465,13 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .expect("Failed to create Pinecone instance");
 
-        let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
-        assert!(delete_index_request.is_ok());
+        let _ = pinecone
+            .delete_index("index-name")
+            .await
+            .expect("Failed to delete index");
 
         Ok(())
     }
@@ -484,10 +487,10 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .expect("Failed to create Pinecone instance");
 
         let _ = pinecone
-            .unwrap()
             .delete_collection("collection-name")
             .await
             .expect("Failed to delete collection");
