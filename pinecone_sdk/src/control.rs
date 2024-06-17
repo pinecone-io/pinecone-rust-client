@@ -158,7 +158,7 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::Metric;
+    /// use pinecone_sdk::control::{Metric, Cloud};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError> {
@@ -282,6 +282,7 @@ impl PineconeClient {
         }
     }
 
+    // Test function to mock a timeout error
     async fn mock_timeout(&self, timeout: u32) -> Result<(), PineconeError> {
         let timeout = std::time::Duration::from_secs(timeout.into());
         match tokio::time::timeout(timeout, tokio::time::sleep(Duration::from_secs(1000000000)))
@@ -297,7 +298,7 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::models::{self, create_index_request, IndexList};
+    use openapi::models::{self, IndexList};
     use tokio;
 
     #[tokio::test]
