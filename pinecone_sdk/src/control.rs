@@ -128,9 +128,8 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
-        let response = manage_indexes_api::list_indexes(&self.openapi_config()).await;
-        match response {
-            Ok(response) => Ok(response),
+        match manage_indexes_api::list_indexes(&self.openapi_config()).await {
+            Ok(index_list) => Ok(index_list),
             Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
         }
     }
