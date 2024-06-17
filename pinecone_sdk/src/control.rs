@@ -22,7 +22,6 @@ impl PineconeClient {
     /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
-    /// TODO: need to delete the index after the test so it can be rerun
     /// ```no_run
     /// # use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::utils::errors::PineconeError;
@@ -83,7 +82,7 @@ impl PineconeClient {
     /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
-    /// ```
+    /// ```no_run
     /// # use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     /// # #[tokio::main]
@@ -92,7 +91,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let index_list = pinecone.describe_index("index-name").await.unwrap();
+    /// let index = pinecone.describe_index("index-name").await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -112,10 +111,10 @@ impl PineconeClient {
     /// index name, dimension, metric, status, and spec.
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>`
+    /// * `Result<IndexList, PineconeError>`
     ///
     /// ### Example
-    /// ```
+    /// ```no_run
     /// # use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     /// # #[tokio::main]
@@ -131,10 +130,7 @@ impl PineconeClient {
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
         let response = manage_indexes_api::list_indexes(&self.openapi_config()).await;
         match response {
-            Ok(response) => {
-                println!("{:?}", response);
-                Ok(response)
-            }
+            Ok(response) => Ok(response),
             Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
         }
     }
