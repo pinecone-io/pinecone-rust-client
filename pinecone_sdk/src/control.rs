@@ -178,7 +178,7 @@ impl PineconeClient {
     ///         vec!["genre".to_string(),
     ///         "title".to_string(),
     ///         "imdb_rating".to_string()]),
-    ///     Some("example-collection".to_string()), // Source collection
+    ///     Some("example-collection"), // Source collection
     ///     None // Request timeout
     /// )
     /// .await.unwrap();
@@ -198,7 +198,7 @@ impl PineconeClient {
         pod_type: &str,
         pods: i32,
         indexed: Option<Vec<String>>,
-        source_collection: Option<String>,
+        source_collection: Option<&str>,
         timeout: Option<u32>,
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
@@ -208,7 +208,7 @@ impl PineconeClient {
             pod_type: pod_type.to_string(),
             pods,
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
-            source_collection,
+            source_collection: source_collection.map(|s| s.to_string()),
         };
 
         let spec = CreateIndexRequestSpec {
@@ -658,7 +658,7 @@ mod tests {
                     "title".to_string(),
                     "imdb_rating".to_string(),
                 ]),
-                Some("example-collection".to_string()),
+                Some("example-collection"),
                 None,
             )
             .await
