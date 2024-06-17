@@ -34,7 +34,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create an index.
-    /// let create_index_request = pinecone.create_serverless_index(
+    /// let create_index_response = pinecone.create_serverless_index(
     ///     "create-index", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
@@ -148,37 +148,64 @@ impl PineconeClient {
     /// * `pod_type: String` - The type of pod to use for the index
     /// * `pods: i32` - The number of pods to use for the index
     /// * `indexed: Option<Vec<String>>` - The metadata fields to index
+    /// * `source_collection: Option<String>` - The source collection to use for the index
+    /// * `timeout: Option<u32>` - The timeout for the request
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
     ///
     /// ### Example
-    /// ```
-    /// // put a good example here of how the developer should use it
-    /// # // start the line like this if you don't want this to be shown to the dev
-    /// # // but it's needed to run properly during doc tests
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::Metric;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError> {
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// // Create a pod index.
+    /// let create_index_response = pinecone.create_pod_index(
+    ///     "index_name", // Name of the index
+    ///     10, // Dimension of the index
+    ///     Metric::Cosine, // Distance metric
+    ///     "us-east-1-aws", // Environment
+    ///     Some(1), // Number of replicas
+    ///     Some(1), // Number of shards
+    ///     "p1.x1", // Pod type
+    ///     1, // Number of pods
+    ///     Some( // Metadata fields to index
+    ///         vec!["genre".to_string(), 
+    ///         "title".to_string(), 
+    ///         "imdb_rating".to_string()]), 
+    ///     Some("example-collection".to_string()), // Source collection
+    ///     None // Request timeout
+    /// )
+    /// .await.unwrap();
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// Include any additional technical notes here.
     pub async fn create_pod_index(
         &self,
-        name: String,
+        name: &str,
         dimension: u32,
         metric: Metric,
-        environment: String,
+        environment: &str,
         replicas: Option<i32>,
         shards: Option<i32>,
-        pod_type: String,
+        pod_type: &str,
         pods: i32,
         indexed: Option<Vec<String>>,
         source_collection: Option<String>,
         timeout: Option<u32>,
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
-            environment,
+            environment: environment.to_string(),
             replicas,
             shards,
-            pod_type,
+            pod_type: pod_type.to_string(),
             pods,
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection,
@@ -190,7 +217,7 @@ impl PineconeClient {
         };
 
         let create_index_request = CreateIndexRequest {
-            name,
+            name: name.to_string(),
             dimension: dimension.try_into().unwrap(),
             metric: Some(metric),
             spec: Some(Box::new(spec)),
@@ -570,13 +597,13 @@ mod tests {
 
         let create_index_response = pinecone
             .create_pod_index(
-                "test-index".to_string(),
+                "test-index",
                 1536,
                 Metric::Euclidean,
-                "us-east-1-aws".to_string(),
+                "us-east-1-aws",
                 Some(1),
                 Some(1),
-                "p1.x1".to_string(),
+                "p1.x1",
                 1,
                 Some(vec![
                     "genre".to_string(),
@@ -655,13 +682,13 @@ mod tests {
 
         let create_index_response = pinecone
             .create_pod_index(
-                "test-index".to_string(),
+                "test-index",
                 1536,
                 Default::default(),
-                "us-east-1-aws".to_string(),
+                "us-east-1-aws",
                 None,
                 None,
-                "p1.x1".to_string(),
+                "p1.x1",
                 1,
                 None,
                 None,

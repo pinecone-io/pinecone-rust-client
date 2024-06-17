@@ -1,5 +1,5 @@
-use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::control::{Cloud, Metric};
+use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
 fn generate_index_name() -> String {
@@ -51,9 +51,8 @@ async fn test_list_index() -> Result<(), PineconeError> {
 #[tokio::test]
 async fn test_create_delete_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    
+
     let name = &generate_index_name();
-    println!("Generated index name: {}", name);
 
     let dimension = 2;
     let metric = Metric::Euclidean;
@@ -67,11 +66,70 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(response.metric, openapi::models::index_model::Metric::Euclidean);
+    assert_eq!(
+        response.metric,
+        openapi::models::index_model::Metric::Euclidean
+    );
 
     let spec = response.spec.serverless.unwrap();
     assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
     assert_eq!(spec.region, "us-west-2");
+
+    let _ = pinecone
+        .delete_index(name)
+        .await
+        .expect("Failed to delete index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_create_pod_index() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let name = &generate_index_name();
+    let dimension = 2;
+    let metric = Metric::Euclidean;
+    let environment = "us-west1-gcp";
+    let replicas = Some(1);
+    let shards = Some(1);
+    let pod_type = "p1.x1";
+    let pods = 1;
+    let indexed = None;
+    let source_collection = None;
+    let timeout = None;
+
+    let response = pinecone
+        .create_pod_index(
+            name,
+            dimension,
+            metric,
+            environment,
+            replicas,
+            shards,
+            pod_type,
+            pods,
+            indexed,
+            source_collection,
+            timeout,
+        )
+        .await
+        .expect("Failed to create index");
+
+    assert_eq!(response.name, name.to_string());
+    assert_eq!(response.dimension, 2);
+    assert_eq!(
+        response.metric,
+        openapi::models::index_model::Metric::Euclidean
+    );
+
+    let spec = response.spec.pod.unwrap();
+    assert_eq!(spec.environment, "us-west1-gcp");
+    assert_eq!(spec.replicas, Some(1));
+    assert_eq!(spec.shards, Some(1));
+    assert_eq!(spec.pod_type, "p1.x1");
+    assert_eq!(spec.pods, 1);
+    assert_eq!(spec.source_collection, None);
 
     let _ = pinecone
         .delete_index(name)
