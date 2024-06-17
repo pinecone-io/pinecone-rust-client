@@ -1,6 +1,7 @@
 use openapi::apis::{
     manage_indexes_api::{
-        CreateIndexError, DeleteIndexError, DescribeIndexError, ListIndexesError,
+        CreateCollectionError, CreateIndexError, DeleteIndexError, DescribeIndexError,
+        ListIndexesError,
     },
     Error as OpenAPIError,
 };
@@ -12,6 +13,15 @@ pub enum PineconeError {
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
     #[snafu(display("API key missing."))]
     APIKeyMissingError,
+
+    /// CreateCollectionError: Failed to create a collection.
+    #[snafu(display("Failed to create collection '{}'.", name))]
+    CreateCollectionError {
+        /// name: Collection name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<CreateCollectionError>,
+    },
 
     /// CreateIndexError: Failed to create an index.
     #[snafu(display("Failed to create an index."))]
@@ -30,7 +40,7 @@ pub enum PineconeError {
     },
 
     /// DescribeIndexError: Failed to describe an index.
-    #[snafu(display("Failed to describe the index '{}'", name))]
+    #[snafu(display("Failed to describe the index '{}'.", name))]
     DescribeIndexError {
         /// name: Index name.
         name: String,
