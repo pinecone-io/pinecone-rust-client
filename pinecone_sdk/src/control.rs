@@ -2,7 +2,8 @@ use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
 use openapi::models::{
-    CreateIndexRequest, CreateIndexRequestSpec, IndexList, IndexModel, ServerlessSpec,
+    CollectionModel, CreateCollectionRequest, CreateIndexRequest, CreateIndexRequestSpec,
+    IndexList, IndexModel, ServerlessSpec,
 };
 
 pub use openapi::models::create_index_request::Metric;
@@ -33,7 +34,7 @@ impl PineconeClient {
     ///
     /// // Create an index.
     /// let create_index_request = pinecone.create_serverless_index(
-    ///     "create-index", // Name of the index
+    ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
@@ -165,13 +166,59 @@ impl PineconeClient {
             }),
         }
     }
+
+    /// Creates a collection from an index.
+    ///
+    /// ### Arguments
+    /// * `name: &str` - Name of the collection to create.
+    /// * `source: &str` - Name of the index to be used as the source for the collection.
+    ///
+    /// ### Return
+    /// * `Result<CollectionModel, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// // Describe an index in the project.
+    /// let collection = pinecone.create_collection("collection-name", "index-name").await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn create_collection(
+        &self,
+        name: &str,
+        source: &str,
+    ) -> Result<CollectionModel, PineconeError> {
+        let create_collection_request = CreateCollectionRequest {
+            name: name.to_string(),
+            source: source.to_string(),
+        };
+        match manage_indexes_api::create_collection(
+            &self.openapi_config(),
+            create_collection_request,
+        )
+        .await
+        {
+            Ok(collection) => Ok(collection),
+            Err(e) => Err(PineconeError::CreateCollectionError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::models::{self, IndexList};
+    use openapi::models::{self, collection_model::Status, IndexList};
     use tokio;
 
     #[tokio::test]
@@ -439,6 +486,50 @@ mod tests {
 
         let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
         assert!(delete_index_request.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection() -> Result<(), PineconeError> {
+        // Create a mock server
+        let _m = mock("POST", "/collections")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "example-collection",
+                    "size": 10000000,
+                    "status": "Initializing",
+                    "dimension": 1536,
+                    "vector_count": 120000,
+                    "environment": "us-east1-gcp"
+                  }
+            "#,
+            )
+            .create();
+
+        // Construct Pinecone instance with the mock server URL
+        let api_key = "test_api_key".to_string();
+        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
+            .expect("Failed to create Pinecone instance");
+
+        // Call create_collection and verify the result
+        let collection = pinecone
+            .create_collection("collection1", "index1")
+            .await
+            .expect("Failed to create collection");
+
+        let expected = CollectionModel {
+            name: "example-collection".to_string(),
+            size: Some(10000000),
+            status: Status::Initializing,
+            dimension: Some(1536),
+            vector_count: Some(120000),
+            environment: "us-east1-gcp".to_string(),
+        };
+        assert_eq!(collection, expected);
 
         Ok(())
     }
