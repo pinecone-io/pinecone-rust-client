@@ -77,6 +77,10 @@ pub enum PineconeError {
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
     MissingSpecError,
+
+    /// TimeoutError: Request timed out.
+    #[snafu(display("Request timed out."))]
+    TimeoutError,
 }
 
 impl PartialEq for PineconeError {
@@ -100,6 +104,7 @@ impl PartialEq for PineconeError {
                 PineconeError::InvalidMetricError { .. },
                 PineconeError::InvalidMetricError { .. },
             ) => true,
+            (PineconeError::TimeoutError, PineconeError::TimeoutError) => true,
             _ => false,
         }
     }

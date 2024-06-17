@@ -5,6 +5,7 @@ use openapi::models::{
     CreateIndexRequest, CreateIndexRequestSpec, IndexList, IndexModel, PodSpec,
     PodSpecMetadataConfig, ServerlessSpec,
 };
+use std::time::Duration;
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -171,6 +172,7 @@ impl PineconeClient {
         pods: i32,
         indexed: Option<Vec<String>>,
         source_collection: Option<String>,
+        timeout: Option<u32>,
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
             environment,
@@ -194,8 +196,29 @@ impl PineconeClient {
             spec: Some(Box::new(spec)),
         };
 
+        match timeout {
+            Some(timeout) => {
+                let timeout = std::time::Duration::from_secs(timeout.into());
+                match tokio::time::timeout(
+                    timeout,
+                    self.create_pod_index_call(create_index_request),
+                )
+                .await
+                {
+                    Ok(index) => Ok(index?),
+                    Err(_) => Err(PineconeError::TimeoutError),
+                }
+            }
+            None => self.create_pod_index_call(create_index_request).await,
+        }
+    }
+
+    async fn create_pod_index_call(
+        &self,
+        create_index_request: CreateIndexRequest,
+    ) -> Result<IndexModel, PineconeError> {
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
-            Ok(response) => Ok(response),
+            Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
     }
@@ -231,13 +254,23 @@ impl PineconeClient {
             }),
         }
     }
+
+    async fn mock_timeout(&self, timeout: u32) -> Result<(), PineconeError> {
+        let timeout = std::time::Duration::from_secs(timeout.into());
+        match tokio::time::timeout(timeout, tokio::time::sleep(Duration::from_secs(1000000000)))
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(_) => Err(PineconeError::TimeoutError),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::models::{self, IndexList};
+    use openapi::models::{self, create_index_request, IndexList};
     use tokio;
 
     #[tokio::test]
@@ -551,6 +584,7 @@ mod tests {
                     "imdb_rating".to_string(),
                 ]),
                 Some("example-collection".to_string()),
+                None,
             )
             .await
             .expect("Failed to create pod index");
@@ -631,6 +665,7 @@ mod tests {
                 1,
                 None,
                 None,
+                None,
             )
             .await
             .expect("Failed to create pod index");
@@ -645,14 +680,34 @@ mod tests {
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
         assert_eq!(pod_spec.environment, "us-east-1-aws");
         assert_eq!(pod_spec.pod_type, "p1.x1");
-        assert_eq!(
-            pod_spec.metadata_config.as_ref().unwrap().indexed,
-            None
-        );
+        assert_eq!(pod_spec.metadata_config.as_ref().unwrap().indexed, None);
         assert_eq!(pod_spec.pods, 1);
         assert_eq!(pod_spec.replicas, Some(1));
         assert_eq!(pod_spec.shards, Some(1));
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_pod_index_timeout() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone.mock_timeout(1).await;
+        assert_eq!(
+            create_index_response.unwrap_err(),
+            PineconeError::TimeoutError
+        );
         Ok(())
     }
 
