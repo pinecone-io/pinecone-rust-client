@@ -1,7 +1,9 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::models::{CreateIndexRequest, CreateIndexRequestSpec, IndexModel, IndexList, ServerlessSpec};
+use openapi::models::{
+    CreateIndexRequest, CreateIndexRequestSpec, IndexList, IndexModel, ServerlessSpec,
+};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -32,12 +34,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        match manage_indexes_api::create_index(
-            &self.openapi_config(),
-            create_index_request,
-        )
-        .await
-        {
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
@@ -68,15 +65,43 @@ impl PineconeClient {
     /// ```
 
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
-        let response = manage_indexes_api::list_indexes(&self.openapi_config()).await;
-        match response {
+        match manage_indexes_api::list_indexes(&self.openapi_config()).await {
             Ok(response) => {
                 println!("{:?}", response);
                 Ok(response)
-            },
-            Err(e) => {
-                Err(PineconeError::ListIndexesError { openapi_error: e })
-            },
+            }
+            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
+        }
+    }
+
+    /// Deletes an index.
+    ///
+    /// ### Arguments
+    /// * name: &str - The name of the index to be deleted.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object. 
+    ///
+    /// ### Example
+    /// ```no_run
+    /// # use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::control::{Cloud, Metric};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// # let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// # let _ = pinecone.create_serverless_index("index-name", 2, Metric::Euclidean, Cloud::Aws, "us-west-2").await;
+    /// let response = pinecone.delete_index("index-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
+        match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(PineconeError::DeleteIndexError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
         }
     }
 }
@@ -271,6 +296,25 @@ mod tests {
             ]),
         };
         assert_eq!(index_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_index() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/index_name")
+            .with_status(204)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        );
+
+        let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
+        assert!(delete_index_request.is_ok());
 
         Ok(())
     }
