@@ -20,6 +20,15 @@ impl PineconeClient {
     /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
     /// It is used to create, delete, and manage your indexes and collections.
     ///
+    /// ### Arguments
+    /// * `api_key: Option<String>` - The API key used for authentication.
+    /// * `control_plane_host: Option<String>` - The Pinecone controller host. Default is `https://api.pinecone.io`.
+    /// * `additional_headers: Option<HashMap<String, String>>` - Additional headers to be included in all requests. Expects a HashMap.
+    /// * `source_tag: Option<String>` - A tag to identify the source of the request.
+    ///
+    /// ### Return
+    /// * `Result<PineconeClient, PineconeError>` - A Pinecone client instance.
+    ///
     /// ### Configuration with environment variables
     ///
     /// If arguments are not provided, the SDK will attempt to read the following environment variables:
@@ -29,7 +38,7 @@ impl PineconeClient {
     ///
     /// ### Example
     ///
-    /// ```
+    /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     ///
     /// // Create a Pinecone client with the API key and controller host.
@@ -49,7 +58,7 @@ impl PineconeClient {
                 Err(_) => {
                     return Err(PineconeError::APIKeyMissingError);
                 }
-            }
+            },
         };
 
         let controller_host = control_plane_host.unwrap_or(
@@ -77,7 +86,7 @@ impl PineconeClient {
             source_tag: source_tag.clone(),
         };
         let user_agent = get_user_agent(&config);
-        
+
         Ok(PineconeClient {
             api_key: api_key_str,
             controller_url: controller_host,
@@ -123,7 +132,10 @@ mod tests {
         assert_eq!(pinecone.controller_url, mock_controller_host);
         assert_eq!(pinecone.additional_headers, HashMap::new());
         assert_eq!(pinecone.source_tag, None);
-        assert_eq!(pinecone.user_agent, Some("lang=rust; pinecone-rust-client=0.1.0".to_string()));
+        assert_eq!(
+            pinecone.user_agent,
+            Some("lang=rust; pinecone-rust-client=0.1.0".to_string())
+        );
 
         Ok(())
     }
@@ -146,7 +158,10 @@ mod tests {
             assert_eq!(pinecone.controller_url, mock_controller_host);
             assert_eq!(pinecone.additional_headers, HashMap::new());
             assert_eq!(pinecone.source_tag, None);
-            assert_eq!(pinecone.user_agent, Some("lang=rust; pinecone-rust-client=0.1.0".to_string()));
+            assert_eq!(
+                pinecone.user_agent,
+                Some("lang=rust; pinecone-rust-client=0.1.0".to_string())
+            );
         });
 
         Ok(())
@@ -197,9 +212,13 @@ mod tests {
             "PINECONE_CONTROLLER_HOST",
             Some(mock_controller_host.as_str()),
             || {
-                let pinecone =
-                    PineconeClient::new(Some(mock_api_key.clone()), None, Some(HashMap::new()), None)
-                        .expect("Expected to successfully create Pinecone instance with env host");
+                let pinecone = PineconeClient::new(
+                    Some(mock_api_key.clone()),
+                    None,
+                    Some(HashMap::new()),
+                    None,
+                )
+                .expect("Expected to successfully create Pinecone instance with env host");
 
                 assert_eq!(pinecone.controller_url, mock_controller_host);
             },
@@ -362,10 +381,7 @@ mod tests {
                 .expect("Expected to successfully create Pinecone instance");
 
                 assert_eq!(pinecone.api_key, mock_arg_api_key.clone());
-                assert_eq!(
-                    pinecone.controller_url,
-                    mock_arg_controller_host.clone()
-                );
+                assert_eq!(pinecone.controller_url, mock_arg_controller_host.clone());
                 assert_eq!(pinecone.additional_headers, mock_arg_headers.clone());
             },
         );
