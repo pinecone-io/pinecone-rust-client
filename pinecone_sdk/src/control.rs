@@ -185,8 +185,6 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    ///
-    /// Include any additional technical notes here.
     pub async fn create_pod_index(
         &self,
         name: &str,
