@@ -83,7 +83,7 @@ impl PineconeClient {
     /// * Returns a `Result<(), PineconeError>` object. 
     ///
     /// ### Example
-    /// ```
+    /// ```no_run
     /// # use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::control::{Cloud, Metric};
     /// # use pinecone_sdk::utils::errors::PineconeError;
