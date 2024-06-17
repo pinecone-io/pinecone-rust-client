@@ -1,5 +1,8 @@
 use openapi::apis::{
-    manage_indexes_api::{CreateCollectionError, CreateIndexError, ListIndexesError},
+    manage_indexes_api::{
+        CreateCollectionError, CreateIndexError, DeleteIndexError, DescribeIndexError,
+        ListIndexesError,
+    },
     Error as OpenAPIError,
 };
 use snafu::prelude::*;
@@ -12,7 +15,7 @@ pub enum PineconeError {
     APIKeyMissingError,
 
     /// CreateCollectionError: Failed to create a collection.
-    #[snafu(display("Failed to create collection {}", name))]
+    #[snafu(display("Failed to create collection '{}'.", name))]
     CreateCollectionError {
         /// name: Collection name.
         name: String,
@@ -21,10 +24,28 @@ pub enum PineconeError {
     },
 
     /// CreateIndexError: Failed to create an index.
-    #[snafu(display("API key missing."))]
+    #[snafu(display("Failed to create an index."))]
     CreateIndexError {
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<CreateIndexError>,
+    },
+
+    /// DeleteIndexError: Failed to delete an index.
+    #[snafu(display("Failed to delete index '{}'.", name))]
+    DeleteIndexError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DeleteIndexError>,
+    },
+
+    /// DescribeIndexError: Failed to describe an index.
+    #[snafu(display("Failed to describe the index '{}'.", name))]
+    DescribeIndexError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DescribeIndexError>,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
@@ -55,13 +76,13 @@ pub enum PineconeError {
         openapi_error: OpenAPIError<ListIndexesError>,
     },
 
-    /// MissingNameError: Index name is missing.
-    #[snafu(display("Index name missing."))]
-    MissingNameError,
-
     /// MissingDimensionError: Index dimension is missing.
     #[snafu(display("Dimension missing."))]
     MissingDimensionError,
+
+    /// MissingNameError: Index name is missing.
+    #[snafu(display("Index name missing."))]
+    MissingNameError,
 
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
