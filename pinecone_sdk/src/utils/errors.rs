@@ -1,5 +1,7 @@
 use openapi::apis::{
-    manage_indexes_api::{CreateIndexError, DescribeIndexError, ListIndexesError},
+    manage_indexes_api::{
+        CreateIndexError, DeleteIndexError, DescribeIndexError, ListIndexesError,
+    },
     Error as OpenAPIError,
 };
 use snafu::prelude::*;
@@ -16,6 +18,15 @@ pub enum PineconeError {
     CreateIndexError {
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<CreateIndexError>,
+    },
+
+    /// DeleteIndexError: Failed to delete an index.
+    #[snafu(display("Failed to delete index '{}'.", name))]
+    DeleteIndexError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DeleteIndexError>,
     },
 
     /// DescribeIndexError: Failed to describe an index.
