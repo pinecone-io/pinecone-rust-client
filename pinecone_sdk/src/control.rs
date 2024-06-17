@@ -23,12 +23,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// # use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::utils::errors::PineconeError;
-    /// # use pinecone_sdk::control::{Metric, Cloud};
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::{Metric, Cloud};
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// // Create a Pinecone client with the API key and controller host.
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create an index.
@@ -83,11 +83,11 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// # use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// // Create a Pinecone client with the API key and controller host.
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
@@ -115,13 +115,13 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// # use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// # // Create a Pinecone client with the API key and controller host.
-    /// # let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    /// #
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
     /// // List all indexes in the project.
     /// let index_list = pinecone.list_indexes().await.unwrap();
     /// # Ok(())
@@ -145,13 +145,14 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// # use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::control::{Cloud, Metric};
-    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::control::{Cloud, Metric};
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// # let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    /// # let _ = pinecone.create_serverless_index("index-name", 2, Metric::Euclidean, Cloud::Aws, "us-west-2").await;
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
     /// let response = pinecone.delete_index("index-name").await;
     /// # Ok(())
     /// # }

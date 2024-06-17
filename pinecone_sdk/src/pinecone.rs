@@ -38,7 +38,7 @@ impl PineconeClient {
     ///
     /// ### Example
     ///
-    /// ```
+    /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     ///
     /// // Create a Pinecone client with the API key and controller host.
