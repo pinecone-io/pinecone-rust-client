@@ -97,7 +97,6 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = None;
-    let timeout = None;
 
     let response = pinecone
         .create_pod_index(
@@ -111,7 +110,6 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             pods,
             indexed,
             source_collection,
-            timeout,
         )
         .await
         .expect("Failed to create index");
@@ -152,7 +150,6 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = Some("valid-collection");
-    let timeout = None;
 
     let response = pinecone
         .create_pod_index(
@@ -166,7 +163,6 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             pods,
             indexed,
             source_collection,
-            timeout,
         )
         .await
         .expect("Failed to create index");

@@ -149,7 +149,6 @@ impl PineconeClient {
     /// * `pods: i32` - The number of pods to use for the index
     /// * `indexed: Option<Vec<String>>` - The metadata fields to index
     /// * `source_collection: Option<String>` - The source collection to use for the index
-    /// * `timeout: Option<u32>` - The timeout for the request
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -179,7 +178,6 @@ impl PineconeClient {
     ///         "title".to_string(),
     ///         "imdb_rating".to_string()]),
     ///     Some("example-collection"), // Source collection
-    ///     None // Request timeout
     /// )
     /// .await.unwrap();
     /// # Ok(())
@@ -196,8 +194,7 @@ impl PineconeClient {
         pod_type: &str,
         pods: i32,
         indexed: Option<Vec<String>>,
-        source_collection: Option<&str>,
-        timeout: Option<u32>,
+        source_collection: Option<&str>
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
             environment: environment.to_string(),
@@ -221,28 +218,7 @@ impl PineconeClient {
             spec: Some(Box::new(spec)),
         };
 
-        match timeout {
-            Some(timeout) => {
-                let timeout = std::time::Duration::from_secs(timeout.into());
-                match tokio::time::timeout(
-                    timeout,
-                    self.create_pod_index_call(create_index_request),
-                )
-                .await
-                {
-                    Ok(index) => Ok(index?),
-                    Err(_) => Err(PineconeError::TimeoutError),
-                }
-            }
-            None => self.create_pod_index_call(create_index_request).await,
-        }
-    }
-
-    // Helper function to make async create_index call
-    async fn create_pod_index_call(
-        &self,
-        create_index_request: CreateIndexRequest,
-    ) -> Result<IndexModel, PineconeError> {
+        // remove timeout for t
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
@@ -324,17 +300,6 @@ impl PineconeClient {
                 name: name.to_string(),
                 openapi_error: e,
             }),
-        }
-    }
-
-    // Test function to mock a timeout error
-    async fn mock_timeout(&self, timeout: u32) -> Result<(), PineconeError> {
-        let timeout = std::time::Duration::from_secs(timeout.into());
-        match tokio::time::timeout(timeout, tokio::time::sleep(Duration::from_secs(1000000000)))
-            .await
-        {
-            Ok(_) => Ok(()),
-            Err(_) => Err(PineconeError::TimeoutError),
         }
     }
 }
@@ -657,7 +622,6 @@ mod tests {
                     "imdb_rating".to_string(),
                 ]),
                 Some("example-collection"),
-                None,
             )
             .await
             .expect("Failed to create pod index");
@@ -738,7 +702,6 @@ mod tests {
                 1,
                 None,
                 None,
-                None,
             )
             .await
             .expect("Failed to create pod index");
@@ -758,29 +721,6 @@ mod tests {
         assert_eq!(pod_spec.replicas, Some(1));
         assert_eq!(pod_spec.shards, Some(1));
 
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index_timeout() -> Result<(), PineconeError> {
-        let _m = mock("POST", "/indexes")
-            .with_status(201)
-            .with_header("content-type", "application/json")
-            .create();
-
-        let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(mockito::server_url()),
-            None,
-            None,
-        )
-        .unwrap();
-
-        let create_index_response = pinecone.mock_timeout(1).await;
-        assert_eq!(
-            create_index_response.unwrap_err(),
-            PineconeError::TimeoutError
-        );
         Ok(())
     }
 
