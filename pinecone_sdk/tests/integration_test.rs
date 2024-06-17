@@ -1,5 +1,5 @@
-use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::control::{Cloud, Metric};
+use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
 fn generate_index_name() -> String {
@@ -51,7 +51,7 @@ async fn test_list_index() -> Result<(), PineconeError> {
 #[tokio::test]
 async fn test_create_delete_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    
+
     let name = &generate_index_name();
     println!("Generated index name: {}", name);
 
@@ -67,7 +67,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(response.metric, openapi::models::index_model::Metric::Euclidean);
+    assert_eq!(
+        response.metric,
+        openapi::models::index_model::Metric::Euclidean
+    );
 
     let spec = response.spec.serverless.unwrap();
     assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
