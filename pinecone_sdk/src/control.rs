@@ -34,7 +34,7 @@ impl PineconeClient {
     ///
     /// // Create an index.
     /// let create_index_request = pinecone.create_serverless_index(
-    ///     "create-index", // Name of the index
+    ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
@@ -177,17 +177,16 @@ impl PineconeClient {
     /// * `Result<CollectionModel, PineconeError>`
     ///
     /// ### Example
-    /// TODO: need to delete the collection after the test so it can be rerun
     /// ```no_run
-    /// # use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// // Create a Pinecone client with the API key and controller host.
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let collection = pinecone.create_collection("temp-collection", "valid-index").await.unwrap();
+    /// let collection = pinecone.create_collection("collection-name", "index-name").await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
