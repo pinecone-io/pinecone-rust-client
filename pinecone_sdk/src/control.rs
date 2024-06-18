@@ -14,7 +14,7 @@ impl PineconeClient {
     ///
     /// ### Arguments
     /// * `name: &str` - Name of the index to create.
-    /// * `dimension: u32` - Dimension of the vectors to be inserted in the index.
+    /// * `dimension: i32` - Dimension of the vectors to be inserted in the index.
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
@@ -47,7 +47,7 @@ impl PineconeClient {
     pub async fn create_serverless_index(
         &self,
         name: &str,
-        dimension: u32,
+        dimension: i32,
         metric: Metric,
         cloud: Cloud,
         region: &str,
@@ -63,7 +63,7 @@ impl PineconeClient {
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension: dimension.try_into().unwrap(),
+            dimension,
             metric: Some(metric),
             spec: Some(Box::new(create_index_request_spec)),
         };
@@ -141,7 +141,7 @@ impl PineconeClient {
     ///
     /// ### Arguments
     /// * `name: String` - The name of the index
-    /// * `dimension: u32` - The dimension of the index
+    /// * `dimension: i32` - The dimension of the index
     /// * `metric: Metric` - The metric to use for the index
     /// * `environment: String` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
     /// * `pod_type: String` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
@@ -187,13 +187,13 @@ impl PineconeClient {
     pub async fn create_pod_index(
         &self,
         name: &str,
-        dimension: u32,
+        dimension: i32,
         metric: Metric,
         environment: &str,
         pod_type: &str,
-        pods: u32,
-        replicas: Option<u32>,
-        shards: Option<u32>,
+        pods: i32,
+        replicas: Option<i32>,
+        shards: Option<i32>,
         indexed: Option<&[&str]>,
         source_collection: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
@@ -201,10 +201,10 @@ impl PineconeClient {
 
         let pod_spec = PodSpec {
             environment: environment.to_string(),
-            replicas: replicas.map(|r| r as i32),
-            shards: shards.map(|s| s as i32),
+            replicas,
+            shards,
             pod_type: pod_type.to_string(),
-            pods: pods as i32,
+            pods,
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection: source_collection.map(|s| s.to_string()),
         };
