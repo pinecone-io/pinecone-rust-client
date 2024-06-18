@@ -137,7 +137,7 @@ impl PineconeClient {
         }
     }
 
-    /// Creates a Pinecone pod index.
+    /// Creates a pod index.
     ///
     /// ### Arguments
     /// * `name: String` - The name of the index
@@ -334,7 +334,7 @@ mod tests {
                         "ready": true,
                         "state": "Initializing"
                     }
-                  }
+                }
             "#,
             )
             .create();
@@ -388,7 +388,7 @@ mod tests {
                         "ready": true,
                         "state": "Initializing"
                     }
-                  }
+                }
             "#,
             )
             .create();
@@ -447,9 +447,9 @@ mod tests {
                        "serverless": {
                           "region": "us-east-1",
                           "cloud": "aws"
-                       }
+                        }
                     }
-                 }
+                }
             "#,
             )
             .create();
@@ -835,7 +835,7 @@ mod tests {
                     "dimension": 1536,
                     "vector_count": 120000,
                     "environment": "us-east1-gcp"
-                  }
+                }
             "#,
             )
             .create();
