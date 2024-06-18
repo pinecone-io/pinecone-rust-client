@@ -504,7 +504,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
         let _m = mock("DELETE", "/indexes/index-name")
-            .with_status(204)
+            .with_status(202)
             .create();
 
         let pinecone = PineconeClient::new(
