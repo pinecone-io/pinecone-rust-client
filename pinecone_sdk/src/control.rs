@@ -218,6 +218,7 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
+    use openapi::apis::{Error as OpenAPIError, ResponseContent};
     use openapi::models::{self, collection_model::Status, IndexList};
     use tokio;
 
@@ -336,6 +337,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_create_serverless_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes").with_status(500).create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
+            .await
+            .expect_err("Expected create_index to return an error");
+
+        assert_eq!(
+            create_index_response,
+            PineconeError::CreateIndexError {
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+                    content: "Internal Server Error".to_string(),
+                    entity: None,
+                })
+            }
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_describe_index() -> Result<(), PineconeError> {
         // Create a mock server
         let _m = mock("GET", "/indexes/serverless-index")
@@ -392,6 +424,82 @@ mod tests {
             }),
         };
         assert_eq!(index, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_describe_index_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes/invalid-index")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let describe_index_response = pinecone
+            .describe_index("invalid-index")
+            .await
+            .expect_err("Expected describe_index to return an error");
+
+        assert_eq!(
+            describe_index_response,
+            PineconeError::DescribeIndexError {
+                name: "invalid-index".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::NOT_FOUND,
+                    content: "Index not found".to_string(),
+                    entity: None,
+                })
+            }
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_describe_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes/serverless-index")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let describe_index_response = pinecone
+            .describe_index("serverless-index")
+            .await
+            .expect_err("Expected describe_index to return an error");
+
+        assert_eq!(
+            describe_index_response,
+            PineconeError::DescribeIndexError {
+                name: "serverless-index".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+                    content: "Internal Server Error".to_string(),
+                    entity: None,
+                })
+            }
+        );
 
         Ok(())
     }
@@ -472,6 +580,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_list_indexes_server_error() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes").with_status(500).create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let list_indexes_response = pinecone
+            .list_indexes()
+            .await
+            .expect_err("Expected list_indexes to return an error");
+
+        assert_eq!(
+            list_indexes_response,
+            PineconeError::ListIndexesError {
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+                    content: "Internal Server Error".to_string(),
+                    entity: None,
+                })
+            }
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
         let _m = mock("DELETE", "/indexes/index_name")
             .with_status(204)
@@ -486,6 +625,82 @@ mod tests {
 
         let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
         assert!(delete_index_request.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_index_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/invalid-index")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let delete_index_response = pinecone
+            .delete_index("invalid-index")
+            .await
+            .expect_err("Expected delete_index to return an error");
+
+        assert_eq!(
+            delete_index_response,
+            PineconeError::DeleteIndexError {
+                name: "invalid-index".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::NOT_FOUND,
+                    content: "Index not found".to_string(),
+                    entity: None,
+                })
+            }
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/index_name")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let delete_index_response = pinecone
+            .delete_index("invalid-index")
+            .await
+            .expect_err("Expected delete_index to return an error");
+
+        assert_eq!(
+            delete_index_response,
+            PineconeError::DeleteIndexError {
+                name: "invalid-index".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+                    content: "Internal Server Error".to_string(),
+                    entity: None,
+                })
+            }
+        );
 
         Ok(())
     }
@@ -530,6 +745,82 @@ mod tests {
             environment: "us-east1-gcp".to_string(),
         };
         assert_eq!(collection, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/collections")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_collection_response = pinecone
+            .create_collection("invalid_collection", "valid-index")
+            .await
+            .expect_err("Expected create_collection to return an error");
+
+        assert_eq!(
+            create_collection_response,
+            PineconeError::CreateCollectionError {
+                name: "invalid_collection".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::BAD_REQUEST,
+                    content: "Bad Request".to_string(),
+                    entity: None,
+                })
+            }
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection_server_error() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/collections")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_collection_response = pinecone
+            .create_collection("collection-name", "index1")
+            .await
+            .expect_err("Expected create_collection to return an error");
+
+        assert_eq!(
+            create_collection_response,
+            PineconeError::CreateCollectionError {
+                name: "collection-name".to_string(),
+                openapi_error: OpenAPIError::ResponseError(ResponseContent {
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+                    content: "Internal Server Error".to_string(),
+                    entity: None,
+                })
+            }
+        );
 
         Ok(())
     }

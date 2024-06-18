@@ -38,12 +38,56 @@ async fn test_describe_index_fail() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_list_index() -> Result<(), PineconeError> {
+async fn test_create_list_indexes() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let index1_name = &generate_index_name();
+    let index2_name = &generate_index_name();
+
     let _ = pinecone
+        .create_serverless_index(index1_name, 2, Metric::Cosine, Cloud::Aws, "us-west-2")
+        .await
+        .expect("Failed to create index");
+    let _ = pinecone
+        .create_serverless_index(index2_name, 2, Metric::Dotproduct, Cloud::Aws, "us-west-2")
+        .await
+        .expect("Failed to create index");
+
+    let index_list = pinecone
         .list_indexes()
         .await
         .expect("Failed to list indexes");
+    let indexes = index_list.indexes.unwrap();
+
+    println!("Indexes: {:?}", indexes);
+
+    let index1 = indexes.iter().find(|index| index.name == index1_name.to_string()).unwrap();
+    assert_eq!(index1.name, index1_name.to_string());
+    assert_eq!(index1.dimension, 2);
+    assert_eq!(index1.metric, openapi::models::index_model::Metric::Cosine);
+    let spec1 = index1.spec.serverless.as_ref().unwrap();
+    assert_eq!(spec1.cloud, openapi::models::serverless_spec::Cloud::Aws);
+    assert_eq!(spec1.region, "us-west-2");
+
+    let index2 = indexes.iter().find(|index| index.name == index2_name.to_string()).unwrap();
+    assert_eq!(index2.name, index2_name.to_string());
+    assert_eq!(index2.dimension, 2);
+    assert_eq!(
+        index2.metric,
+        openapi::models::index_model::Metric::Dotproduct
+    );
+    let spec2 = index2.spec.serverless.as_ref().unwrap();
+    assert_eq!(spec2.cloud, openapi::models::serverless_spec::Cloud::Aws);
+    assert_eq!(spec2.region, "us-west-2");
+
+    let _ = pinecone
+        .delete_index(index1_name)
+        .await
+        .expect("Failed to delete index");
+    let _ = pinecone
+        .delete_index(index2_name)
+        .await
+        .expect("Failed to delete index");
 
     Ok(())
 }

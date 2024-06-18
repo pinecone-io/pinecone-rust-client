@@ -96,6 +96,18 @@ impl PartialEq for PineconeError {
             (PineconeError::CreateIndexError { .. }, PineconeError::CreateIndexError { .. }) => {
                 true
             }
+            (
+                PineconeError::CreateCollectionError { .. },
+                PineconeError::CreateCollectionError { .. },
+            ) => true,
+            (
+                PineconeError::DescribeIndexError { .. },
+                PineconeError::DescribeIndexError { .. },
+            ) => true,
+            (PineconeError::DeleteIndexError { .. }, PineconeError::DeleteIndexError { .. }) => true,
+            (PineconeError::ListIndexesError { .. }, PineconeError::ListIndexesError { .. }) => {
+                true
+            }
             (PineconeError::MissingNameError, PineconeError::MissingNameError) => true,
             (PineconeError::MissingDimensionError, PineconeError::MissingDimensionError) => true,
             (PineconeError::MissingSpecError, PineconeError::MissingSpecError) => true,
