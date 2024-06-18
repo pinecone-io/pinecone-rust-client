@@ -1,14 +1,13 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
-use openapi::models::{
-    CollectionModel, CreateCollectionRequest, CreateIndexRequest, CreateIndexRequestSpec,
-    IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
-};
-use std::time::Duration;
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
+pub use openapi::models::{
+    CollectionModel, CreateCollectionRequest, CreateIndexRequest, CreateIndexRequestSpec,
+    IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+};
 
 impl PineconeClient {
     /// Creates a serverless index.
@@ -27,20 +26,20 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud};
+    /// use pinecone_sdk::control::{Metric, Cloud, IndexModel};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create an index.
-    /// let create_index_response = pinecone.create_serverless_index(
+    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
     ///     "create-index", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
     ///     "us-east-1" // Region
-    /// ).await.unwrap();
+    /// ).await;
     ///
     /// # Ok(())
     /// # }
@@ -87,13 +86,14 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::IndexModel;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let index = pinecone.describe_index("index-name").await.unwrap();
+    /// let describe_index_response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -119,13 +119,14 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::IndexList;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // List all indexes in the project.
-    /// let index_list = pinecone.list_indexes().await.unwrap();
+    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
     /// # Ok(())
     /// # }
     /// ```
@@ -142,13 +143,13 @@ impl PineconeClient {
     /// * `name: String` - The name of the index
     /// * `dimension: u32` - The dimension of the index
     /// * `metric: Metric` - The metric to use for the index
-    /// * `environment: String` - The environment to use for the index
-    /// * `replicas: Option<i32>` - The number of replicas to use for the index
-    /// * `shards: Option<i32>` - The number of shards to use for the index
-    /// * `pod_type: String` - The type of pod to use for the index
-    /// * `pods: i32` - The number of pods to use for the index
-    /// * `indexed: Option<Vec<String>>` - The metadata fields to index
-    /// * `source_collection: Option<String>` - The source collection to use for the index
+    /// * `environment: String` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
+    /// * `replicas: Option<i32>` - The number of replicas to deploy for the pod index. Default: 1
+    /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
+    /// * `pod_type: String` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
+    /// * `pods: i32` - The number of pods to deploy. Default: 1
+    /// * `indexed: Option<Vec<String>>` - The metadata fields to index // i don't actually know what this is
+    /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -157,14 +158,14 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud};
+    /// use pinecone_sdk::control::{Metric, Cloud, IndexModel};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError> {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create a pod index.
-    /// let create_index_response = pinecone.create_pod_index(
+    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
@@ -179,7 +180,7 @@ impl PineconeClient {
     ///         "imdb_rating".to_string()]),
     ///     Some("example-collection"), // Source collection
     /// )
-    /// .await.unwrap();
+    /// .await;
     /// # Ok(())
     /// # }
     /// ```
@@ -189,19 +190,19 @@ impl PineconeClient {
         dimension: u32,
         metric: Metric,
         environment: &str,
-        replicas: Option<i32>,
-        shards: Option<i32>,
+        replicas: Option<u32>,
+        shards: Option<u32>,
         pod_type: &str,
-        pods: i32,
+        pods: u32,
         indexed: Option<Vec<String>>,
-        source_collection: Option<&str>
+        source_collection: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
         let pod_spec = PodSpec {
             environment: environment.to_string(),
-            replicas,
-            shards,
+            replicas: replicas.map(|r| r as i32),
+            shards: shards.map(|s| s as i32),
             pod_type: pod_type.to_string(),
-            pods,
+            pods: pods as i32,
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection: source_collection.map(|s| s.to_string()),
         };
@@ -213,12 +214,11 @@ impl PineconeClient {
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension: dimension.try_into().unwrap(),
+            dimension: dimension as i32,
             metric: Some(metric),
             spec: Some(Box::new(spec)),
         };
 
-        // remove timeout for t
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
@@ -243,7 +243,7 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let response = pinecone.delete_index("index-name").await;
+    /// let delete_index_response: Result<(), PineconeError> = pinecone.delete_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -270,13 +270,14 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::CollectionModel;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let collection = pinecone.create_collection("collection-name", "index-name").await.unwrap();
+    /// let create_collection_response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
     /// # Ok(())
     /// # }
     /// ```
