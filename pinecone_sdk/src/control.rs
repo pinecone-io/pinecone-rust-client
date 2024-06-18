@@ -144,10 +144,10 @@ impl PineconeClient {
     /// * `dimension: u32` - The dimension of the index
     /// * `metric: Metric` - The metric to use for the index
     /// * `environment: String` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
-    /// * `replicas: Option<i32>` - The number of replicas to deploy for the pod index. Default: 1
-    /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `pod_type: String` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
     /// * `pods: i32` - The number of pods to deploy. Default: 1
+    /// * `replicas: Option<i32>` - The number of replicas to deploy for the pod index. Default: 1
+    /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     ///
@@ -170,10 +170,10 @@ impl PineconeClient {
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
     ///     "us-east-1-aws", // Environment
-    ///     Some(1), // Number of replicas
-    ///     Some(1), // Number of shards
     ///     "p1.x1", // Pod type
     ///     1, // Number of pods
+    ///     Some(1), // Number of replicas
+    ///     Some(1), // Number of shards
     ///     Some( // Metadata fields to index
     ///         &vec!["genre",
     ///         "title",
@@ -190,10 +190,10 @@ impl PineconeClient {
         dimension: u32,
         metric: Metric,
         environment: &str,
-        replicas: Option<u32>,
-        shards: Option<u32>,
         pod_type: &str,
         pods: u32,
+        replicas: Option<u32>,
+        shards: Option<u32>,
         indexed: Option<&[&str]>,
         source_collection: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
@@ -615,10 +615,10 @@ mod tests {
                 1536,
                 Metric::Euclidean,
                 "us-east-1-aws",
-                Some(1),
-                Some(1),
                 "p1.x1",
                 1,
+                Some(1),
+                Some(1),
                 Some(&vec![
                     "genre",
                     "title",
@@ -699,10 +699,10 @@ mod tests {
                 1536,
                 Default::default(),
                 "us-east-1-aws",
-                None,
-                None,
                 "p1.x1",
                 1,
+                None,
+                None,
                 None,
                 None,
             )
@@ -748,10 +748,10 @@ mod tests {
                 1536,
                 Metric::Euclidean,
                 "invalid-environment",
-                Some(1),
-                Some(1),
                 "p1.x1",
                 1,
+                Some(1),
+                Some(1),
                 Some(&vec![
                     "genre",
                     "title",
@@ -786,10 +786,10 @@ mod tests {
                 1536,
                 Metric::Euclidean,
                 "us-east-1-aws",
-                Some(1),
-                Some(1),
                 "invalid-pod-type",
                 1,
+                Some(1),
+                Some(1),
                 Some(&vec![
                     "genre",
                     "title",
