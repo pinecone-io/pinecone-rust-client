@@ -34,7 +34,7 @@ impl PineconeClient {
     ///
     /// // Create an index.
     /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
-    ///     "create-index", // Name of the index
+    ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
