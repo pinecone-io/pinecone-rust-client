@@ -12,7 +12,6 @@ regex = "1.10.4"
 serde_json = "1.0.117"
 snafu = "0.8.3"
 rand = "0.8.5"
-reqwest = "0.12.5"
 
 [dev-dependencies]
 mockito = "0.30"
