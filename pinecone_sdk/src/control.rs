@@ -175,9 +175,9 @@ impl PineconeClient {
     ///     "p1.x1", // Pod type
     ///     1, // Number of pods
     ///     Some( // Metadata fields to index
-    ///         vec!["genre".to_string(),
-    ///         "title".to_string(),
-    ///         "imdb_rating".to_string()]),
+    ///         &vec!["genre",
+    ///         "title",
+    ///         "imdb_rating"]),
     ///     Some("example-collection"), // Source collection
     /// )
     /// .await;
@@ -194,9 +194,11 @@ impl PineconeClient {
         shards: Option<u32>,
         pod_type: &str,
         pods: u32,
-        indexed: Option<Vec<String>>,
+        indexed: Option<&[&str]>,
         source_collection: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
+        let indexed = indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
+
         let pod_spec = PodSpec {
             environment: environment.to_string(),
             replicas: replicas.map(|r| r as i32),
@@ -617,10 +619,10 @@ mod tests {
                 Some(1),
                 "p1.x1",
                 1,
-                Some(vec![
-                    "genre".to_string(),
-                    "title".to_string(),
-                    "imdb_rating".to_string(),
+                Some(&vec![
+                    "genre",
+                    "title",
+                    "imdb_rating",
                 ]),
                 Some("example-collection"),
             )
@@ -750,10 +752,10 @@ mod tests {
                 Some(1),
                 "p1.x1",
                 1,
-                Some(vec![
-                    "genre".to_string(),
-                    "title".to_string(),
-                    "imdb_rating".to_string(),
+                Some(&vec![
+                    "genre",
+                    "title",
+                    "imdb_rating",
                 ]),
                 Some("example-collection"),
             )
@@ -788,10 +790,10 @@ mod tests {
                 Some(1),
                 "invalid-pod-type",
                 1,
-                Some(vec![
-                    "genre".to_string(),
-                    "title".to_string(),
-                    "imdb_rating".to_string(),
+                Some(&vec![
+                    "genre",
+                    "title",
+                    "imdb_rating",
                 ]),
                 Some("example-collection"),
             )
