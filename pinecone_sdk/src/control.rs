@@ -148,7 +148,7 @@ impl PineconeClient {
     /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `pod_type: String` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
     /// * `pods: i32` - The number of pods to deploy. Default: 1
-    /// * `indexed: Option<Vec<String>>` - The metadata fields to index // i don't actually know what this is
+    /// * `indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     ///
     /// ### Return
