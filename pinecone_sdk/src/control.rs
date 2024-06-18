@@ -742,7 +742,7 @@ mod tests {
         )
         .unwrap();
 
-        let _ = pinecone
+        let create_index_response = pinecone
             .create_pod_index(
                 "test-index",
                 1536,
@@ -762,6 +762,8 @@ mod tests {
             .await
             .expect_err("Expected create_pod_index to return an error");
 
+        assert!(matches!(create_index_response, PineconeError::CreateIndexError { .. }));
+
         Ok(())
     }
 
@@ -780,7 +782,7 @@ mod tests {
         )
         .unwrap();
 
-        let _ = pinecone
+        let create_index_response = pinecone
             .create_pod_index(
                 "test-index",
                 1536,
@@ -799,6 +801,8 @@ mod tests {
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
+        
+        assert!(matches!(create_index_response, PineconeError::CreateIndexError { .. }));
 
         Ok(())
     }
