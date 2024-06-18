@@ -726,6 +726,82 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_create_pod_index_invalid_environment() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(400)
+            .with_header("content-type", "application/json")
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let _ = pinecone
+            .create_pod_index(
+                "test-index",
+                1536,
+                Metric::Euclidean,
+                "invalid-environment",
+                Some(1),
+                Some(1),
+                "p1.x1",
+                1,
+                Some(vec![
+                    "genre".to_string(),
+                    "title".to_string(),
+                    "imdb_rating".to_string(),
+                ]),
+                Some("example-collection"),
+            )
+            .await
+            .expect_err("Expected create_pod_index to return an error");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_pod_index_invalid_pod_type() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(400)
+            .with_header("content-type", "application/json")
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let _ = pinecone
+            .create_pod_index(
+                "test-index",
+                1536,
+                Metric::Euclidean,
+                "us-east-1-aws",
+                Some(1),
+                Some(1),
+                "invalid-pod-type",
+                1,
+                Some(vec![
+                    "genre".to_string(),
+                    "title".to_string(),
+                    "imdb_rating".to_string(),
+                ]),
+                Some("example-collection"),
+            )
+            .await
+            .expect_err("Expected create_pod_index to return an error");
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
         let _m = mock("DELETE", "/indexes/index_name")
             .with_status(204)
