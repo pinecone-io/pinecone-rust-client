@@ -87,8 +87,47 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 #[tokio::test]
 async fn test_delete_index_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    let name = "invalid-index";
-    let response = pinecone.delete_index(name).await;
-    assert!(response.is_err());
+
+    let _ = pinecone
+        .delete_index("invalid-index")
+        .await
+        .expect_err("Expected to fail deleting invalid index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_index() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let _ = pinecone
+        .configure_index("valid-index-pod", 1, "s1.x1")
+        .await
+        .expect("Failed to configure index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let _ = pinecone
+        .configure_index("valid-index", 1, "p1.x1")
+        .await
+        .expect_err("Expected to fail configuring serverless index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let _ = pinecone
+        .configure_index("invalid-index", 2, "p1.x1")
+        .await
+        .expect_err("Expected to fail configuring invalid index");
+
     Ok(())
 }
