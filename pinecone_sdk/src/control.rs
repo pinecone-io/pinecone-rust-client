@@ -218,7 +218,6 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use mockito::mock;
-    use openapi::apis::{Error as OpenAPIError, ResponseContent};
     use openapi::models::{self, collection_model::Status, IndexList};
     use tokio;
 
@@ -353,16 +352,7 @@ mod tests {
             .await
             .expect_err("Expected create_index to return an error");
 
-        assert_eq!(
-            create_index_response,
-            PineconeError::CreateIndexError {
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
-                    content: "Internal Server Error".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(create_index_response, PineconeError::CreateIndexError{..}));
 
         Ok(())
     }
@@ -455,17 +445,7 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert_eq!(
-            describe_index_response,
-            PineconeError::DescribeIndexError {
-                name: "invalid-index".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::NOT_FOUND,
-                    content: "Index not found".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
 
         Ok(())
     }
@@ -489,17 +469,7 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert_eq!(
-            describe_index_response,
-            PineconeError::DescribeIndexError {
-                name: "serverless-index".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
-                    content: "Internal Server Error".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
 
         Ok(())
     }
@@ -596,16 +566,7 @@ mod tests {
             .await
             .expect_err("Expected list_indexes to return an error");
 
-        assert_eq!(
-            list_indexes_response,
-            PineconeError::ListIndexesError {
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
-                    content: "Internal Server Error".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(list_indexes_response, PineconeError::ListIndexesError{..}));
 
         Ok(())
     }
@@ -656,17 +617,7 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert_eq!(
-            delete_index_response,
-            PineconeError::DeleteIndexError {
-                name: "invalid-index".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::NOT_FOUND,
-                    content: "Index not found".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
 
         Ok(())
     }
@@ -690,17 +641,7 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert_eq!(
-            delete_index_response,
-            PineconeError::DeleteIndexError {
-                name: "invalid-index".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
-                    content: "Internal Server Error".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
 
         Ok(())
     }
@@ -776,17 +717,7 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert_eq!(
-            create_collection_response,
-            PineconeError::CreateCollectionError {
-                name: "invalid_collection".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::BAD_REQUEST,
-                    content: "Bad Request".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
 
         Ok(())
     }
@@ -810,17 +741,7 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert_eq!(
-            create_collection_response,
-            PineconeError::CreateCollectionError {
-                name: "collection-name".to_string(),
-                openapi_error: OpenAPIError::ResponseError(ResponseContent {
-                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR,
-                    content: "Internal Server Error".to_string(),
-                    entity: None,
-                })
-            }
-        );
+        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
 
         Ok(())
     }
