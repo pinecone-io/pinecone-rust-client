@@ -1,7 +1,7 @@
 use openapi::apis::{
     manage_indexes_api::{
         ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteIndexError,
-        DescribeIndexError, ListIndexesError,
+        DescribeIndexError, ListCollectionsError, ListIndexesError,
     },
     Error as OpenAPIError,
 };
@@ -78,6 +78,13 @@ pub enum PineconeError {
         metric: String,
     },
 
+    /// ListCollectionsError: Failed to list indexes.
+    #[snafu(display("Failed to list collections."))]
+    ListCollectionsError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ListCollectionsError>,
+    },
+
     /// ListIndexesError: Failed to list indexes.
     #[snafu(display("Failed to list indexes."))]
     ListIndexesError {
@@ -96,4 +103,8 @@ pub enum PineconeError {
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
     MissingSpecError,
+
+    /// TimeoutError: Request timed out.
+    #[snafu(display("Request timed out."))]
+    TimeoutError,
 }
