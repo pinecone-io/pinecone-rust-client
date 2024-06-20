@@ -5,8 +5,8 @@ use openapi::apis::manage_indexes_api;
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
 pub use openapi::models::{
-    CollectionModel, CreateCollectionRequest, CreateIndexRequest, CreateIndexRequestSpec,
-    IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    CollectionList, CollectionModel, CreateCollectionRequest, CreateIndexRequest,
+    CreateIndexRequestSpec, IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
 impl PineconeClient {
@@ -647,11 +647,7 @@ mod tests {
                 1,
                 Some(1),
                 Some(1),
-                Some(&vec![
-                    "genre",
-                    "title",
-                    "imdb_rating",
-                ]),
+                Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
             )
             .await
@@ -780,17 +776,16 @@ mod tests {
                 1,
                 Some(1),
                 Some(1),
-                Some(&vec![
-                    "genre",
-                    "title",
-                    "imdb_rating",
-                ]),
+                Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
 
-        assert!(matches!(create_index_response, PineconeError::CreateIndexError { .. }));
+        assert!(matches!(
+            create_index_response,
+            PineconeError::CreateIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -820,17 +815,16 @@ mod tests {
                 1,
                 Some(1),
                 Some(1),
-                Some(&vec![
-                    "genre",
-                    "title",
-                    "imdb_rating",
-                ]),
+                Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
-        
-        assert!(matches!(create_index_response, PineconeError::CreateIndexError { .. }));
+
+        assert!(matches!(
+            create_index_response,
+            PineconeError::CreateIndexError { .. }
+        ));
 
         Ok(())
     }
