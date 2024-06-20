@@ -530,6 +530,58 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_create_serverless_index_with_timeout() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "index_name",
+                    "dimension": 10,
+                    "metric": "euclidean",
+                    "host": "host1",
+                    "spec": {
+                        "serverless": {
+                            "cloud": "aws",
+                            "region": "us-east-1"
+                        }
+                    },
+                    "status": {
+                        "ready": true,
+                        "state": "Initializing"
+                    }
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_serverless_index(
+                "index_name",
+                10,
+                Metric::Cosine,
+                Cloud::Aws,
+                "us-east-1",
+                Some(1),
+            )
+            .await
+            .expect_err("Expected timeout error");
+
+        assert!(matches!(create_index_response, PineconeError::TimeoutError));
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_create_serverless_index_defaults() -> Result<(), PineconeError> {
         let _m = mock("POST", "/indexes")
             .with_status(201)
@@ -672,6 +724,73 @@ mod tests {
         assert_eq!(pod_spec.pods, 1);
         assert_eq!(pod_spec.replicas, Some(1));
         assert_eq!(pod_spec.shards, Some(1));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_pod_index_with_timeout() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes")
+            .with_status(201)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "index-name",
+                    "dimension": 1536,
+                    "metric": "euclidean",
+                    "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
+                    "spec": {
+                      "pod": {
+                        "environment": "us-east-1-aws",
+                        "replicas": 1,
+                        "shards": 1,
+                        "pod_type": "p1.x1",
+                        "pods": 1,
+                        "metadata_config": {
+                          "indexed": [
+                            "genre",
+                            "title",
+                            "imdb_rating"
+                          ]
+                        }
+                      }
+                    },
+                    "status": {
+                      "ready": true,
+                      "state": "ScalingUpPodSize"
+                    }
+                  }
+                  "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_pod_index(
+                "index-name",
+                1536,
+                Metric::Euclidean,
+                "us-east-1-aws",
+                "p1.x1",
+                1,
+                Some(1),
+                Some(1),
+                Some(&vec!["genre", "title", "imdb_rating"]),
+                Some("example-collection"),
+                Some(1),
+            )
+            .await
+            .expect_err("Expected timeout error");
+
+        assert!(matches!(create_index_response, PineconeError::TimeoutError));
 
         Ok(())
     }
