@@ -83,27 +83,9 @@ impl PineconeClient {
             };
 
         // check for timeout
-        match timeout {
-            Some(mut timeout) => {
-                // if specified timeout
-                if timeout != -1 {
-                    while !self.is_ready(name).await && timeout >= 0 {
-                        tokio::time::sleep(Duration::new(2, 0)).await;
-                        timeout -= 2;
-                    }
-                    if timeout < 0 {
-                        return Err(PineconeError::TimeoutError);
-                    }
-                }
-                return create_index_response;
-            }
-            None => {
-                // if wait indefinitely
-                while !self.is_ready(name).await {
-                    tokio::time::sleep(Duration::new(2, 0)).await;
-                }
-                return create_index_response;
-            }
+        match self.check_timeout(name, timeout).await {
+            Ok(_) => create_index_response,
+            Err(e) => Err(e),
         }
     }
 
@@ -203,6 +185,13 @@ impl PineconeClient {
             };
 
         // check for timeout
+        match self.check_timeout(name, timeout).await {
+            Ok(_) => create_index_response,
+            Err(e) => Err(e),
+        }
+    }
+
+    async fn check_timeout(&self, name: &str, timeout: Option<i32>) -> Result<(), PineconeError> {
         match timeout {
             Some(mut timeout) => {
                 // if specified timeout
@@ -215,14 +204,14 @@ impl PineconeClient {
                         return Err(PineconeError::TimeoutError);
                     }
                 }
-                return create_index_response;
+                Ok(())
             }
             None => {
                 // if wait indefinitely
                 while !self.is_ready(name).await {
                     tokio::time::sleep(Duration::new(2, 0)).await;
                 }
-                return create_index_response;
+                Ok(())
             }
         }
     }
