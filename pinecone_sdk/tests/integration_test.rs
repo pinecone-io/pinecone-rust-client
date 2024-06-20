@@ -58,9 +58,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
     let metric = Metric::Euclidean;
     let cloud = Cloud::Aws;
     let region = "us-west-2";
+    let timeout = Some(-1);
 
     let response = pinecone
-        .create_serverless_index(name, dimension, metric, cloud, region)
+        .create_serverless_index(name, dimension, metric, cloud, region, timeout)
         .await
         .expect("Failed to create index");
 
@@ -97,6 +98,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = None;
+    let timeout = Some(-1);
 
     let response = pinecone
         .create_pod_index(
@@ -110,6 +112,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             shards,
             indexed,
             source_collection,
+            timeout,
         )
         .await
         .expect("Failed to create index");
@@ -150,6 +153,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = Some("valid-collection");
+    let timeout = Some(-1);
 
     let response = pinecone
         .create_pod_index(
@@ -163,6 +167,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             shards,
             indexed,
             source_collection,
+            timeout,
         )
         .await
         .expect("Failed to create index");
