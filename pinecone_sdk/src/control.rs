@@ -5,7 +5,8 @@ use openapi::apis::manage_indexes_api;
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
 pub use openapi::models::{
-    CollectionList, CollectionModel, CreateCollectionRequest, CreateIndexRequest,
+    CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest,
     CreateIndexRequestSpec, IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
@@ -71,69 +72,6 @@ impl PineconeClient {
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
-        }
-    }
-
-    /// Describes an index.
-    ///
-    /// ### Arguments
-    /// * `name: &str` - Name of the index to describe.
-    ///
-    /// ### Return
-    /// * `Result<IndexModel, PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexModel;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    ///
-    /// // Describe an index in the project.
-    /// let describe_index_response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
-        match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
-            Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::DescribeIndexError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
-        }
-    }
-
-    /// Lists all indexes.
-    ///
-    /// The results include a description of all indexes in your project, including the
-    /// index name, dimension, metric, status, and spec.
-    ///
-    /// ### Return
-    /// * `Result<IndexList, PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexList;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    ///
-    /// // List all indexes in the project.
-    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
-        match manage_indexes_api::list_indexes(&self.openapi_config()).await {
-            Ok(index_list) => Ok(index_list),
-            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
         }
     }
 
@@ -224,6 +162,124 @@ impl PineconeClient {
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
             Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
+        }
+    }
+
+    /// Describes an index.
+    ///
+    /// ### Arguments
+    /// * `name: &str` - Name of the index to describe.
+    ///
+    /// ### Return
+    /// * `Result<IndexModel, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::IndexModel;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// // Describe an index in the project.
+    /// let describe_index_response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
+        match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
+            Ok(index) => Ok(index),
+            Err(e) => Err(PineconeError::DescribeIndexError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
+        }
+    }
+
+    /// Lists all indexes.
+    ///
+    /// The results include a description of all indexes in your project, including the
+    /// index name, dimension, metric, status, and spec.
+    ///
+    /// ### Return
+    /// * `Result<IndexList, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::IndexList;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// // List all indexes in the project.
+    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
+        match manage_indexes_api::list_indexes(&self.openapi_config()).await {
+            Ok(index_list) => Ok(index_list),
+            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
+        }
+    }
+
+    /// Configures an index.
+    ///
+    /// This operation specifies the pod type and number of replicas for an index.
+    /// It applies to pod-based indexes only.
+    /// Serverless indexes scale automatically based on usage.
+    ///
+    /// ### Arguments
+    /// * name: &str - The name of the index to be configured.
+    /// * replicas: i32 - The desired number of replicas, lowest value is 0.
+    /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
+    ///
+    /// ### Return
+    /// * `Result<IndexModel, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let response = pinecone.configure_index("index-name", 6, "s1").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn configure_index(
+        &self,
+        name: &str,
+        replicas: i32,
+        pod_type: &str,
+    ) -> Result<IndexModel, PineconeError> {
+        let configure_index_request = ConfigureIndexRequest::new(ConfigureIndexRequestSpec::new(
+            ConfigureIndexRequestSpecPod {
+                replicas: Some(replicas),
+                pod_type: Some(pod_type.to_string()),
+            },
+        ));
+
+        match manage_indexes_api::configure_index(
+            &self.openapi_config(),
+            name,
+            configure_index_request,
+        )
+        .await
+        {
+            Ok(index) => Ok(index),
+            Err(e) => Err(PineconeError::ConfigureIndexError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
         }
     }
 
@@ -700,32 +756,32 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "test-index",
+                    "name": "index-name",
                     "dimension": 1536,
                     "metric": "euclidean",
                     "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
                     "spec": {
-                        "pod": {
+                      "pod": {
                         "environment": "us-east-1-aws",
-                        "metadata_config": {
-                            "indexed": [
-                                "genre",
-                                "title",
-                                "imdb_rating"
-                            ]
-                        },
+                        "replicas": 1,
+                        "shards": 1,
                         "pod_type": "p1.x1",
                         "pods": 1,
-                        "replicas": 1,
-                        "shards": 1
+                        "metadata_config": {
+                          "indexed": [
+                            "genre",
+                            "title",
+                            "imdb_rating"
+                          ]
                         }
+                      }
                     },
                     "status": {
-                        "ready": true,
-                        "state": "ScalingUpPodSize"
+                      "ready": true,
+                      "state": "ScalingUpPodSize"
                     }
-                }
-            "#,
+                  }
+                  "#,
             )
             .create();
 
@@ -736,10 +792,9 @@ mod tests {
             None,
         )
         .unwrap();
-
         let create_index_response = pinecone
             .create_pod_index(
-                "test-index",
+                "index-name",
                 1536,
                 Metric::Euclidean,
                 "us-east-1-aws",
@@ -753,7 +808,7 @@ mod tests {
             .await
             .expect("Failed to create pod index");
 
-        assert_eq!(create_index_response.name, "test-index");
+        assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 1536);
         assert_eq!(
             create_index_response.metric,
@@ -925,6 +980,65 @@ mod tests {
             create_index_response,
             PineconeError::CreateIndexError { .. }
         ));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_configure_index() -> Result<(), PineconeError> {
+        let _m = mock("PATCH", "/indexes/index-name")
+            .with_status(202)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "index-name",
+                    "dimension": 1536,
+                    "metric": "cosine",
+                    "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
+                    "spec": {
+                      "pod": {
+                        "environment": "us-east-1-aws",
+                        "replicas": 6,
+                        "shards": 1,
+                        "pod_type": "p1.x1",
+                        "pods": 1,
+                        "metadata_config": {
+                          "indexed": [
+                            "genre",
+                            "title",
+                            "imdb_rating"
+                          ]
+                        }
+                      }
+                    },
+                    "status": {
+                      "ready": true,
+                      "state": "ScalingUpPodSize"
+                    }
+                  }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let configure_index_response = pinecone
+            .configure_index("index-name", 6, "p1.x1")
+            .await
+            .expect("Failed to configure index");
+
+        assert_eq!(configure_index_response.name, "index-name");
+
+        let spec = configure_index_response.spec.pod.unwrap();
+        assert_eq!(spec.replicas.unwrap(), 6);
+        assert_eq!(spec.pod_type.as_str(), "p1.x1");
 
         Ok(())
     }
