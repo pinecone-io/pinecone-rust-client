@@ -97,29 +97,3 @@ pub enum PineconeError {
     #[snafu(display("Spec missing."))]
     MissingSpecError,
 }
-
-impl PartialEq for PineconeError {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (PineconeError::APIKeyMissingError, PineconeError::APIKeyMissingError) => true,
-            (PineconeError::CreateIndexError { .. }, PineconeError::CreateIndexError { .. }) => {
-                true
-            }
-            (PineconeError::MissingNameError, PineconeError::MissingNameError) => true,
-            (PineconeError::MissingDimensionError, PineconeError::MissingDimensionError) => true,
-            (PineconeError::MissingSpecError, PineconeError::MissingSpecError) => true,
-            (
-                PineconeError::InvalidHeadersError { .. },
-                PineconeError::InvalidHeadersError { .. },
-            ) => true,
-            (PineconeError::InvalidCloudError { .. }, PineconeError::InvalidCloudError { .. }) => {
-                true
-            }
-            (
-                PineconeError::InvalidMetricError { .. },
-                PineconeError::InvalidMetricError { .. },
-            ) => true,
-            _ => false,
-        }
-    }
-}
