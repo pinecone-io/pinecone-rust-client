@@ -38,7 +38,7 @@ async fn test_describe_index_fail() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_list_index() -> Result<(), PineconeError> {
+async fn test_list_indexes() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     let _ = pinecone
         .list_indexes()
@@ -196,5 +196,16 @@ async fn test_delete_index_err() -> Result<(), PineconeError> {
     let name = "invalid-index";
     let response = pinecone.delete_index(name).await;
     assert!(response.is_err());
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_list_collections() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    let _ = pinecone
+        .list_collections()
+        .await
+        .expect("Failed to list collections");
+
     Ok(())
 }
