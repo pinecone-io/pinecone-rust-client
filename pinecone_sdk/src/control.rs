@@ -216,7 +216,7 @@ impl PineconeClient {
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension: dimension as i32,
+            dimension,
             metric: Some(metric),
             spec: Some(Box::new(spec)),
         };
