@@ -88,8 +88,8 @@ impl PineconeClient {
                 // if specified timeout
                 if timeout != -1 {
                     while !self.is_ready(name).await && timeout >= 0 {
-                        tokio::time::sleep(Duration::new(5, 0)).await;
-                        timeout -= 5;
+                        tokio::time::sleep(Duration::new(2, 0)).await;
+                        timeout -= 2;
                     }
                     if timeout < 0 {
                         return Err(PineconeError::TimeoutError);
@@ -100,7 +100,7 @@ impl PineconeClient {
             None => {
                 // if wait indefinitely
                 while !self.is_ready(name).await {
-                    tokio::time::sleep(Duration::new(5, 0)).await;
+                    tokio::time::sleep(Duration::new(2, 0)).await;
                 }
                 return create_index_response;
             }
@@ -208,8 +208,8 @@ impl PineconeClient {
                 // if specified timeout
                 if timeout != -1 {
                     while !self.is_ready(name).await && timeout >= 0 {
-                        tokio::time::sleep(Duration::new(5, 0)).await;
-                        timeout -= 5;
+                        tokio::time::sleep(Duration::new(2, 0)).await;
+                        timeout -= 2;
                     }
                     if timeout < 0 {
                         return Err(PineconeError::TimeoutError);
@@ -220,7 +220,7 @@ impl PineconeClient {
             None => {
                 // if wait indefinitely
                 while !self.is_ready(name).await {
-                    tokio::time::sleep(Duration::new(5, 0)).await;
+                    tokio::time::sleep(Duration::new(2, 0)).await;
                 }
                 return create_index_response;
             }
