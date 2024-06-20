@@ -85,6 +85,32 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
+async fn test_create_serverless_index_timeout() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let name = &generate_index_name();
+    let dimension = 2;
+    let metric = Metric::Euclidean;
+    let cloud = Cloud::Aws;
+    let region = "us-west-2";
+    let timeout = Some(1);
+
+    let response = pinecone
+        .create_serverless_index(name, dimension, metric, cloud, region, timeout)
+        .await
+        .expect_err("Expected to fail creating index with timeout");
+
+    assert!(matches!(response, PineconeError::TimeoutError));
+
+    let _ = pinecone
+        .delete_index(name)
+        .await
+        .expect("Failed to delete index");
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_create_pod_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
@@ -131,6 +157,49 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
     assert_eq!(spec.pod_type, "p1.x1");
     assert_eq!(spec.pods, 1);
     assert_eq!(spec.source_collection, None);
+
+    let _ = pinecone
+        .delete_index(name)
+        .await
+        .expect("Failed to delete index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_create_pod_index_timeout() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let name = &generate_index_name();
+    let dimension = 2;
+    let metric = Metric::Euclidean;
+    let environment = "us-west1-gcp";
+    let replicas = Some(1);
+    let shards = Some(1);
+    let pod_type = "p1.x1";
+    let pods = 1;
+    let indexed = None;
+    let source_collection = None;
+    let timeout = Some(1);
+
+    let response = pinecone
+        .create_pod_index(
+            name,
+            dimension,
+            metric,
+            environment,
+            pod_type,
+            pods,
+            replicas,
+            shards,
+            indexed,
+            source_collection,
+            timeout,
+        )
+        .await
+        .expect_err("Expected to fail creating index with timeout");
+
+    assert!(matches!(response, PineconeError::TimeoutError));
 
     let _ = pinecone
         .delete_index(name)
