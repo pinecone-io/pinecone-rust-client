@@ -15,7 +15,7 @@ impl PineconeClient {
     ///
     /// ### Arguments
     /// * `name: &str` - Name of the index to create.
-    /// * `dimension: u32` - Dimension of the vectors to be inserted in the index.
+    /// * `dimension: i32` - Dimension of the vectors to be inserted in the index.
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
@@ -48,7 +48,7 @@ impl PineconeClient {
     pub async fn create_serverless_index(
         &self,
         name: &str,
-        dimension: u32,
+        dimension: i32,
         metric: Metric,
         cloud: Cloud,
         region: &str,
@@ -64,7 +64,7 @@ impl PineconeClient {
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension: dimension.try_into().unwrap(),
+            dimension,
             metric: Some(metric),
             spec: Some(Box::new(create_index_request_spec)),
         };
@@ -144,7 +144,7 @@ impl PineconeClient {
     ///
     /// ### Arguments
     /// * name: &str - The name of the index to be configured.
-    /// * replicas: u32 - The desired number of replicas, lowest value is 0.
+    /// * replicas: i32 - The desired number of replicas, lowest value is 0.
     /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
     ///
     /// ### Return
@@ -166,12 +166,12 @@ impl PineconeClient {
     pub async fn configure_index(
         &self,
         name: &str,
-        replicas: u32,
+        replicas: i32,
         pod_type: &str,
     ) -> Result<IndexModel, PineconeError> {
         let configure_index_request = ConfigureIndexRequest::new(ConfigureIndexRequestSpec::new(
             ConfigureIndexRequestSpecPod {
-                replicas: Some(replicas.try_into().unwrap()),
+                replicas: Some(replicas),
                 pod_type: Some(pod_type.to_string()),
             },
         ));
@@ -569,10 +569,10 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .unwrap();
 
         let configure_index_response = pinecone
-            .unwrap()
             .configure_index("index-name", 6, "p1.x1")
             .await
             .expect("Failed to configure index");
