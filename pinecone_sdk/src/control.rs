@@ -21,7 +21,7 @@ impl PineconeClient {
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
-    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait indefinitely; if >=0, time out after this many seconds; if -1, return immediately and do not wait.
+    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait indefinitely; if >=0, time out after this many seconds; if < 0, return immediately and do not wait.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -102,7 +102,7 @@ impl PineconeClient {
     /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `metadata_indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
-    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait indefinitely; if >=0, time out after this many seconds; if -1, return immediately and do not wait.
+    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait indefinitely; if >=0, time out after this many seconds; if < 0, return immediately and do not wait.
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -195,7 +195,7 @@ impl PineconeClient {
         match timeout {
             Some(mut timeout) => {
                 // if specified timeout
-                if timeout != -1 {
+                if timeout >= 0 {
                     while !self.is_ready(name).await && timeout >= 0 {
                         tokio::time::sleep(Duration::new(2, 0)).await;
                         timeout -= 2;
@@ -935,6 +935,14 @@ mod tests {
             PineconeError::CreateIndexError { .. }
         ));
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_check_timeout_negative_timeout() -> Result<(), PineconeError> {
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let result = pinecone.check_timeout("test-index", Some(-5)).await;
+        assert!(result.is_ok());
         Ok(())
     }
 
