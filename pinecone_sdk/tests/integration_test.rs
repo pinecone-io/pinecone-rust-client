@@ -136,3 +136,14 @@ async fn test_delete_index_err() -> Result<(), PineconeError> {
     assert!(response.is_err());
     Ok(())
 }
+
+#[tokio::test]
+async fn test_list_collections() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    let _ = pinecone
+        .list_collections()
+        .await
+        .expect("Failed to list collections");
+
+    Ok(())
+}

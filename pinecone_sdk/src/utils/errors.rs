@@ -1,7 +1,7 @@
 use openapi::apis::{
     manage_indexes_api::{
         CreateCollectionError, CreateIndexError, DeleteIndexError, DescribeIndexError,
-        ListIndexesError,
+        ListCollectionsError, ListIndexesError,
     },
     Error as OpenAPIError,
 };
@@ -67,6 +67,13 @@ pub enum PineconeError {
     InvalidMetricError {
         /// metric: Metric name.
         metric: String,
+    },
+
+    /// ListCollectionsError: Failed to list indexes.
+    #[snafu(display("Failed to list collections."))]
+    ListCollectionsError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ListCollectionsError>,
     },
 
     /// ListIndexesError: Failed to list indexes.
