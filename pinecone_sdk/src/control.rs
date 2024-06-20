@@ -229,7 +229,7 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // List all indexes in the project.
+    /// // List all collections in the project.
     /// let collection_list = pinecone.list_collections().await.unwrap();
     /// # Ok(())
     /// # }
