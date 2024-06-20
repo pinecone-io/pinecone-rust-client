@@ -148,7 +148,7 @@ impl PineconeClient {
     /// * `pods: i32` - The number of pods to deploy. Default: 1
     /// * `replicas: Option<i32>` - The number of replicas to deploy for the pod index. Default: 1
     /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
-    /// * `indexed: Option<Vec<String>>` - The metadata fields to index.
+    /// * `metadata_indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     ///
     /// ### Return
@@ -194,10 +194,10 @@ impl PineconeClient {
         pods: i32,
         replicas: Option<i32>,
         shards: Option<i32>,
-        indexed: Option<&[&str]>,
+        metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
-        let indexed = indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
+        let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
 
         let pod_spec = PodSpec {
             environment: environment.to_string(),
