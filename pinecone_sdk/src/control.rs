@@ -211,8 +211,8 @@ impl PineconeClient {
         // poll index status
         if timeout_val != -1 {
             while !self.is_ready(name).await && timeout_val >= 0 {
-                tokio::time::sleep(Duration::new(2, 0)).await;
-                timeout_val -= 2;
+                tokio::time::sleep(Duration::new(5, 0)).await;
+                timeout_val -= 5;
             }
             if timeout_val < 0 {
                 return Err(PineconeError::TimeoutError);
