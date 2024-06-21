@@ -74,6 +74,7 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
+        // make openAPI call
         let create_index_response =
             match manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
                 .await
@@ -152,6 +153,7 @@ impl PineconeClient {
         source_collection: Option<&str>,
         timeout: Option<i32>,
     ) -> Result<IndexModel, PineconeError> {
+        // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
 
         let pod_spec = PodSpec {
@@ -176,6 +178,7 @@ impl PineconeClient {
             spec: Some(Box::new(spec)),
         };
 
+        // make openAPI call
         let create_index_response =
             match manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
                 .await
