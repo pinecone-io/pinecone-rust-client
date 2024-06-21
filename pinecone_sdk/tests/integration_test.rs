@@ -1,3 +1,5 @@
+use openapi::models::index_model::Metric as OpenApiMetric;
+use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::control::{Cloud, Metric};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
@@ -59,25 +61,26 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .expect("Failed to list indexes");
     let indexes = index_list.indexes.unwrap();
 
-    println!("Indexes: {:?}", indexes);
-
-    let index1 = indexes.iter().find(|index| index.name == index1_name.to_string()).unwrap();
+    let index1 = indexes
+        .iter()
+        .find(|index| index.name == index1_name.to_string())
+        .unwrap();
     assert_eq!(index1.name, index1_name.to_string());
     assert_eq!(index1.dimension, 2);
-    assert_eq!(index1.metric, openapi::models::index_model::Metric::Cosine);
+    assert_eq!(index1.metric, OpenApiMetric::Cosine);
     let spec1 = index1.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec1.cloud, openapi::models::serverless_spec::Cloud::Aws);
+    assert_eq!(spec1.cloud, OpenApiCloud::Aws);
     assert_eq!(spec1.region, "us-west-2");
 
-    let index2 = indexes.iter().find(|index| index.name == index2_name.to_string()).unwrap();
+    let index2 = indexes
+        .iter()
+        .find(|index| index.name == index2_name.to_string())
+        .unwrap();
     assert_eq!(index2.name, index2_name.to_string());
     assert_eq!(index2.dimension, 2);
-    assert_eq!(
-        index2.metric,
-        openapi::models::index_model::Metric::Dotproduct
-    );
+    assert_eq!(index2.metric, OpenApiMetric::Dotproduct);
     let spec2 = index2.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec2.cloud, openapi::models::serverless_spec::Cloud::Aws);
+    assert_eq!(spec2.cloud, OpenApiCloud::Aws);
     assert_eq!(spec2.region, "us-west-2");
 
     let _ = pinecone
@@ -110,13 +113,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(
-        response.metric,
-        openapi::models::index_model::Metric::Euclidean
-    );
+    assert_eq!(response.metric, OpenApiMetric::Euclidean);
 
     let spec = response.spec.serverless.unwrap();
-    assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
+    assert_eq!(spec.cloud, OpenApiCloud::Aws);
     assert_eq!(spec.region, "us-west-2");
 
     let _ = pinecone
@@ -160,10 +160,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(
-        response.metric,
-        openapi::models::index_model::Metric::Euclidean
-    );
+    assert_eq!(response.metric, OpenApiMetric::Euclidean);
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-west1-gcp");
@@ -213,10 +210,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 12);
-    assert_eq!(
-        response.metric,
-        openapi::models::index_model::Metric::Euclidean
-    );
+    assert_eq!(response.metric, OpenApiMetric::Euclidean);
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-east-1-aws");

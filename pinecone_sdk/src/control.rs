@@ -536,7 +536,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_describe_index() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("GET", "/indexes/serverless-index")
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -653,7 +652,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_indexes() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("GET", "/indexes")
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1120,7 +1118,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_collection() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("POST", "/collections")
             .with_status(201)
             .with_header("content-type", "application/json")
@@ -1164,7 +1161,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_collections() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("GET", "/collections")
             .with_status(200)
             .with_header("content-type", "application/json")
