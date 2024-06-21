@@ -637,6 +637,240 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_create_serverless_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/indexes").with_status(500).create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_index_response = pinecone
+            .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1", Some(-1))
+            .await
+            .expect_err("Expected create_index to return an error");
+
+        assert!(matches!(create_index_response, PineconeError::CreateIndexError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_describe_index() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes/serverless-index")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "name": "serverless-index",
+                    "metric": "cosine",
+                    "dimension": 1536,
+                    "status": {
+                       "ready": true,
+                       "state": "Ready"
+                    },
+                    "host": "serverless-index-4zo0ijk.svc.us-east1-aws.pinecone.io",
+                    "spec": {
+                       "serverless": {
+                          "region": "us-east-1",
+                          "cloud": "aws"
+                        }
+                    }
+                }
+            "#,
+            )
+            .create();
+
+        // Construct Pinecone instance with the mock server URL
+        let api_key = "test_api_key".to_string();
+        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
+            .expect("Failed to create Pinecone instance");
+
+        // Call describe_index and verify the result
+        let index = pinecone
+            .describe_index("serverless-index")
+            .await
+            .expect("Failed to describe index");
+
+        let expected = IndexModel {
+            name: "serverless-index".to_string(),
+            metric: openapi::models::index_model::Metric::Cosine,
+            dimension: 1536,
+            status: Box::new(openapi::models::IndexModelStatus {
+                ready: true,
+                state: openapi::models::index_model_status::State::Ready,
+            }),
+            host: "serverless-index-4zo0ijk.svc.us-east1-aws.pinecone.io".to_string(),
+            spec: Box::new(models::IndexModelSpec {
+                serverless: Some(Box::new(models::ServerlessSpec {
+                    cloud: openapi::models::serverless_spec::Cloud::Aws,
+                    region: "us-east-1".to_string(),
+                })),
+                pod: None,
+            }),
+        };
+        assert_eq!(index, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_describe_index_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes/invalid-index")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let describe_index_response = pinecone
+            .describe_index("invalid-index")
+            .await
+            .expect_err("Expected describe_index to return an error");
+
+        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_describe_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes/serverless-index")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let describe_index_response = pinecone
+            .describe_index("serverless-index")
+            .await
+            .expect_err("Expected describe_index to return an error");
+
+        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_indexes() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "indexes": [
+                        {
+                            "name": "index1",
+                            "dimension": 1536,
+                            "metric": "cosine",
+                            "host": "host1",
+                            "spec": {},
+                            "status": {
+                                "ready": false,
+                                "state": "Initializing"
+                            }
+                        },
+                        {
+                            "name": "index2",
+                            "dimension": 1536,
+                            "metric": "cosine",
+                            "host": "host2",
+                            "spec": {},
+                            "status": {
+                                "ready": false,
+                                "state": "Initializing"
+                            }
+                        }
+                    ]
+                }
+            "#,
+            )
+            .create();
+
+        // Construct Pinecone instance with the mock server URL
+        let api_key = "test_api_key".to_string();
+        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
+            .expect("Failed to create Pinecone instance");
+
+        // Call list_indexes and verify the result
+        let index_list = pinecone
+            .list_indexes()
+            .await
+            .expect("Failed to list indexes");
+
+        let expected = IndexList {
+            // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
+            indexes: Some(vec![
+                IndexModel::new(
+                    "index1".to_string(),
+                    1536,
+                    openapi::models::index_model::Metric::Cosine,
+                    "host1".to_string(),
+                    models::IndexModelSpec::default(),
+                    models::IndexModelStatus::default(),
+                ),
+                IndexModel::new(
+                    "index2".to_string(),
+                    1536,
+                    openapi::models::index_model::Metric::Cosine,
+                    "host2".to_string(),
+                    models::IndexModelSpec::default(),
+                    models::IndexModelStatus::default(),
+                ),
+            ]),
+        };
+        assert_eq!(index_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_indexes_server_error() -> Result<(), PineconeError> {
+        let _m = mock("GET", "/indexes").with_status(500).create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let list_indexes_response = pinecone
+            .list_indexes()
+            .await
+            .expect_err("Expected list_indexes to return an error");
+
+        assert!(matches!(list_indexes_response, PineconeError::ListIndexesError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_create_pod_index() -> Result<(), PineconeError> {
         let _m = mock("POST", "/indexes")
             .with_status(201)
@@ -955,142 +1189,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_index() -> Result<(), PineconeError> {
-        // Create a mock server
-        let _m = mock("GET", "/indexes/serverless-index")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"
-                {
-                    "name": "serverless-index",
-                    "metric": "cosine",
-                    "dimension": 1536,
-                    "status": {
-                       "ready": true,
-                       "state": "Ready"
-                    },
-                    "host": "serverless-index-4zo0ijk.svc.us-east1-aws.pinecone.io",
-                    "spec": {
-                       "serverless": {
-                          "region": "us-east-1",
-                          "cloud": "aws"
-                        }
-                    }
-                }
-            "#,
-            )
-            .create();
-
-        // Construct Pinecone instance with the mock server URL
-        let api_key = "test_api_key".to_string();
-        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
-            .expect("Failed to create Pinecone instance");
-
-        // Call describe_index and verify the result
-        let index = pinecone
-            .describe_index("serverless-index")
-            .await
-            .expect("Failed to describe index");
-
-        let expected = IndexModel {
-            name: "serverless-index".to_string(),
-            metric: openapi::models::index_model::Metric::Cosine,
-            dimension: 1536,
-            status: Box::new(openapi::models::IndexModelStatus {
-                ready: true,
-                state: openapi::models::index_model_status::State::Ready,
-            }),
-            host: "serverless-index-4zo0ijk.svc.us-east1-aws.pinecone.io".to_string(),
-            spec: Box::new(models::IndexModelSpec {
-                serverless: Some(Box::new(models::ServerlessSpec {
-                    cloud: openapi::models::serverless_spec::Cloud::Aws,
-                    region: "us-east-1".to_string(),
-                })),
-                pod: None,
-            }),
-        };
-        assert_eq!(index, expected);
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_list_indexes() -> Result<(), PineconeError> {
-        // Create a mock server
-        let _m = mock("GET", "/indexes")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"
-                {
-                    "indexes": [
-                        {
-                            "name": "index1",
-                            "dimension": 1536,
-                            "metric": "cosine",
-                            "host": "host1",
-                            "spec": {},
-                            "status": {
-                                "ready": false,
-                                "state": "Initializing"
-                            }
-                        },
-                        {
-                            "name": "index2",
-                            "dimension": 1536,
-                            "metric": "cosine",
-                            "host": "host2",
-                            "spec": {},
-                            "status": {
-                                "ready": false,
-                                "state": "Initializing"
-                            }
-                        }
-                    ]
-                }
-            "#,
-            )
-            .create();
-
-        // Construct Pinecone instance with the mock server URL
-        let api_key = "test_api_key".to_string();
-        let pinecone = PineconeClient::new(Some(api_key), Some(mockito::server_url()), None, None)
-            .expect("Failed to create Pinecone instance");
-
-        // Call list_indexes and verify the result
-        let index_list = pinecone
-            .list_indexes()
-            .await
-            .expect("Failed to list indexes");
-
-        let expected = IndexList {
-            // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
-            indexes: Some(vec![
-                IndexModel::new(
-                    "index1".to_string(),
-                    1536,
-                    openapi::models::index_model::Metric::Cosine,
-                    "host1".to_string(),
-                    models::IndexModelSpec::default(),
-                    models::IndexModelStatus::default(),
-                ),
-                IndexModel::new(
-                    "index2".to_string(),
-                    1536,
-                    openapi::models::index_model::Metric::Cosine,
-                    "host2".to_string(),
-                    models::IndexModelSpec::default(),
-                    models::IndexModelStatus::default(),
-                ),
-            ]),
-        };
-        assert_eq!(index_list, expected);
-
-        Ok(())
-    }
-
-    #[tokio::test]
     async fn test_configure_index() -> Result<(), PineconeError> {
         let _m = mock("PATCH", "/indexes/index-name")
             .with_status(202)
@@ -1169,8 +1267,63 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_delete_index_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/invalid-index")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let delete_index_response = pinecone
+            .delete_index("invalid-index")
+            .await
+            .expect_err("Expected delete_index to return an error");
+
+        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_index_server_error() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/indexes/index_name")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let delete_index_response = pinecone
+            .delete_index("invalid-index")
+            .await
+            .expect_err("Expected delete_index to return an error");
+
+        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_create_collection() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("POST", "/collections")
             .with_status(201)
             .with_header("content-type", "application/json")
@@ -1214,7 +1367,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_collections() -> Result<(), PineconeError> {
-        // Create a mock server
         let _m = mock("GET", "/collections")
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1293,6 +1445,62 @@ mod tests {
             ]),
         };
         assert_eq!(collection_list, expected);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection_invalid_name() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/collections")
+            .with_status(404)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"
+                {
+                    "error": "Index not found"
+                }
+            "#,
+            )
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_collection_response = pinecone
+            .create_collection("invalid_collection", "valid-index")
+            .await
+            .expect_err("Expected create_collection to return an error");
+
+        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_collection_server_error() -> Result<(), PineconeError> {
+        let _m = mock("POST", "/collections")
+            .with_status(500)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .unwrap();
+
+        let create_collection_response = pinecone
+            .create_collection("collection-name", "index1")
+            .await
+            .expect_err("Expected create_collection to return an error");
+
+        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
 
         Ok(())
     }
