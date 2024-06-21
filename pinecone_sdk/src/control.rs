@@ -649,11 +649,21 @@ mod tests {
         .unwrap();
 
         let create_index_response = pinecone
-            .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1", Some(-1))
+            .create_serverless_index(
+                "index_name",
+                10,
+                Metric::Cosine,
+                Cloud::Aws,
+                "us-east-1",
+                Some(-1),
+            )
             .await
             .expect_err("Expected create_index to return an error");
 
-        assert!(matches!(create_index_response, PineconeError::CreateIndexError{..}));
+        assert!(matches!(
+            create_index_response,
+            PineconeError::CreateIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -745,7 +755,10 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+        assert!(matches!(
+            describe_index_response,
+            PineconeError::DescribeIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -769,7 +782,10 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+        assert!(matches!(
+            describe_index_response,
+            PineconeError::DescribeIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -865,7 +881,10 @@ mod tests {
             .await
             .expect_err("Expected list_indexes to return an error");
 
-        assert!(matches!(list_indexes_response, PineconeError::ListIndexesError{..}));
+        assert!(matches!(
+            list_indexes_response,
+            PineconeError::ListIndexesError { .. }
+        ));
 
         Ok(())
     }
@@ -1293,7 +1312,10 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+        assert!(matches!(
+            delete_index_response,
+            PineconeError::DeleteIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -1317,7 +1339,10 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+        assert!(matches!(
+            delete_index_response,
+            PineconeError::DeleteIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -1476,16 +1501,17 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
+        assert!(matches!(
+            create_collection_response,
+            PineconeError::CreateCollectionError { .. }
+        ));
 
         Ok(())
     }
 
     #[tokio::test]
     async fn test_create_collection_server_error() -> Result<(), PineconeError> {
-        let _m = mock("POST", "/collections")
-            .with_status(500)
-            .create();
+        let _m = mock("POST", "/collections").with_status(500).create();
 
         let pinecone = PineconeClient::new(
             Some("api_key".to_string()),
@@ -1500,7 +1526,10 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
+        assert!(matches!(
+            create_collection_response,
+            PineconeError::CreateCollectionError { .. }
+        ));
 
         Ok(())
     }

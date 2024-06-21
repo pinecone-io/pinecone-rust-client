@@ -47,11 +47,25 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
     let index2_name = &generate_index_name();
 
     let _ = pinecone
-        .create_serverless_index(index1_name, 2, Metric::Cosine, Cloud::Aws, "us-west-2", Some(-1))
+        .create_serverless_index(
+            index1_name,
+            2,
+            Metric::Cosine,
+            Cloud::Aws,
+            "us-west-2",
+            Some(-1),
+        )
         .await
         .expect("Failed to create index");
     let _ = pinecone
-        .create_serverless_index(index2_name, 2, Metric::Dotproduct, Cloud::Aws, "us-west-2", Some(-1))
+        .create_serverless_index(
+            index2_name,
+            2,
+            Metric::Dotproduct,
+            Cloud::Aws,
+            "us-west-2",
+            Some(-1),
+        )
         .await
         .expect("Failed to create index");
 
