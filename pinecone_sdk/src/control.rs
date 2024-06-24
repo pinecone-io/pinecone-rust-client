@@ -902,27 +902,27 @@ mod tests {
                     "metric": "euclidean",
                     "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
                     "spec": {
-                      "pod": {
-                        "environment": "us-east-1-aws",
-                        "replicas": 1,
-                        "shards": 1,
-                        "pod_type": "p1.x1",
-                        "pods": 1,
-                        "metadata_config": {
-                          "indexed": [
-                            "genre",
-                            "title",
-                            "imdb_rating"
-                          ]
+                        "pod": {
+                            "environment": "us-east-1-aws",
+                            "replicas": 1,
+                            "shards": 1,
+                            "pod_type": "p1.x1",
+                            "pods": 1,
+                            "metadata_config": {
+                                "indexed": [
+                                    "genre",
+                                    "title",
+                                    "imdb_rating"
+                                ]
+                            }
                         }
-                      }
                     },
                     "status": {
-                      "ready": true,
-                      "state": "ScalingUpPodSize"
+                        "ready": true,
+                        "state": "ScalingUpPodSize"
                     }
-                  }
-                  "#,
+                }
+            "#,
             )
             .create();
 
@@ -988,27 +988,27 @@ mod tests {
                     "metric": "euclidean",
                     "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
                     "spec": {
-                      "pod": {
-                        "environment": "us-east-1-aws",
-                        "replicas": 1,
-                        "shards": 1,
-                        "pod_type": "p1.x1",
-                        "pods": 1,
-                        "metadata_config": {
-                          "indexed": [
-                            "genre",
-                            "title",
-                            "imdb_rating"
-                          ]
+                        "pod": {
+                            "environment": "us-east-1-aws",
+                            "replicas": 1,
+                            "shards": 1,
+                            "pod_type": "p1.x1",
+                            "pods": 1,
+                            "metadata_config": {
+                                "indexed": [
+                                    "genre",
+                                    "title",
+                                    "imdb_rating"
+                                ]
+                            }
                         }
-                      }
                     },
                     "status": {
-                      "ready": true,
-                      "state": "ScalingUpPodSize"
+                        "ready": true,
+                        "state": "ScalingUpPodSize"
                     }
-                  }
-                  "#,
+                }
+            "#,
             )
             .create();
 
@@ -1220,24 +1220,24 @@ mod tests {
                     "metric": "cosine",
                     "host": "semantic-search-c01b5b5.svc.us-west1-gcp.pinecone.io",
                     "spec": {
-                      "pod": {
-                        "environment": "us-east-1-aws",
-                        "replicas": 6,
-                        "shards": 1,
-                        "pod_type": "p1.x1",
-                        "pods": 1,
-                        "metadata_config": {
-                          "indexed": [
-                            "genre",
-                            "title",
-                            "imdb_rating"
-                          ]
+                        "pod": {
+                            "environment": "us-east-1-aws",
+                            "replicas": 6,
+                            "shards": 1,
+                            "pod_type": "p1.x1",
+                            "pods": 1,
+                            "metadata_config": {
+                                "indexed": [
+                                    "genre",
+                                    "title",
+                                    "imdb_rating"
+                                ]
+                            }
                         }
-                      }
                     },
                     "status": {
-                      "ready": true,
-                      "state": "ScalingUpPodSize"
+                        "ready": true,
+                        "state": "ScalingUpPodSize"
                     }
                   }
             "#,
