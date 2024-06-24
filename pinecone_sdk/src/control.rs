@@ -470,7 +470,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "euclidean",
                     "host": "host1",
@@ -499,7 +499,7 @@ mod tests {
 
         let create_index_response = pinecone
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Metric::Cosine,
                 Cloud::Aws,
@@ -509,7 +509,7 @@ mod tests {
             .await
             .expect("Failed to create serverless index");
 
-        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
@@ -531,7 +531,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "euclidean",
                     "host": "host1",
@@ -560,7 +560,7 @@ mod tests {
 
         let create_index_response = pinecone
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Metric::Cosine,
                 Cloud::Aws,
@@ -583,7 +583,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "cosine",
                     "host": "host1",
@@ -612,7 +612,7 @@ mod tests {
 
         let create_index_response = pinecone
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Default::default(),
                 Default::default(),
@@ -622,7 +622,7 @@ mod tests {
             .await
             .expect("Failed to create serverless index");
 
-        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
@@ -650,7 +650,7 @@ mod tests {
 
         let create_index_response = pinecone
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Metric::Cosine,
                 Cloud::Aws,
@@ -1198,7 +1198,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_check_timeout_negative_timeout() -> Result<(), PineconeError> {
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let pinecone = PineconeClient::new(Some("api_key".to_string()), None, None, None).unwrap();
         let result = pinecone
             .check_timeout("test-index", Some(-5))
             .await
@@ -1268,7 +1268,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
-        let _m = mock("DELETE", "/indexes/index_name")
+        let _m = mock("DELETE", "/indexes/index-name")
             .with_status(204)
             .create();
 
@@ -1279,7 +1279,7 @@ mod tests {
             None,
         );
 
-        let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
+        let delete_index_request = pinecone.unwrap().delete_index("index-name").await;
         assert!(delete_index_request.is_ok());
 
         Ok(())
@@ -1322,7 +1322,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_index_server_error() -> Result<(), PineconeError> {
-        let _m = mock("DELETE", "/indexes/index_name")
+        let _m = mock("DELETE", "/indexes/index-name")
             .with_status(500)
             .create();
 
