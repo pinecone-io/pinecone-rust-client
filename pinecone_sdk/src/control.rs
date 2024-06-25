@@ -199,9 +199,13 @@ impl PineconeClient {
     async fn check_timeout(&self, name: &str, timeout: Option<i32>) -> Result<(), PineconeError> {
         let mut timeout_val = 150;
         match timeout {
+            Some(-1) => {
+                // if -1, return immediately
+                return Ok(());
+            }
             Some(t) => {
                 // if specified timeout
-                timeout_val = min(t, 150);
+                timeout_val = t;
             }
             None => {
                 // default, do nothing
@@ -209,14 +213,12 @@ impl PineconeClient {
         }
 
         // poll index status
-        if timeout_val != -1 {
-            while !self.is_ready(name).await && timeout_val >= 0 {
-                tokio::time::sleep(Duration::new(5, 0)).await;
-                timeout_val -= 5;
-            }
-            if timeout_val < 0 {
-                return Err(PineconeError::TimeoutError);
-            }
+        while !self.is_ready(name).await && timeout_val >= 0 {
+            tokio::time::sleep(Duration::new(5, 0)).await;
+            timeout_val -= 5;
+        }
+        if timeout_val < 0 {
+            return Err(PineconeError::TimeoutError);
         }
         Ok(())
     }
