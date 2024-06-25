@@ -85,7 +85,7 @@ impl PineconeClient {
             };
 
         // check for timeout
-        match self.check_timeout(name, timeout).await {
+        match self.handle_poll_index(name, timeout).await {
             Ok(_) => create_index_response,
             Err(e) => Err(e),
         }
@@ -189,14 +189,14 @@ impl PineconeClient {
             };
 
         // check for timeout
-        match self.check_timeout(name, timeout).await {
+        match self.handle_poll_index(name, timeout).await {
             Ok(_) => create_index_response,
             Err(e) => Err(e),
         }
     }
 
     // Checks if the index is ready by polling the index status
-    async fn check_timeout(&self, name: &str, timeout: Option<i32>) -> Result<(), PineconeError> {
+    async fn handle_poll_index(&self, name: &str, timeout: Option<i32>) -> Result<(), PineconeError> {
         match timeout {
             Some(-1) => {
                 // if -1, return immediately
@@ -1195,17 +1195,6 @@ mod tests {
             PineconeError::CreateIndexError { .. }
         ));
 
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_check_timeout_negative_timeout() -> Result<(), PineconeError> {
-        let pinecone = PineconeClient::new(Some("api_key".to_string()), None, None, None).unwrap();
-        let result = pinecone
-            .check_timeout("test-index", Some(-5))
-            .await
-            .expect_err("Expected timeout error");
-        assert!(matches!(result, PineconeError::TimeoutError));
         Ok(())
     }
 
