@@ -300,7 +300,6 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
     let collection_name = &generate_collection_name();
-    println!("Generated collection name: {}", collection_name);
 
     let index_name = "valid-index-pod";
 
