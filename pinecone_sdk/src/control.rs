@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::max;
 use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
@@ -197,29 +197,29 @@ impl PineconeClient {
 
     // Checks if the index is ready by polling the index status
     async fn check_timeout(&self, name: &str, timeout: Option<i32>) -> Result<(), PineconeError> {
-        let mut timeout_val = 150;
         match timeout {
             Some(-1) => {
                 // if -1, return immediately
                 return Ok(());
             }
             Some(t) => {
-                // if specified timeout
-                timeout_val = t;
+                let mut timeout_val = t;
+                while !self.is_ready(name).await && timeout_val >= 0 {
+                    tokio::time::sleep(Duration::new(5, 0)).await;
+                    timeout_val -= max(t, 5);
+                }
+                if timeout_val < 0 {
+                    return Err(PineconeError::TimeoutError);
+                }
             }
             None => {
-                // default, do nothing
+                // if None, wait indefinitely
+                while !self.is_ready(name).await {
+                    tokio::time::sleep(Duration::new(5, 0)).await;
+                }
             }
         }
 
-        // poll index status
-        while !self.is_ready(name).await && timeout_val >= 0 {
-            tokio::time::sleep(Duration::new(5, 0)).await;
-            timeout_val -= 5;
-        }
-        if timeout_val < 0 {
-            return Err(PineconeError::TimeoutError);
-        }
         Ok(())
     }
 
