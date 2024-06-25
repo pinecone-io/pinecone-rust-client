@@ -109,7 +109,7 @@ Name | Type | Description  | Required | Notes
 
 ## delete_collection
 
-> String delete_collection(collection_name)
+> delete_collection(collection_name)
 Delete a collection
 
 This operation deletes an existing collection. Serverless indexes do not support collections. 
@@ -123,7 +123,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-**String**
+ (empty response body)
 
 ### Authorization
 
@@ -132,7 +132,7 @@ Name | Type | Description  | Required | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: text/plain, application/json
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

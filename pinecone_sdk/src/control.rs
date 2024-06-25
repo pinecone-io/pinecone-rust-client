@@ -6,8 +6,8 @@ pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
 pub use openapi::models::{
     CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest,
-    CreateIndexRequestSpec, IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest, IndexList,
+    IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
 impl PineconeClient {
@@ -54,7 +54,7 @@ impl PineconeClient {
         region: &str,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
-        let create_index_request_spec = CreateIndexRequestSpec {
+        let create_index_request_spec = IndexSpec {
             serverless: Some(Box::new(ServerlessSpec {
                 cloud,
                 region: region.to_string(),
@@ -147,7 +147,7 @@ impl PineconeClient {
             source_collection: source_collection.map(|s| s.to_string()),
         };
 
-        let spec = CreateIndexRequestSpec {
+        let spec = IndexSpec {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
         };
@@ -529,7 +529,10 @@ mod tests {
             .await
             .expect_err("Expected create_index to return an error");
 
-        assert!(matches!(create_index_response, PineconeError::CreateIndexError{..}));
+        assert!(matches!(
+            create_index_response,
+            PineconeError::CreateIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -621,7 +624,10 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+        assert!(matches!(
+            describe_index_response,
+            PineconeError::DescribeIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -645,7 +651,10 @@ mod tests {
             .await
             .expect_err("Expected describe_index to return an error");
 
-        assert!(matches!(describe_index_response, PineconeError::DescribeIndexError{..}));
+        assert!(matches!(
+            describe_index_response,
+            PineconeError::DescribeIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -741,7 +750,10 @@ mod tests {
             .await
             .expect_err("Expected list_indexes to return an error");
 
-        assert!(matches!(list_indexes_response, PineconeError::ListIndexesError{..}));
+        assert!(matches!(
+            list_indexes_response,
+            PineconeError::ListIndexesError { .. }
+        ));
 
         Ok(())
     }
@@ -1087,7 +1099,10 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+        assert!(matches!(
+            delete_index_response,
+            PineconeError::DeleteIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -1111,7 +1126,10 @@ mod tests {
             .await
             .expect_err("Expected delete_index to return an error");
 
-        assert!(matches!(delete_index_response, PineconeError::DeleteIndexError{..}));
+        assert!(matches!(
+            delete_index_response,
+            PineconeError::DeleteIndexError { .. }
+        ));
 
         Ok(())
     }
@@ -1270,16 +1288,17 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
+        assert!(matches!(
+            create_collection_response,
+            PineconeError::CreateCollectionError { .. }
+        ));
 
         Ok(())
     }
 
     #[tokio::test]
     async fn test_create_collection_server_error() -> Result<(), PineconeError> {
-        let _m = mock("POST", "/collections")
-            .with_status(500)
-            .create();
+        let _m = mock("POST", "/collections").with_status(500).create();
 
         let pinecone = PineconeClient::new(
             Some("api_key".to_string()),
@@ -1294,7 +1313,10 @@ mod tests {
             .await
             .expect_err("Expected create_collection to return an error");
 
-        assert!(matches!(create_collection_response, PineconeError::CreateCollectionError{..}));
+        assert!(matches!(
+            create_collection_response,
+            PineconeError::CreateCollectionError { .. }
+        ));
 
         Ok(())
     }

@@ -17,7 +17,7 @@ pub struct ServerlessSpec {
     /// The public cloud where you would like your index hosted. Serverless indexes can be hosted only in AWS at this time.
     #[serde(rename = "cloud")]
     pub cloud: Cloud,
-    /// The region where you would like your index to be created.  Serverless indexes can be created only in the us-west-2 and us-east-1 regions of AWS at this time.
+    /// The region where you would like your index to be created.  Serverless indexes can be created only in the us-east-1,us-west-2, and eu-west-1 regions of AWS at this time.
     #[serde(rename = "region")]
     pub region: String,
 }

@@ -227,7 +227,7 @@ pub async fn create_index(configuration: &configuration::Configuration, create_i
 }
 
 /// This operation deletes an existing collection. Serverless indexes do not support collections. 
-pub async fn delete_collection(configuration: &configuration::Configuration, collection_name: &str) -> Result<String, Error<DeleteCollectionError>> {
+pub async fn delete_collection(configuration: &configuration::Configuration, collection_name: &str) -> Result<(), Error<DeleteCollectionError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -254,7 +254,7 @@ pub async fn delete_collection(configuration: &configuration::Configuration, col
     let local_var_content = local_var_resp.text().await?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<DeleteCollectionError> = serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent { status: local_var_status, content: local_var_content, entity: local_var_entity };
