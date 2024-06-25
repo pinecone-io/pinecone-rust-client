@@ -1,7 +1,7 @@
 use openapi::apis::{
     manage_indexes_api::{
-        CreateCollectionError, CreateIndexError, DeleteCollectionError, DeleteIndexError,
-        DescribeIndexError, ListIndexesError,
+        ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError,
+        DeleteIndexError, DescribeIndexError, ListCollectionsError, ListIndexesError,
     },
     Error as OpenAPIError,
 };
@@ -13,6 +13,15 @@ pub enum PineconeError {
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
     #[snafu(display("API key missing."))]
     APIKeyMissingError,
+
+    /// ConfigureIndexError: Failed to configure an index.
+    #[snafu(display("Failed to configure index '{}'.", name))]
+    ConfigureIndexError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ConfigureIndexError>,
+    },
 
     /// CreateCollectionError: Failed to create a collection.
     #[snafu(display("Failed to create collection '{}'.", name))]
@@ -78,6 +87,13 @@ pub enum PineconeError {
         metric: String,
     },
 
+    /// ListCollectionsError: Failed to list indexes.
+    #[snafu(display("Failed to list collections."))]
+    ListCollectionsError {
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<ListCollectionsError>,
+    },
+
     /// ListIndexesError: Failed to list indexes.
     #[snafu(display("Failed to list indexes."))]
     ListIndexesError {
@@ -96,30 +112,8 @@ pub enum PineconeError {
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
     MissingSpecError,
-}
 
-impl PartialEq for PineconeError {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (PineconeError::APIKeyMissingError, PineconeError::APIKeyMissingError) => true,
-            (PineconeError::CreateIndexError { .. }, PineconeError::CreateIndexError { .. }) => {
-                true
-            }
-            (PineconeError::MissingNameError, PineconeError::MissingNameError) => true,
-            (PineconeError::MissingDimensionError, PineconeError::MissingDimensionError) => true,
-            (PineconeError::MissingSpecError, PineconeError::MissingSpecError) => true,
-            (
-                PineconeError::InvalidHeadersError { .. },
-                PineconeError::InvalidHeadersError { .. },
-            ) => true,
-            (PineconeError::InvalidCloudError { .. }, PineconeError::InvalidCloudError { .. }) => {
-                true
-            }
-            (
-                PineconeError::InvalidMetricError { .. },
-                PineconeError::InvalidMetricError { .. },
-            ) => true,
-            _ => false,
-        }
-    }
+    /// TimeoutError: Request timed out.
+    #[snafu(display("Request timed out."))]
+    TimeoutError,
 }

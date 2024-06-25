@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 /// CollectionModel : The CollectionModel describes the configuration and status of a Pinecone collection.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CollectionModel {
+    /// The name of the collection.
     #[serde(rename = "name")]
     pub name: String,
     /// The size of the collection in bytes.
