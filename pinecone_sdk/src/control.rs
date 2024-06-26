@@ -294,7 +294,6 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::control::{Cloud, Metric};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -389,6 +388,37 @@ impl PineconeClient {
             Err(e) => Err(PineconeError::ListCollectionsError { openapi_error: e }),
         }
     }
+
+    /// Deletes a collection.
+    ///
+    /// ### Arguments
+    /// * name: &str - The name of the collection to be deleted.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// /// let response = pinecone.delete_collection("collection-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
+        match manage_indexes_api::delete_collection(&self.openapi_config(), name).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(PineconeError::DeleteCollectionError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -406,7 +436,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "euclidean",
                     "host": "host1",
@@ -434,11 +464,11 @@ mod tests {
         .unwrap();
 
         let create_index_response = pinecone
-            .create_serverless_index("index_name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
+            .create_serverless_index("index-name", 10, Metric::Cosine, Cloud::Aws, "us-east-1")
             .await
             .expect("Failed to create serverless index");
 
-        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
@@ -460,7 +490,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "cosine",
                     "host": "host1",
@@ -489,7 +519,7 @@ mod tests {
 
         let create_index_response = pinecone
             .create_serverless_index(
-                "index_name",
+                "index-name",
                 10,
                 Default::default(),
                 Default::default(),
@@ -498,7 +528,7 @@ mod tests {
             .await
             .expect("Failed to create serverless index");
 
-        assert_eq!(create_index_response.name, "index_name");
+        assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
@@ -1055,8 +1085,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_index() -> Result<(), PineconeError> {
-        let _m = mock("DELETE", "/indexes/index_name")
-            .with_status(204)
+        let _m = mock("DELETE", "/indexes/index-name")
+            .with_status(202)
             .create();
 
         let pinecone = PineconeClient::new(
@@ -1064,10 +1094,35 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .expect("Failed to create Pinecone instance");
 
-        let delete_index_request = pinecone.unwrap().delete_index("index_name").await;
-        assert!(delete_index_request.is_ok());
+        let _ = pinecone
+            .delete_index("index-name")
+            .await
+            .expect("Failed to delete index");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_collection() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/collections/collection-name")
+            .with_status(202)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let _ = pinecone
+            .delete_collection("collection-name")
+            .await
+            .expect("Failed to delete collection");
 
         Ok(())
     }
