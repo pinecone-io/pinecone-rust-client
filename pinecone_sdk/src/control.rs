@@ -1,4 +1,3 @@
-use std::cmp::min;
 use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
@@ -217,28 +216,21 @@ impl PineconeClient {
         name: &str,
         timeout: WaitPolicy,
     ) -> Result<(), PineconeError> {
-        let mut timeout_val = 300;
         match timeout {
             WaitPolicy::WaitFor(duration) => {
-                timeout_val = min(duration.as_secs() as i32, 300);
-            }
-            WaitPolicy::NoWait => {
-                timeout_val = -1;
-            }
-        }
+                // poll index status every 5 seconds until index is ready or timeout is reached
+                let mut t = 0;
+                while !self.is_ready(name).await && t <= duration.as_secs() {
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    t += 5;
+                }
 
-        // keep polling describe_index() for specified time or 300 seconds
-        if timeout_val != -1 {
-            let res = self.is_ready(name).await;
-            while !res && timeout_val >= 0 {
-                tokio::time::sleep(Duration::new(5, 0)).await;
-                timeout_val -= 5;
+                // if index is not ready after timeout, return error
+                if !self.is_ready(name).await {
+                    return Err(PineconeError::TimeoutError);
+                }
             }
-
-            // if index is not ready after timeout, return error
-            if timeout_val < 0 {
-                return Err(PineconeError::TimeoutError);
-            }
+            WaitPolicy::NoWait => {}
         }
 
         Ok(())

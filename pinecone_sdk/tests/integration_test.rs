@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
@@ -89,6 +87,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .iter()
         .find(|index| index.name == index1_name.to_string())
         .unwrap();
+
     assert_eq!(index1.name, index1_name.to_string());
     assert_eq!(index1.dimension, 2);
     assert_eq!(index1.metric, OpenApiMetric::Cosine);
@@ -100,6 +99,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .iter()
         .find(|index| index.name == index2_name.to_string())
         .unwrap();
+
     assert_eq!(index2.name, index2_name.to_string());
     assert_eq!(index2.dimension, 2);
     assert_eq!(index2.metric, OpenApiMetric::Dotproduct);
