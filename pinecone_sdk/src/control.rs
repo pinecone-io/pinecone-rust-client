@@ -90,19 +90,13 @@ impl PineconeClient {
             spec: Some(Box::new(create_index_request_spec)),
         };
 
-        // make openAPI call
-        let create_index_response =
-            match manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
-                .await
-            {
-                Ok(index) => Ok(index),
-                Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
-            };
-
-        // check for timeout
-        match self.handle_poll_index(name, timeout).await {
-            Ok(_) => create_index_response,
-            Err(e) => Err(e),
+        // make openAPI call; poll index status if Ok, return early if Err
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
+            Ok(index) => match self.handle_poll_index(name, timeout).await {
+                Ok(_) => Ok(index),
+                Err(e) => Err(e),
+            },
+            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
     }
 
