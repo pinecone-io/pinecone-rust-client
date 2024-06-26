@@ -569,7 +569,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index_name",
+                    "name": "index-name",
                     "dimension": 10,
                     "metric": "cosine",
                     "host": "host1",
