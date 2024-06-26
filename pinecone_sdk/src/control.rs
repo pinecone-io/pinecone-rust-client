@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
@@ -14,7 +15,7 @@ pub use openapi::models::{
 
 /// Defines the wait policy for index creation.
 pub enum WaitPolicy {
-    /// Wait for the index to become ready for the specified duration.
+    /// Wait for the index to become ready, up to the specified duration.
     WaitFor(Duration),
 
     /// Do not wait for the index to become ready -- return immediately.
@@ -36,7 +37,7 @@ impl PineconeClient {
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
-    /// * `timeout: WaitPolicy` - The wait policy for index creation -- defines whether to wait for the index to become ready or not, and if applicable, how long to wait for.
+    /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -118,7 +119,7 @@ impl PineconeClient {
     /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `metadata_indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
-    /// * `timeout: WaitPolicy` - The wait policy for index creation -- defines whether to wait for the index to become ready or not, and if applicable, how long to wait for.
+    /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -194,19 +195,13 @@ impl PineconeClient {
             spec: Some(Box::new(spec)),
         };
 
-        // make openAPI call
-        let create_index_response =
-            match manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
-                .await
-            {
-                Ok(index) => Ok(index),
-                Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
-            };
-
-        // check for timeout
-        match self.handle_poll_index(name, timeout).await {
-            Ok(_) => create_index_response,
-            Err(e) => Err(e),
+        // make openAPI call; poll index status if Ok, return early if Err
+        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
+            Ok(index) => match self.handle_poll_index(name, timeout).await {
+                Ok(_) => Ok(index),
+                Err(e) => Err(e),
+            },
+            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
         }
     }
 
@@ -218,16 +213,20 @@ impl PineconeClient {
     ) -> Result<(), PineconeError> {
         match timeout {
             WaitPolicy::WaitFor(duration) => {
-                // poll index status every 5 seconds until index is ready or timeout is reached
-                let mut t = 0;
-                while !self.is_ready(name).await && t <= duration.as_secs() {
-                    tokio::time::sleep(Duration::from_secs(5)).await;
-                    t += 5;
-                }
+                let start_time = std::time::Instant::now();
 
-                // if index is not ready after timeout, return error
-                if !self.is_ready(name).await {
-                    return Err(PineconeError::TimeoutError);
+                loop {
+                    // poll index status, if ready return early
+                    if self.is_ready(name).await {
+                        break;
+                    }
+
+                    // check remaining time, sleep either for 5 seconds or for however much time is left if less than 5 seconds
+                    if start_time.elapsed() >= duration {
+                        return Err(PineconeError::TimeoutError);
+                    }
+                    let time_remaining = duration - start_time.elapsed();
+                    tokio::time::sleep(Duration::from_secs(min(5, time_remaining.as_secs()))).await;
                 }
             }
             WaitPolicy::NoWait => {}
@@ -1201,11 +1200,13 @@ mod tests {
         )
         .unwrap();
 
+        let start_time = std::time::Instant::now();
         let err = pinecone
-            .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(5)))
+            .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(7)))
             .await
             .expect_err("Expected to fail polling index");
 
+        assert!(start_time.elapsed().as_secs() >= 7 && start_time.elapsed().as_secs() < 8);
         assert!(matches!(err, PineconeError::TimeoutError));
 
         Ok(())
