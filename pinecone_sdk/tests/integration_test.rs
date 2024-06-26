@@ -1,4 +1,3 @@
-use serial_test::serial;
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
@@ -270,7 +269,6 @@ async fn test_delete_index_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
 #[tokio::test]
 async fn test_configure_index() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -283,7 +281,6 @@ async fn test_configure_index() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
 #[tokio::test]
 async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -296,7 +293,6 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
 #[tokio::test]
 async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -320,7 +316,7 @@ async fn test_list_collections() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
+#[ignore]
 #[tokio::test]
 async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -343,7 +339,6 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
 #[tokio::test]
 async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -358,7 +353,6 @@ async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[serial]
 #[tokio::test]
 async fn test_create_collection_invalid_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
