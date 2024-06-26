@@ -27,6 +27,7 @@ All URIs are relative to *https://api.pinecone.io*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*InferenceApi* | [**embed**](docs/InferenceApi.md#embed) | **POST** /embed | Embed data
 *ManageIndexesApi* | [**configure_index**](docs/ManageIndexesApi.md#configure_index) | **PATCH** /indexes/{index_name} | Configure an index
 *ManageIndexesApi* | [**create_collection**](docs/ManageIndexesApi.md#create_collection) | **POST** /collections | Create a collection
 *ManageIndexesApi* | [**create_index**](docs/ManageIndexesApi.md#create_index) | **POST** /indexes | Create an index
@@ -47,11 +48,17 @@ Class | Method | HTTP request | Description
  - [ConfigureIndexRequestSpecPod](docs/ConfigureIndexRequestSpecPod.md)
  - [CreateCollectionRequest](docs/CreateCollectionRequest.md)
  - [CreateIndexRequest](docs/CreateIndexRequest.md)
- - [CreateIndexRequestSpec](docs/CreateIndexRequestSpec.md)
+ - [EmbedRequest](docs/EmbedRequest.md)
+ - [EmbedRequestInputsInner](docs/EmbedRequestInputsInner.md)
+ - [EmbedRequestParameters](docs/EmbedRequestParameters.md)
+ - [Embedding](docs/Embedding.md)
+ - [EmbeddingsList](docs/EmbeddingsList.md)
+ - [EmbeddingsListUsage](docs/EmbeddingsListUsage.md)
  - [IndexList](docs/IndexList.md)
  - [IndexModel](docs/IndexModel.md)
  - [IndexModelSpec](docs/IndexModelSpec.md)
  - [IndexModelStatus](docs/IndexModelStatus.md)
+ - [IndexSpec](docs/IndexSpec.md)
  - [ListIndexes401Response](docs/ListIndexes401Response.md)
  - [ListIndexes401ResponseError](docs/ListIndexes401ResponseError.md)
  - [PodSpec](docs/PodSpec.md)

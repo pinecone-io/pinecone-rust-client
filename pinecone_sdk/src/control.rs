@@ -9,8 +9,8 @@ pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
 pub use openapi::models::{
     CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest,
-    CreateIndexRequestSpec, IndexList, IndexModel, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest, IndexList,
+    IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
 impl PineconeClient {
@@ -60,7 +60,7 @@ impl PineconeClient {
         timeout: Option<i32>,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
-        let create_index_request_spec = CreateIndexRequestSpec {
+        let create_index_request_spec = IndexSpec {
             serverless: Some(Box::new(ServerlessSpec {
                 cloud,
                 region: region.to_string(),
@@ -167,7 +167,7 @@ impl PineconeClient {
             source_collection: source_collection.map(|s| s.to_string()),
         };
 
-        let spec = CreateIndexRequestSpec {
+        let spec = IndexSpec {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
         };
@@ -366,7 +366,6 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::control::{Cloud, Metric};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -461,6 +460,37 @@ impl PineconeClient {
             Err(e) => Err(PineconeError::ListCollectionsError { openapi_error: e }),
         }
     }
+
+    /// Deletes a collection.
+    ///
+    /// ### Arguments
+    /// * name: &str - The name of the collection to be deleted.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// /// let response = pinecone.delete_collection("collection-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
+        match manage_indexes_api::delete_collection(&self.openapi_config(), name).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(PineconeError::DeleteCollectionError {
+                name: name.to_string(),
+                openapi_error: e,
+            }),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -539,7 +569,7 @@ mod tests {
             .with_body(
                 r#"
                 {
-                    "name": "index-name",
+                    "name": "index_name",
                     "dimension": 10,
                     "metric": "cosine",
                     "host": "host1",
@@ -1243,10 +1273,35 @@ mod tests {
             Some(mockito::server_url()),
             None,
             None,
-        );
+        )
+        .expect("Failed to create Pinecone instance");
 
-        let delete_index_request = pinecone.unwrap().delete_index("index-name").await;
-        assert!(delete_index_request.is_ok());
+        let _ = pinecone
+            .delete_index("index-name")
+            .await
+            .expect("Failed to delete index");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_collection() -> Result<(), PineconeError> {
+        let _m = mock("DELETE", "/collections/collection-name")
+            .with_status(202)
+            .create();
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(mockito::server_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let _ = pinecone
+            .delete_collection("collection-name")
+            .await
+            .expect("Failed to delete collection");
 
         Ok(())
     }

@@ -1,7 +1,7 @@
 use openapi::apis::{
     manage_indexes_api::{
-        ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteIndexError,
-        DescribeIndexError, ListCollectionsError, ListIndexesError,
+        ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError,
+        DeleteIndexError, DescribeIndexError, ListCollectionsError, ListIndexesError,
     },
     Error as OpenAPIError,
 };
@@ -37,6 +37,15 @@ pub enum PineconeError {
     CreateIndexError {
         /// openapi_error: Error object for OpenAPI error.
         openapi_error: OpenAPIError<CreateIndexError>,
+    },
+
+    /// DeleteCollectionError: Failed to delete an index.
+    #[snafu(display("Failed to delete collection '{}'.", name))]
+    DeleteCollectionError {
+        /// name: Index name.
+        name: String,
+        /// openapi_error: Error object for OpenAPI error.
+        openapi_error: OpenAPIError<DeleteCollectionError>,
     },
 
     /// DeleteIndexError: Failed to delete an index.

@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**name** | **String** |  | 
+**name** | **String** | The name of the collection. | 
 **size** | Option<**i64**> | The size of the collection in bytes. | [optional]
 **status** | **String** | The status of the collection. | 
 **dimension** | Option<**i32**> | The dimension of the vectors stored in each record held in the collection. | [optional]

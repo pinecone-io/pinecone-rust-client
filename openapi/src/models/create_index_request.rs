@@ -24,12 +24,12 @@ pub struct CreateIndexRequest {
     #[serde(rename = "metric", skip_serializing_if = "Option::is_none")]
     pub metric: Option<Metric>,
     #[serde(rename = "spec", deserialize_with = "Option::deserialize")]
-    pub spec: Option<Box<models::CreateIndexRequestSpec>>,
+    pub spec: Option<Box<models::IndexSpec>>,
 }
 
 impl CreateIndexRequest {
     /// The configuration needed to create a Pinecone index.
-    pub fn new(name: String, dimension: i32, spec: Option<models::CreateIndexRequestSpec>) -> CreateIndexRequest {
+    pub fn new(name: String, dimension: i32, spec: Option<models::IndexSpec>) -> CreateIndexRequest {
         CreateIndexRequest {
             name,
             dimension,
