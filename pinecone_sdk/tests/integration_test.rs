@@ -1,6 +1,8 @@
+use std::time::Duration;
+
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::control::{Cloud, Metric};
+use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
@@ -61,7 +63,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             Metric::Cosine,
             Cloud::Aws,
             "us-west-2",
-            Some(-1),
+            WaitPolicy::NoWait,
         )
         .await
         .expect("Failed to create index");
@@ -72,7 +74,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             Metric::Dotproduct,
             Cloud::Aws,
             "us-west-2",
-            Some(-1),
+            WaitPolicy::NoWait,
         )
         .await
         .expect("Failed to create index");
@@ -127,7 +129,7 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
     let metric = Metric::Euclidean;
     let cloud = Cloud::Aws;
     let region = "us-west-2";
-    let timeout = Some(-1);
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
         .create_serverless_index(name, dimension, metric, cloud, region, timeout)
@@ -164,7 +166,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = None;
-    let timeout = Some(-1);
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
         .create_pod_index(
@@ -216,7 +218,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = Some("valid-collection");
-    let timeout = Some(-1);
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
         .create_pod_index(

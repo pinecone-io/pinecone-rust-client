@@ -1,4 +1,4 @@
-use std::cmp::{max, min};
+use std::cmp::min;
 use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
@@ -13,6 +13,21 @@ pub use openapi::models::{
     IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
+/// Defines the wait policy for index creation.
+pub enum WaitPolicy {
+    /// Wait for the index to become ready for the specified duration.
+    WaitFor(Duration),
+
+    /// Do not wait for the index to become ready -- return immediately.
+    NoWait,
+}
+
+impl Default for WaitPolicy {
+    fn default() -> Self {
+        WaitPolicy::WaitFor(Duration::from_secs(300))
+    }
+}
+
 impl PineconeClient {
     /// Creates a serverless index.
     ///
@@ -22,7 +37,7 @@ impl PineconeClient {
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
-    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait until default timeout (300 seconds); if >=0, time out after this many seconds; if -1, return immediately and do not wait.
+    /// * `timeout: WaitPolicy` - The wait policy for index creation -- defines whether to wait for the index to become ready or not, and if applicable, how long to wait for.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -31,7 +46,7 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, IndexModel};
+    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
@@ -44,7 +59,7 @@ impl PineconeClient {
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
     ///     "us-east-1", // Region
-    ///     None // Timeout
+    ///     WaitPolicy::NoWait // Timeout
     /// ).await;
     ///
     /// # Ok(())
@@ -57,7 +72,7 @@ impl PineconeClient {
         metric: Metric,
         cloud: Cloud,
         region: &str,
-        timeout: Option<i32>,
+        timeout: WaitPolicy,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
@@ -104,7 +119,7 @@ impl PineconeClient {
     /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
     /// * `metadata_indexed: Option<Vec<String>>` - The metadata fields to index.
     /// * `source_collection: Option<String>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
-    /// * `timeout: Option<i32>` - The number of seconds to wait until index gets ready. If None, wait until default timeout (300 seconds); if >=0, time out after this many seconds; if -1, return immediately and do not wait.
+    /// * `timeout: WaitPolicy` - The wait policy for index creation -- defines whether to wait for the index to become ready or not, and if applicable, how long to wait for.
     ///
     /// ### Return
     /// * Returns a `Result<IndexModel, PineconeError>` object.
@@ -113,7 +128,8 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, IndexModel};
+    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
+    /// use std::time::Duration;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError> {
@@ -134,7 +150,7 @@ impl PineconeClient {
     ///         "title",
     ///         "imdb_rating"]),
     ///     Some("example-collection"), // Source collection
-    ///     Some(10), // Timeout
+    ///     WaitPolicy::WaitFor(Duration::from_secs(10)), // Timeout
     /// )
     /// .await;
     /// # Ok(())
@@ -152,7 +168,7 @@ impl PineconeClient {
         shards: Option<i32>,
         metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
-        timeout: Option<i32>,
+        timeout: WaitPolicy,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
@@ -199,15 +215,15 @@ impl PineconeClient {
     async fn handle_poll_index(
         &self,
         name: &str,
-        timeout: Option<i32>,
+        timeout: WaitPolicy,
     ) -> Result<(), PineconeError> {
         let mut timeout_val = 300;
         match timeout {
-            Some(t) => {
-                timeout_val = min(t, 300);
+            WaitPolicy::WaitFor(duration) => {
+                timeout_val = min(duration.as_secs() as i32, 300);
             }
-            None => {
-                // if None, wait until done
+            WaitPolicy::NoWait => {
+                timeout_val = -1;
             }
         }
 
@@ -542,7 +558,7 @@ mod tests {
                 Metric::Cosine,
                 Cloud::Aws,
                 "us-east-1",
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect("Failed to create serverless index");
@@ -603,7 +619,7 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 "us-east-1",
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect("Failed to create serverless index");
@@ -641,7 +657,7 @@ mod tests {
                 Metric::Cosine,
                 Cloud::Aws,
                 "us-east-1",
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect_err("Expected create_index to return an error");
@@ -931,7 +947,7 @@ mod tests {
                 Some(1),
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect("Failed to create pod index");
@@ -1012,7 +1028,7 @@ mod tests {
                 None,
                 None,
                 None,
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect("Failed to create pod index");
@@ -1062,7 +1078,7 @@ mod tests {
                 Some(1),
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
@@ -1102,7 +1118,7 @@ mod tests {
                 Some(1),
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
-                Some(-1),
+                WaitPolicy::NoWait,
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
@@ -1152,7 +1168,7 @@ mod tests {
         .unwrap();
 
         let _ = pinecone
-            .handle_poll_index("index-name", Some(5))
+            .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(5)))
             .await
             .expect("Failed to poll index");
 
@@ -1194,7 +1210,7 @@ mod tests {
         .unwrap();
 
         let err = pinecone
-            .handle_poll_index("index-name", Some(5))
+            .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(5)))
             .await
             .expect_err("Expected to fail polling index");
 
