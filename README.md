@@ -6,7 +6,11 @@
 
 - You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) in order to generate code using openapi. Look at `codegen/build-oas.sh` to see how this is used.
 - Install [homebrew](https://brew.sh/) if you haven't already
-- Instasll `brew install just`. just is a command line tool used to run commands defined inside the project `justfile`. You run commands by passing the command name, for example `just build-openapi`.
+- Install `brew install just`. just is a command line tool used to run commands defined inside the project `justfile`. You run commands by passing the command name, for example `just build-openapi`.
+
+Generating files for protobuf:
+- `brew install protobuf`
+- `cargo install protobuf-codegen` and add it to path: `PATH="$HOME/.cargo/bin:$PATH"`
 
 # Clone the repository
 
