@@ -215,12 +215,21 @@ impl PineconeClient {
                         break;
                     }
 
-                    // check remaining time, sleep either for 5 seconds or for however much time is left if less than 5 seconds
-                    if start_time.elapsed() >= duration {
-                        return Err(PineconeError::TimeoutError);
+                    match duration.cmp(&start_time.elapsed()) {
+                        // if index not ready after waiting specified duration, return error
+                        std::cmp::Ordering::Less => {
+                            return Err(PineconeError::TimeoutError);
+                        }
+                        // if still waiting, sleep for 5 seconds or remaining time
+                        std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
+                            let time_remaining = duration.saturating_sub(start_time.elapsed());
+                            tokio::time::sleep(Duration::from_millis(min(
+                                time_remaining.as_millis() as u64,
+                                5000,
+                            )))
+                            .await;
+                        }
                     }
-                    let time_remaining = duration - start_time.elapsed();
-                    tokio::time::sleep(Duration::from_secs(min(5, time_remaining.as_secs()))).await;
                 }
             }
             WaitPolicy::NoWait => {}
