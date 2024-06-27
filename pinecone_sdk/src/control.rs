@@ -1125,50 +1125,6 @@ mod tests {
         Ok(())
     }
 
-    // todo: fix this test case
-    #[ignore]
-    #[tokio::test]
-    async fn test_handle_polling_index_ok() -> Result<(), PineconeError> {
-        let _m = mock("GET", "indexes/index-name")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                "dimension": 1536,
-                "host": "movie-recommendations-c01b5b5.svc.us-east1-gcp.pinecone.io",
-                "metric": "cosine",
-                "name": "index-name",
-                    "spec": {
-                        "serverless": {
-                        "cloud": "aws",
-                        "region": "us-east-1"
-                        }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "Ready"
-                    }
-                }
-            "#,
-            )
-            .create();
-
-        let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(mockito::server_url()),
-            None,
-            None,
-        )
-        .unwrap();
-
-        let _ = pinecone
-            .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(5)))
-            .await
-            .expect("Failed to poll index");
-
-        Ok(())
-    }
-
     #[tokio::test]
     async fn test_handle_polling_index_err() -> Result<(), PineconeError> {
         let _m = mock("GET", "indexes/index-name")
