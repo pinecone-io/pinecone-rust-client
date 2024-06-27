@@ -13,11 +13,8 @@ use snafu::prelude::*;
 #[derive(Debug, Snafu)]
 pub enum PineconeError {
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
-    #[snafu(display("{}", msg))]
-    APIKeyMissingError {
-        status: NonZero<u16>,
-        msg: String,
-    },
+    #[snafu(display("API Key is missing"))]
+    APIKeyMissingError,
 
     /// ConfigureIndexError: Failed to configure an index.
     #[snafu(display("Failed to configure index: {}", msg))]
@@ -69,11 +66,8 @@ pub enum PineconeError {
     },
 
     /// InvalidHeadersError: Provided headers are not valid. Expects JSON.
-    #[snafu(display("Failed to parse headers: {}", msg))]
-    InvalidHeadersError {
-        status: NonZero<u16>,
-        msg: String,
-    },
+    #[snafu(display("Failed to parse headers: {}", json_error))]
+    InvalidHeadersError { json_error: serde_json::Error },
 
     /// InvalidMetricError: Provided metric is not valid.
     #[snafu(display("Invalid metric."))]

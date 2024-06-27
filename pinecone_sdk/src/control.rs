@@ -73,7 +73,10 @@ impl PineconeClient {
 
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::CreateIndexError { status, msg })
+            }
         }
     }
 
@@ -163,7 +166,10 @@ impl PineconeClient {
 
         match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
             Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::CreateIndexError { openapi_error: e }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::CreateIndexError { status, msg })
+            }
         }
     }
 
@@ -193,10 +199,10 @@ impl PineconeClient {
     pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
         match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
             Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::DescribeIndexError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::DescribeIndexError { status, msg })
+            }
         }
     }
 
@@ -226,7 +232,10 @@ impl PineconeClient {
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
         match manage_indexes_api::list_indexes(&self.openapi_config()).await {
             Ok(index_list) => Ok(index_list),
-            Err(e) => Err(PineconeError::ListIndexesError { openapi_error: e }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::ListIndexesError { status, msg })
+            }
         }
     }
 
@@ -278,10 +287,10 @@ impl PineconeClient {
         .await
         {
             Ok(index) => Ok(index),
-            Err(e) => Err(PineconeError::ConfigureIndexError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::ConfigureIndexError { status, msg })
+            }
         }
     }
 
@@ -309,10 +318,10 @@ impl PineconeClient {
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
         match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
-            Err(e) => Err(PineconeError::DeleteIndexError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::DeleteIndexError { status, msg })
+            }
         }
     }
 
@@ -356,10 +365,10 @@ impl PineconeClient {
         .await
         {
             Ok(collection) => Ok(collection),
-            Err(e) => Err(PineconeError::CreateCollectionError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::CreateCollectionError { status, msg })
+            }
         }
     }
 
@@ -387,7 +396,10 @@ impl PineconeClient {
     pub async fn list_collections(&self) -> Result<CollectionList, PineconeError> {
         match manage_indexes_api::list_collections(&self.openapi_config()).await {
             Ok(collection_list) => Ok(collection_list),
-            Err(e) => Err(PineconeError::ListCollectionsError { openapi_error: e }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::ListCollectionsError { status, msg })
+            }
         }
     }
 
@@ -417,32 +429,23 @@ impl PineconeClient {
             Ok(_) => Ok(()),
             Err(e) => {
                 let (status, msg) = self.unwrap_err(e);
-                Err(PineconeError::DeleteCollectionError {
-                    status,
-                    msg,
-                })
-            },
+                Err(PineconeError::DeleteCollectionError { status, msg })
+            }
         }
     }
 
-    async fn unwrap_err(&self, err: openapi::apis::Error) -> (NonZero<u16>, String) {
+    fn unwrap_err(&self, err: openapi::apis::Error) -> (NonZero<u16>, String) {
         match err {
-            openapi::apis::Error::Reqwest(e) => {},
-            openapi::apis::Error::Serde(e) => {
-                let status_code = match NonZero::new(e.err.code) {
-                    Some(status) => status,
-                    None => NonZero::new(500).unwrap(),
-                };
-                (status_code, e.to_string())
-            },
-            openapi::apis::Error::Io(e) => {},
+            openapi::apis::Error::Reqwest(e) => {}
+            openapi::apis::Error::Serde(e) => {}
+            openapi::apis::Error::Io(e) => {}
             openapi::apis::Error::ResponseError(e) => {
                 let status_code = match NonZero::new(e.status.as_u16()) {
                     Some(status) => status,
                     None => NonZero::new(500).unwrap(),
                 };
                 (status_code, e.content)
-            },
+            }
         }
     }
 }
