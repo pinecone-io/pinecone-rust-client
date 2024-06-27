@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 use openapi::apis::{
     manage_indexes_api::{
         ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError,
@@ -11,109 +13,114 @@ use snafu::prelude::*;
 #[derive(Debug, Snafu)]
 pub enum PineconeError {
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
-    #[snafu(display("API key missing."))]
-    APIKeyMissingError,
+    #[snafu(display("{}", msg))]
+    APIKeyMissingError {
+        status: NonZero<u16>,
+        msg: String,
+    },
 
     /// ConfigureIndexError: Failed to configure an index.
-    #[snafu(display("Failed to configure index '{}'.", name))]
+    #[snafu(display("Failed to configure index: {}", msg))]
     ConfigureIndexError {
-        /// name: Index name.
-        name: String,
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<ConfigureIndexError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// CreateCollectionError: Failed to create a collection.
-    #[snafu(display("Failed to create collection '{}'.", name))]
+    #[snafu(display("Failed to create collection: {}", msg))]
     CreateCollectionError {
-        /// name: Collection name.
-        name: String,
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<CreateCollectionError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// CreateIndexError: Failed to create an index.
-    #[snafu(display("Failed to create an index."))]
+    #[snafu(display("Failed to create an index: {}", msg))]
     CreateIndexError {
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<CreateIndexError>,
+        status: u64,
+        msg: String,
     },
 
     /// DeleteCollectionError: Failed to delete an index.
-    #[snafu(display("Failed to delete collection '{}'.", name))]
+    #[snafu(display("Failed to delete collection: {}", msg))]
     DeleteCollectionError {
-        /// name: Index name.
-        name: String,
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<DeleteCollectionError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// DeleteIndexError: Failed to delete an index.
-    #[snafu(display("Failed to delete index '{}'.", name))]
+    #[snafu(display("Failed to delete index: {}", msg))]
     DeleteIndexError {
-        /// name: Index name.
-        name: String,
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<DeleteIndexError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// DescribeIndexError: Failed to describe an index.
-    #[snafu(display("Failed to describe the index '{}'.", name))]
+    #[snafu(display("Failed to describe the index"))]
     DescribeIndexError {
-        /// name: Index name.
-        name: String,
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<DescribeIndexError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
-    #[snafu(display("Invalid cloud '{}'.", cloud))]
+    #[snafu(display("Invalid cloud."))]
     InvalidCloudError {
-        /// cloud: Cloud name.
-        cloud: String,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// InvalidHeadersError: Provided headers are not valid. Expects JSON.
-    #[snafu(display("Failed to parse headers: {}", json_error))]
+    #[snafu(display("Failed to parse headers: {}", msg))]
     InvalidHeadersError {
-        /// json_error: Error object for JSON parsing error.
-        json_error: serde_json::Error,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// InvalidMetricError: Provided metric is not valid.
-    #[snafu(display("Invalid metric '{}'.", metric))]
+    #[snafu(display("Invalid metric."))]
     InvalidMetricError {
-        /// metric: Metric name.
-        metric: String,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// ListCollectionsError: Failed to list indexes.
-    #[snafu(display("Failed to list collections."))]
+    #[snafu(display("Failed to list collections: {}", msg))]
     ListCollectionsError {
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<ListCollectionsError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// ListIndexesError: Failed to list indexes.
-    #[snafu(display("Failed to list indexes."))]
+    #[snafu(display("Failed to list indexes: {}", msg))]
     ListIndexesError {
-        /// openapi_error: Error object for OpenAPI error.
-        openapi_error: OpenAPIError<ListIndexesError>,
+        status: NonZero<u16>,
+        msg: String,
     },
 
     /// MissingDimensionError: Index dimension is missing.
     #[snafu(display("Dimension missing."))]
-    MissingDimensionError,
+    MissingDimensionError {
+        status: NonZero<u16>,
+        msg: String,
+    },
 
     /// MissingNameError: Index name is missing.
     #[snafu(display("Index name missing."))]
-    MissingNameError,
+    MissingNameError {
+        status: NonZero<u16>,
+        msg: String,
+    },
 
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
-    MissingSpecError,
+    MissingSpecError {
+        status: NonZero<u16>,
+        msg: String,
+    },
 
     /// TimeoutError: Request timed out.
     #[snafu(display("Request timed out."))]
-    TimeoutError,
+    TimeoutError {
+        status: NonZero<u16>,
+        msg: String,
+    },
 }

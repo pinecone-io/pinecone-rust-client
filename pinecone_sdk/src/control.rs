@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use openapi::apis::manage_indexes_api;
@@ -413,10 +415,34 @@ impl PineconeClient {
     pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
         match manage_indexes_api::delete_collection(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
-            Err(e) => Err(PineconeError::DeleteCollectionError {
-                name: name.to_string(),
-                openapi_error: e,
-            }),
+            Err(e) => {
+                let (status, msg) = self.unwrap_err(e);
+                Err(PineconeError::DeleteCollectionError {
+                    status,
+                    msg,
+                })
+            },
+        }
+    }
+
+    async fn unwrap_err(&self, err: openapi::apis::Error) -> (NonZero<u16>, String) {
+        match err {
+            openapi::apis::Error::Reqwest(e) => {},
+            openapi::apis::Error::Serde(e) => {
+                let status_code = match NonZero::new(e.err.code) {
+                    Some(status) => status,
+                    None => NonZero::new(500).unwrap(),
+                };
+                (status_code, e.to_string())
+            },
+            openapi::apis::Error::Io(e) => {},
+            openapi::apis::Error::ResponseError(e) => {
+                let status_code = match NonZero::new(e.status.as_u16()) {
+                    Some(status) => status,
+                    None => NonZero::new(500).unwrap(),
+                };
+                (status_code, e.content)
+            },
         }
     }
 }
