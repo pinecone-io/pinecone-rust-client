@@ -3,5 +3,4 @@ build-openapi:
   cargo build -p openapi
 
 build-protos:
-  ./codegen/build-protos.sh
-  
+  cd protos && cargo build

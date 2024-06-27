@@ -1,7 +1,10 @@
 [package]
-name = "proto-builder"
+name = "protos"
 version = "0.1.0"
 
-[dependencies]
+[build-dependencies]
 protobuf-codegen = "3.5.0"
 protoc-bin-vendored = "3.0.0"
+
+[dependencies]
+protobuf = "3.5.0"

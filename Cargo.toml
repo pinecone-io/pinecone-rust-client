@@ -2,6 +2,7 @@
 members = [
     "openapi",
     "pinecone_sdk",
+    "protos"
 ]
 exclude = [
     "codegen"

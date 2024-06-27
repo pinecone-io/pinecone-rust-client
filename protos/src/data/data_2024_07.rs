@@ -19,7 +19,7 @@
 #![allow(unused_results)]
 #![allow(unused_mut)]
 
-//! Generated file from `data_2024-07.proto`
+//! Generated file from `_build/2024-07/data_2024-07.proto`
 
 /// Generated files are compatible only with the same version
 /// of protobuf runtime.
@@ -3984,15 +3984,15 @@ impl ::protobuf::reflect::ProtobufValue for DescribeIndexStatsResponse {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x12data_2024-07.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1cgoog\
-    le/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"J\n\x0c\
-    SparseValues\x12\x1d\n\x07indices\x18\x01\x20\x03(\rR\x07indicesB\x03\
-    \xe0A\x02\x12\x1b\n\x06values\x18\x02\x20\x03(\x02R\x06valuesB\x03\xe0A\
-    \x02\"\xa3\x01\n\x06Vector\x12\x13\n\x02id\x18\x01\x20\x01(\tR\x02idB\
-    \x03\xe0A\x02\x12\x1b\n\x06values\x18\x02\x20\x03(\x02R\x06valuesB\x03\
-    \xe0A\x02\x122\n\rsparse_values\x18\x04\x20\x01(\x0b2\r.SparseValuesR\
-    \x0csparseValues\x123\n\x08metadata\x18\x03\x20\x01(\x0b2\x17.google.pro\
-    tobuf.StructR\x08metadata\"\xba\x01\n\x0cScoredVector\x12\x13\n\x02id\
+    \n!_build/2024-07/data_2024-07.proto\x1a\x1cgoogle/protobuf/struct.proto\
+    \x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.pr\
+    oto\"J\n\x0cSparseValues\x12\x1d\n\x07indices\x18\x01\x20\x03(\rR\x07ind\
+    icesB\x03\xe0A\x02\x12\x1b\n\x06values\x18\x02\x20\x03(\x02R\x06valuesB\
+    \x03\xe0A\x02\"\xa3\x01\n\x06Vector\x12\x13\n\x02id\x18\x01\x20\x01(\tR\
+    \x02idB\x03\xe0A\x02\x12\x1b\n\x06values\x18\x02\x20\x03(\x02R\x06values\
+    B\x03\xe0A\x02\x122\n\rsparse_values\x18\x04\x20\x01(\x0b2\r.SparseValue\
+    sR\x0csparseValues\x123\n\x08metadata\x18\x03\x20\x01(\x0b2\x17.google.p\
+    rotobuf.StructR\x08metadata\"\xba\x01\n\x0cScoredVector\x12\x13\n\x02id\
     \x18\x01\x20\x01(\tR\x02idB\x03\xe0A\x02\x12\x14\n\x05score\x18\x02\x20\
     \x01(\x02R\x05score\x12\x16\n\x06values\x18\x03\x20\x03(\x02R\x06values\
     \x122\n\rsparse_values\x18\x05\x20\x01(\x0b2\r.SparseValuesR\x0csparseVa\
