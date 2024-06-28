@@ -317,6 +317,27 @@ async fn test_list_collections() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
+async fn test_create_delete_collection() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let collection_name = generate_collection_name();
+
+    let response = pinecone
+        .create_collection(&collection_name, "valid-index-pod")
+        .await
+        .expect("Failed to create collection");
+
+    assert_eq!(response.name, collection_name.to_string());
+
+    let _ = pinecone
+        .delete_collection(&collection_name)
+        .await
+        .expect("Failed to delete collection");
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
