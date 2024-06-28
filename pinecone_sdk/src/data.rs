@@ -1,9 +1,11 @@
 use crate::pinecone::PineconeClient;
-use protos::data::data_2024_07::UpsertRequest;
+
+pub mod pb {
+    tonic::include_proto!("_");
+}
 
 impl PineconeClient {
-    /// Creates a new Pinecone client.
     pub fn foo() {
-        let _req = UpsertRequest::new();
+        let req = pb::RequestUnion::default();
     }
 }

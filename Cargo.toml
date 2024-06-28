@@ -1,8 +1,7 @@
 [workspace]
 members = [
     "openapi",
-    "pinecone_sdk",
-    "protos"
+    "pinecone_sdk"
 ]
 exclude = [
     "codegen"
