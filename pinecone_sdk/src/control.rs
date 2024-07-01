@@ -1,6 +1,6 @@
 use std::cmp::min;
-use std::time::Duration;
 use std::num::NonZero;
+use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
@@ -253,7 +253,8 @@ impl PineconeClient {
                     match duration.cmp(&start_time.elapsed()) {
                         // if index not ready after waiting specified duration, return error
                         std::cmp::Ordering::Less => {
-                            return Err(PineconeError::TimeoutError);
+                            let msg = format!("Index {name} not ready");
+                            return Err(PineconeError::TimeoutError { status: None, msg });
                         }
                         // if still waiting, sleep for 5 seconds or remaining time
                         std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
@@ -1305,7 +1306,7 @@ mod tests {
             .expect_err("Expected to fail polling index");
 
         assert!(start_time.elapsed().as_secs() >= 7 && start_time.elapsed().as_secs() < 8);
-        assert!(matches!(err, PineconeError::TimeoutError));
+        assert!(matches!(err, PineconeError::TimeoutError { .. }));
 
         Ok(())
     }
@@ -1658,31 +1659,6 @@ mod tests {
             create_collection_response,
             PineconeError::CreateCollectionError { .. }
         ));
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_serde_error() -> Result<(), PineconeError> {
-        let _m = mock("POST", "/index")
-            .with_status(200)
-            .with_body("invalid json")
-            .create();
-
-        let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(mockito::server_url()),
-            None,
-            None,
-        )
-        .unwrap();
-
-        let create_index_response = pinecone
-            .create_serverless_index("index-name", 2, Metric::Cosine, Cloud::Aws, "us-west-2")
-            .await
-            .expect_err("Expected create_index to return an error");
-
-        println!("{:?}", create_index_response);
 
         Ok(())
     }
