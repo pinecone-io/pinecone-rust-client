@@ -23,6 +23,12 @@ pub enum PineconeError {
         openapi_error: OpenAPIError<ConfigureIndexError>,
     },
 
+    /// ConnectionError: Failed to establish a connection.
+    ConnectionError {
+        /// inner: Error object for connection error.
+        inner: Box<dyn std::error::Error>,
+    },
+
     /// CreateCollectionError: Failed to create a collection.
     #[snafu(display("Failed to create collection '{}'.", name))]
     CreateCollectionError {
