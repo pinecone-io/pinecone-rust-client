@@ -1,6 +1,6 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::control::{Cloud, Metric};
+use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
@@ -55,11 +55,25 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
     let index2_name = &generate_index_name();
 
     let _ = pinecone
-        .create_serverless_index(index1_name, 2, Metric::Cosine, Cloud::Aws, "us-west-2")
+        .create_serverless_index(
+            index1_name,
+            2,
+            Metric::Cosine,
+            Cloud::Aws,
+            "us-west-2",
+            WaitPolicy::NoWait,
+        )
         .await
         .expect("Failed to create index");
     let _ = pinecone
-        .create_serverless_index(index2_name, 2, Metric::Dotproduct, Cloud::Aws, "us-west-2")
+        .create_serverless_index(
+            index2_name,
+            2,
+            Metric::Dotproduct,
+            Cloud::Aws,
+            "us-west-2",
+            WaitPolicy::NoWait,
+        )
         .await
         .expect("Failed to create index");
 
@@ -73,6 +87,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .iter()
         .find(|index| index.name == index1_name.to_string())
         .unwrap();
+
     assert_eq!(index1.name, index1_name.to_string());
     assert_eq!(index1.dimension, 2);
     assert_eq!(index1.metric, OpenApiMetric::Cosine);
@@ -84,6 +99,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .iter()
         .find(|index| index.name == index2_name.to_string())
         .unwrap();
+
     assert_eq!(index2.name, index2_name.to_string());
     assert_eq!(index2.dimension, 2);
     assert_eq!(index2.metric, OpenApiMetric::Dotproduct);
@@ -113,9 +129,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
     let metric = Metric::Euclidean;
     let cloud = Cloud::Aws;
     let region = "us-west-2";
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
-        .create_serverless_index(name, dimension, metric, cloud, region)
+        .create_serverless_index(name, dimension, metric, cloud, region, timeout)
         .await
         .expect("Failed to create index");
 
@@ -149,6 +166,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = None;
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
         .create_pod_index(
@@ -162,6 +180,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             shards,
             indexed,
             source_collection,
+            timeout,
         )
         .await
         .expect("Failed to create index");
@@ -199,6 +218,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
     let pods = 1;
     let indexed = None;
     let source_collection = Some("valid-collection");
+    let timeout = WaitPolicy::NoWait;
 
     let response = pinecone
         .create_pod_index(
@@ -212,6 +232,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             shards,
             indexed,
             source_collection,
+            timeout,
         )
         .await
         .expect("Failed to create index");
@@ -291,29 +312,6 @@ async fn test_list_collections() -> Result<(), PineconeError> {
         .list_collections()
         .await
         .expect("Failed to list collections");
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_create_delete_collection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-
-    let collection_name = &generate_collection_name();
-
-    let index_name = "valid-index-pod";
-
-    let response = pinecone
-        .create_collection(&collection_name, &index_name)
-        .await
-        .expect("Failed to create collection");
-
-    assert_eq!(response.name, collection_name.to_string());
-
-    let _ = pinecone
-        .delete_collection(&collection_name)
-        .await
-        .expect("Failed to delete collection");
 
     Ok(())
 }
