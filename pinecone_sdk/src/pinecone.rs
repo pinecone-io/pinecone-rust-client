@@ -72,7 +72,10 @@ impl PineconeClient {
                 Ok(headers) => match serde_json::from_str(&headers) {
                     Ok(headers) => headers,
                     Err(json_error) => {
-                        return Err(PineconeError::InvalidHeadersError { json_error });
+                        return Err(PineconeError::InvalidHeadersError {
+                            status: None,
+                            msg: json_error.to_string(),
+                        });
                     }
                 },
                 Err(_) => HashMap::new(),
