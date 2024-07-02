@@ -6,6 +6,7 @@ use openapi::apis::{
     Error as OpenAPIError,
 };
 use snafu::prelude::*;
+use tonic::Status;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
 #[derive(Debug, Snafu)]
@@ -122,4 +123,10 @@ pub enum PineconeError {
     /// TimeoutError: Request timed out.
     #[snafu(display("Request timed out."))]
     TimeoutError,
+
+    /// UpsertError: Failed to upsert data.
+    UpsertError {
+        /// inner: Error object for tonic error.
+        inner: Box<Status>,
+    },
 }

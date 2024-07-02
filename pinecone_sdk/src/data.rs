@@ -53,7 +53,7 @@ impl Index {
         let response = match self.connection.upsert(request).await {
             Ok(response) => response.get_ref().clone(),
             Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
+                return Err(PineconeError::UpsertError { inner: Box::new(e) });
             }
         };
 
