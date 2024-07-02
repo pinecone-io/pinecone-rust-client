@@ -7,6 +7,8 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
+pub use crate::data::pb::{UpsertResponse, Vector};
+
 /// Generated protobuf module for data plane.
 pub mod pb {
     tonic::include_proto!("_");
@@ -30,6 +32,7 @@ impl Interceptor for ApiKeyInterceptor {
 }
 
 /// A client for interacting with a Pinecone index.
+#[derive(Debug)]
 pub struct Index {
     /// The name of the index.
     name: String,
@@ -38,20 +41,23 @@ pub struct Index {
 
 impl Index {
     /// Upsert a vector
-    pub async fn upsert(&mut self, vectors: Vec<pb::Vector>) -> Result<(), PineconeError> {
+    pub async fn upsert(
+        &mut self,
+        vectors: Vec<pb::Vector>,
+    ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
             vectors,
             namespace: "".to_string(),
         };
 
         let response = match self.connection.upsert(request).await {
-            Ok(response) => response,
+            Ok(response) => response.get_ref().clone(),
             Err(e) => {
                 return Err(PineconeError::ConnectionError { inner: Box::new(e) });
             }
         };
 
-        Ok(())
+        Ok(response)
     }
 }
 
@@ -93,7 +99,13 @@ impl PineconeClient {
         let index_host = if index_host.starts_with("https://") {
             index_host
         } else {
-            format!("https://{}:443", index_host)
+            format!("https://{}", index_host)
+        };
+
+        let index_host = if index_host.ends_with(":443") {
+            index_host
+        } else {
+            format!("{}:443", index_host)
         };
         Ok(index_host)
     }
@@ -133,5 +145,47 @@ impl PineconeClient {
         let inner = VectorServiceClient::with_interceptor(channel, add_api_key_interceptor);
 
         Ok(inner)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use httpmock::prelude::*;
+    use tokio;
+
+    #[tokio::test]
+    async fn test_index_connection_failed() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+        let mock = server.mock(|when, then| {
+            when.method(GET).path("/indexes/serverless-index");
+            then.status(404)
+                .header("content-type", "application/json")
+                .body(
+                    r#"{
+                        "error": {
+                            "code": "NOT_FOUND",
+                            "message": "Index serverless-index not found."
+                        },
+                        "status": 404
+                    }"#,
+                );
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api-key".to_string()),
+            Some(server.base_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone client");
+        let _ = pinecone
+            .index("serverless-index")
+            .await
+            .expect_err("Expected index connection to fail");
+
+        mock.assert();
+
+        Ok(())
     }
 }

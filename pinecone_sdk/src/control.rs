@@ -687,23 +687,22 @@ mod tests {
             then.status(200)
                 .header("content-type", "application/json")
                 .body(
-                    r#"
-                {
-                    "dimension": 1536,
-                    "host": "mock-host",
-                    "metric": "cosine",
-                    "name": "serverless-index",
-                    "spec": {
-                        "serverless": {
-                        "cloud": "aws",
-                        "region": "us-east-1"
+                    r#"{
+                        "dimension": 1536,
+                        "host": "mock-host",
+                        "metric": "cosine",
+                        "name": "serverless-index",
+                        "spec": {
+                            "serverless": {
+                            "cloud": "aws",
+                            "region": "us-east-1"
+                            }
+                        },
+                        "status": {
+                            "ready": true,
+                            "state": "Ready"
                         }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "Ready"
-                    }
-                }"#,
+                    }"#,
                 );
         });
 
