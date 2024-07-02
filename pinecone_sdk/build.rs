@@ -1,7 +1,7 @@
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let proto_path: &Path = "../codegen/apis/_build/2024-07/data_2024-07.proto".as_ref();
+    let proto_path: &Path = "../protos/data_2024-07.proto".as_ref();
 
     // directory the main .proto file resides in
     let proto_dir = proto_path

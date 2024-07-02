@@ -15,10 +15,7 @@ jobs:
             os: [ubuntu-latest]
             rust: [stable]    
         steps:
-        - name: Checkout repository
           uses: actions/checkout@v4
-          with:
-            submodules: 'true'
         - uses: hecrj/setup-rust-action@v2
           with:
             rust-version: ${{ matrix.rust }}
