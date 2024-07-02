@@ -15,11 +15,10 @@ jobs:
             os: [ubuntu-latest]
             rust: [stable]    
         steps:
-        - uses: actions/checkout@v4
         - name: Checkout repository
-          uses: actions/checkout@v2
-        - name: Checkout submodules
-          run: git submodule update --init --recursive
+          uses: actions/checkout@v4
+          with:
+            submodules: 'true'
         - uses: hecrj/setup-rust-action@v2
           with:
             rust-version: ${{ matrix.rust }}
