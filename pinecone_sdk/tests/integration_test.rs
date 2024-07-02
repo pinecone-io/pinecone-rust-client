@@ -401,3 +401,5 @@ async fn test_upsert() -> Result<(), PineconeError> {
     
     Ok(())
 }
+
+
