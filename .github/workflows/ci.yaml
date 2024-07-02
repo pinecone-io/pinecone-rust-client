@@ -15,7 +15,7 @@ jobs:
             os: [ubuntu-latest]
             rust: [stable]    
         steps:
-          uses: actions/checkout@v4
+        - uses: actions/checkout@v4
         - uses: hecrj/setup-rust-action@v2
           with:
             rust-version: ${{ matrix.rust }}
