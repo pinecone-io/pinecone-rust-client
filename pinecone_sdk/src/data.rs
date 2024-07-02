@@ -1,18 +1,39 @@
 use crate::data::pb::vector_service_client::VectorServiceClient;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
+use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
+use tonic::service::interceptor::InterceptedService;
+use tonic::service::Interceptor;
 use tonic::transport::Channel;
+use tonic::{Request, Status};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
     tonic::include_proto!("_");
 }
 
+#[derive(Debug, Clone)]
+pub struct ApiKeyInterceptor {
+    api_token: TonicMetadataVal<Ascii>,
+}
+
+impl Interceptor for ApiKeyInterceptor {
+    fn call(&mut self, mut request: Request<()>) -> Result<Request<()>, Status> {
+        // TODO: replace `api_token` with an `Option`, and do a proper `if_some`.
+        if !self.api_token.is_empty() {
+            request
+                .metadata_mut()
+                .insert("api-key", self.api_token.clone());
+        }
+        Ok(request)
+    }
+}
+
 /// A client for interacting with a Pinecone index.
 pub struct Index {
     /// The name of the index.
     name: String,
-    connection: VectorServiceClient<Channel>,
+    connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
 }
 
 impl Index {
@@ -46,9 +67,15 @@ impl PineconeClient {
     ///
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-    /// let index = pinecone.index("my-index").unwrap();
+    ///
+    /// let index = pinecone.index("my-index").await.unwrap();
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn index(&self, name: &str) -> Result<Index, PineconeError> {
         let index = Index {
@@ -61,11 +88,11 @@ impl PineconeClient {
 
     async fn get_index_host(&self, name: &str) -> Result<String, PineconeError> {
         let index_host = self.describe_index(name).await?.host;
-        // prepend with "http://" if not already present
-        let index_host = if index_host.starts_with("http://") {
+        // prepend with "https://" if not already present
+        let index_host = if index_host.starts_with("https://") {
             index_host
         } else {
-            format!("http://{}", index_host)
+            format!("https://{}:443", index_host)
         };
         Ok(index_host)
     }
@@ -73,15 +100,24 @@ impl PineconeClient {
     pub async fn new_index_connection(
         &self,
         name: &str,
-    ) -> Result<VectorServiceClient<Channel>, PineconeError> {
+    ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
+    {
         let index_host = self.get_index_host(name).await?;
-        let connection = match VectorServiceClient::connect(index_host).await {
-            Ok(connection) => connection,
-            Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-            }
-        };
+        let tls_config = tonic::transport::ClientTlsConfig::default();
+        let channel = Channel::from_shared(index_host)
+            .unwrap()
+            .tls_config(tls_config)
+            .unwrap()
+            .connect()
+            .await
+            .unwrap();
 
-        Ok(connection)
+        // add api key in metadata through interceptor
+        let api_key = self.get_api_key();
+        let token: TonicMetadataVal<_> = api_key.parse().unwrap();
+        let add_api_key_interceptor = ApiKeyInterceptor { api_token: token };
+        let inner = VectorServiceClient::with_interceptor(channel, add_api_key_interceptor);
+
+        Ok(inner)
     }
 }

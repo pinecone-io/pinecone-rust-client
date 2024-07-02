@@ -108,6 +108,10 @@ impl PineconeClient {
             ..Default::default()
         }
     }
+
+    pub fn get_api_key(&self) -> String {
+        self.api_key.clone()
+    }
 }
 
 #[cfg(test)]
