@@ -13,7 +13,7 @@ pub mod pb {
 }
 
 #[derive(Debug, Clone)]
-pub struct ApiKeyInterceptor {
+struct ApiKeyInterceptor {
     api_token: TonicMetadataVal<Ascii>,
 }
 
@@ -37,6 +37,7 @@ pub struct Index {
 }
 
 impl Index {
+    /// Upsert a vector
     pub async fn upsert(&mut self, vectors: Vec<pb::Vector>) -> Result<(), PineconeError> {
         let request = pb::UpsertRequest {
             vectors,
@@ -97,20 +98,33 @@ impl PineconeClient {
         Ok(index_host)
     }
 
-    pub async fn new_index_connection(
+    async fn new_index_connection(
         &self,
         name: &str,
     ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
     {
         let index_host = self.get_index_host(name).await?;
         let tls_config = tonic::transport::ClientTlsConfig::default();
-        let channel = Channel::from_shared(index_host)
-            .unwrap()
-            .tls_config(tls_config)
-            .unwrap()
-            .connect()
-            .await
-            .unwrap();
+
+        // connect to server
+        let endpoint = match Channel::from_shared(index_host) {
+            Ok(endpoint) => match endpoint.tls_config(tls_config) {
+                Ok(channel) => channel,
+                Err(e) => {
+                    return Err(PineconeError::ConnectionError { inner: Box::new(e) });
+                }
+            },
+            Err(e) => {
+                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
+            }
+        };
+
+        let channel = match endpoint.connect().await {
+            Ok(channel) => channel,
+            Err(e) => {
+                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
+            }
+        };
 
         // add api key in metadata through interceptor
         let api_key = self.get_api_key();
