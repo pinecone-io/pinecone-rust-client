@@ -9,12 +9,6 @@
 /// Defines configurations for the Pinecone SDK.
 pub mod config;
 
-/// Control plane module.
-pub mod control;
-
-/// Data plane module.
-pub mod data;
-
 /// Defines the main entrypoint of the Pinecone SDK.
 pub mod pinecone;
 

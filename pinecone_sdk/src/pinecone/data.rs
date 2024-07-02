@@ -1,13 +1,13 @@
-use crate::data::pb::vector_service_client::VectorServiceClient;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
+use pb::vector_service_client::VectorServiceClient;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
 use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use crate::data::pb::{UpsertResponse, Vector};
+pub use pb::{UpsertResponse, Vector};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -40,7 +40,37 @@ pub struct Index {
 }
 
 impl Index {
-    /// Upsert a vector
+    /// The upsert operation writes vectors into a namespace.
+    /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
+    ///
+    /// ### Arguments
+    /// * `vectors: Vec<pb::Vector>` - A list of vectors to upsert.
+    ///
+    /// ### Return
+    /// * `Result<UpsertResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::pb::Vector;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("my-index").await.unwrap();
+    ///
+    /// let vectors = vec![Vector {
+    ///     id: "vector-id".to_string(),
+    ///     values: vec![1.0, 2.0, 3.0, 4.0],
+    ///     sparse_values: None,
+    ///     metadata: None,
+    /// }];
+    /// let response = index.upsert(vectors).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn upsert(
         &mut self,
         vectors: Vec<pb::Vector>,
@@ -139,8 +169,7 @@ impl PineconeClient {
         };
 
         // add api key in metadata through interceptor
-        let api_key = self.get_api_key();
-        let token: TonicMetadataVal<_> = api_key.parse().unwrap();
+        let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
         let add_api_key_interceptor = ApiKeyInterceptor { api_token: token };
         let inner = VectorServiceClient::with_interceptor(channel, add_api_key_interceptor);
 

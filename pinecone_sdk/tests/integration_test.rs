@@ -2,8 +2,8 @@ use std::vec;
 
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::data::pb;
+use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
+use pinecone_sdk::pinecone::data::Vector;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
@@ -388,7 +388,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![pb::Vector {
+    let vectors = vec![Vector {
         id: "1".to_string(),
         values: vec![1.0, 2.0, 3.0, 5.5],
         sparse_values: None,
@@ -398,8 +398,6 @@ async fn test_upsert() -> Result<(), PineconeError> {
     let upsert_response = index.upsert(vectors).await.expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
-    
+
     Ok(())
 }
-
-
