@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
@@ -339,6 +341,7 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
         } {
             break;
         }
+        tokio::time::sleep(Duration::from_millis(1000)).await;
     }
 
     let response = pinecone
