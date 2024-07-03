@@ -38,6 +38,10 @@ fn get_pod_index() -> String {
     std::env::var("POD_INDEX_NAME").unwrap()
 }
 
+fn get_data_plane_index() -> String {
+    std::env::var("DATA_PLANE_INDEX_NAME").unwrap()
+}
+
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
     let pinecone =
@@ -408,7 +412,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
     let mut index = pinecone
-        .index("test-data-plane")
+        .index(&get_data_plane_index())
         .await
         .expect("Failed to target index");
 
