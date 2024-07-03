@@ -67,17 +67,18 @@ impl Index {
     ///     sparse_values: None,
     ///     metadata: None,
     /// }];
-    /// let response = index.upsert(vectors).await.unwrap();
+    /// let response = index.upsert(vectors, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn upsert(
         &mut self,
         vectors: Vec<pb::Vector>,
+        namespace: Option<String>,
     ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
             vectors,
-            namespace: "".to_string(),
+            namespace: namespace.unwrap_or_default(),
         };
 
         let response = match self.connection.upsert(request).await {

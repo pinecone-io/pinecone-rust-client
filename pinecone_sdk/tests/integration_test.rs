@@ -395,7 +395,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         metadata: None,
     }]; // Convert inner vector to Vector
 
-    let upsert_response = index.upsert(vectors).await.expect("Failed to upsert");
+    let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
 
