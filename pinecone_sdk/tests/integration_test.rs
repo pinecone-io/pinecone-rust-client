@@ -332,24 +332,26 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let collection_name = generate_collection_name();
 
     let index_name = &get_pod_index();
-    let is_ready = match pinecone.describe_index(index_name).await {
-        Ok(index) => index.status.ready,
-        Err(_) => return Ok(()),
-    };
-
-    if is_ready {
-        let response = pinecone
-            .create_collection(&collection_name, index_name)
-            .await
-            .expect("Failed to create collection");
-
-        assert_eq!(response.name, collection_name.to_string());
-
-        let _ = pinecone
-            .delete_collection(&collection_name)
-            .await
-            .expect("Failed to delete collection");
+    loop {
+        if match pinecone.describe_index(index_name).await {
+            Ok(index) => index.status.ready,
+            Err(_) => false,
+        } {
+            break;
+        }
     }
+
+    let response = pinecone
+        .create_collection(&collection_name, index_name)
+        .await
+        .expect("Failed to create collection");
+
+    assert_eq!(response.name, collection_name.to_string());
+
+    let _ = pinecone
+        .delete_collection(&collection_name)
+        .await
+        .expect("Failed to delete collection");
 
     Ok(())
 }
