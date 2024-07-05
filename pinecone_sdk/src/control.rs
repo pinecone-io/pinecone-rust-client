@@ -98,20 +98,7 @@ impl PineconeClient {
                 Err(e) => Err(e),
             },
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to create index {name}: {msg}");
                 Err(PineconeError::CreateIndexError { status, msg })
             }
@@ -214,20 +201,7 @@ impl PineconeClient {
                 Err(e) => Err(e),
             },
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to create index {name}: {msg}");
                 Err(PineconeError::CreateIndexError { status, msg })
             }
@@ -254,7 +228,7 @@ impl PineconeClient {
                         // if index not ready after waiting specified duration, return error
                         std::cmp::Ordering::Less => {
                             let msg = format!("Index {name} not ready");
-                            return Err(PineconeError::TimeoutError { status: None, msg });
+                            return Err(PineconeError::TimeoutError { msg });
                         }
                         // if still waiting, sleep for 5 seconds or remaining time
                         std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
@@ -310,20 +284,7 @@ impl PineconeClient {
         match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
             Ok(index) => Ok(index),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to describe index {name}: {msg}");
                 Err(PineconeError::DescribeIndexError { status, msg })
             }
@@ -357,20 +318,7 @@ impl PineconeClient {
         match manage_indexes_api::list_indexes(&self.openapi_config()).await {
             Ok(index_list) => Ok(index_list),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to list indexes: {msg}");
                 Err(PineconeError::ListIndexesError { status, msg })
             }
@@ -426,20 +374,7 @@ impl PineconeClient {
         {
             Ok(index) => Ok(index),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to configure index {name}: {msg}");
                 Err(PineconeError::ConfigureIndexError { status, msg })
             }
@@ -471,20 +406,7 @@ impl PineconeClient {
         match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to delete index {name}: {msg}");
                 Err(PineconeError::DeleteIndexError { status, msg })
             }
@@ -532,20 +454,7 @@ impl PineconeClient {
         {
             Ok(collection) => Ok(collection),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to create collection {name}: {msg}");
                 Err(PineconeError::CreateCollectionError { status, msg })
             }
@@ -577,20 +486,7 @@ impl PineconeClient {
         match manage_indexes_api::list_collections(&self.openapi_config()).await {
             Ok(collection_list) => Ok(collection_list),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to list collections: {msg}");
                 Err(PineconeError::ListCollectionsError { status, msg })
             }
@@ -622,23 +518,19 @@ impl PineconeClient {
         match manage_indexes_api::delete_collection(&self.openapi_config(), name).await {
             Ok(_) => Ok(()),
             Err(e) => {
-                let (status, msg) = match e {
-                    openapi::apis::Error::Reqwest(e) => {
-                        let status_code = match e.status().map(|s| NonZero::new(s.as_u16())) {
-                            Some(s) => s,
-                            None => None,
-                        };
-                        (status_code, e.to_string())
-                    }
-                    openapi::apis::Error::Serde(e) => (None, e.to_string()),
-                    openapi::apis::Error::Io(e) => (None, e.to_string()),
-                    openapi::apis::Error::ResponseError(e) => {
-                        (NonZero::new(e.status.as_u16()), e.content)
-                    }
-                };
+                let (status, msg) = self.get_err_elts(e);
                 let msg = format!("failed to delete collection {name}: {msg}");
                 Err(PineconeError::DeleteCollectionError { status, msg })
             }
+        }
+    }
+
+    fn get_err_elts<T>(&self, e: openapi::apis::Error<T>) -> (Option<reqwest::StatusCode>, String) {
+        match e {
+            openapi::apis::Error::Reqwest(e) => (e.status(), e.to_string()),
+            openapi::apis::Error::Serde(e) => (None, e.to_string()),
+            openapi::apis::Error::Io(e) => (None, e.to_string()),
+            openapi::apis::Error::ResponseError(e) => (Some(e.status), e.content),
         }
     }
 }
