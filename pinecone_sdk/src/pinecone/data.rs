@@ -132,12 +132,6 @@ impl PineconeClient {
         } else {
             format!("https://{}", index_host)
         };
-
-        let index_host = if index_host.ends_with(":443") {
-            index_host
-        } else {
-            format!("{}:443", index_host)
-        };
         Ok(index_host)
     }
 
@@ -152,7 +146,7 @@ impl PineconeClient {
         // connect to server
         let endpoint = match Channel::from_shared(index_host) {
             Ok(endpoint) => match endpoint.tls_config(tls_config) {
-                Ok(channel) => channel,
+                Ok(configured_endpoint) => configured_endpoint,
                 Err(e) => {
                     return Err(PineconeError::ConnectionError { inner: Box::new(e) });
                 }

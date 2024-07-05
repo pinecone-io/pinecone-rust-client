@@ -1,11 +1,11 @@
-use std::vec;
-use std::time::Duration;
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::data::Vector;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
+use std::time::Duration;
+use std::vec;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -421,7 +421,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         values: vec![1.0, 2.0, 3.0, 5.5],
         sparse_values: None,
         metadata: None,
-    }]; // Convert inner vector to Vector
+    }];
 
     let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
 
