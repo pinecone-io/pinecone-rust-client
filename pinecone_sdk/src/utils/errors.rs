@@ -11,90 +11,125 @@ pub enum PineconeError {
     /// ConfigureIndexError: Failed to configure an index.
     #[snafu(display("Failed to configure index: {}", msg))]
     ConfigureIndexError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// CreateCollectionError: Failed to create a collection.
     #[snafu(display("Failed to create collection: {}", msg))]
     CreateCollectionError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// CreateIndexError: Failed to create an index.
     #[snafu(display("Failed to create an index: {}", msg))]
     CreateIndexError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// DeleteCollectionError: Failed to delete an index.
     #[snafu(display("Failed to delete collection: {}", msg))]
     DeleteCollectionError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// DeleteIndexError: Failed to delete an index.
     #[snafu(display("Failed to delete index: {}", msg))]
     DeleteIndexError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// DescribeIndexError: Failed to describe an index.
     #[snafu(display("Failed to describe the index"))]
     DescribeIndexError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
     #[snafu(display("Invalid cloud."))]
     InvalidCloudError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// InvalidHeadersError: Provided headers are not valid. Expects JSON.
     #[snafu(display("Failed to parse headers."))]
     InvalidHeadersError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// InvalidMetricError: Provided metric is not valid.
     #[snafu(display("Invalid metric."))]
-    InvalidMetricError { msg: String },
+    InvalidMetricError {
+        /// Error message.
+        msg: String,
+    },
 
     /// ListCollectionsError: Failed to list indexes.
     #[snafu(display("Failed to list collections: {}", msg))]
     ListCollectionsError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// ListIndexesError: Failed to list indexes.
     #[snafu(display("Failed to list indexes: {}", msg))]
     ListIndexesError {
+        /// HTTP status code.
         status: Option<reqwest::StatusCode>,
+        /// Error message.
         msg: String,
     },
 
     /// MissingDimensionError: Index dimension is missing.
     #[snafu(display("Dimension missing."))]
-    MissingDimensionError { msg: String },
+    MissingDimensionError {
+        /// Error message.
+        msg: String,
+    },
 
     /// MissingNameError: Index name is missing.
     #[snafu(display("Index name missing."))]
-    MissingNameError { msg: String },
+    MissingNameError {
+        /// Error message.
+        msg: String,
+    },
 
     /// MissingSpecError: Index spec is missing.
     #[snafu(display("Spec missing."))]
-    MissingSpecError { msg: String },
+    MissingSpecError {
+        /// Error message.
+        msg: String,
+    },
 
     /// TimeoutError: Request timed out.
     #[snafu(display("Request timed out."))]
-    TimeoutError { msg: String },
+    TimeoutError {
+        /// Error message.
+        msg: String,
+    },
 }

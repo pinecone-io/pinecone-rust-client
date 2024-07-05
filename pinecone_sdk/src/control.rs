@@ -1,5 +1,4 @@
 use std::cmp::min;
-use std::num::NonZero;
 use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
