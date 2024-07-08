@@ -1,3 +1,5 @@
+use openapi::apis::manage_indexes_api::CreateIndexError;
+use openapi::apis::Error as OpenApiError;
 use reqwest;
 use snafu::Snafu;
 
@@ -132,4 +134,24 @@ pub enum PineconeError {
         /// Error message.
         msg: String,
     },
+}
+
+// Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
+impl From<OpenApiError<CreateIndexError>> for PineconeError {
+    fn from(error: OpenApiError<CreateIndexError>) -> Self {
+        let (status, msg) = get_err_elements(error);
+        PineconeError::CreateIndexError { status, msg }
+    }
+}
+
+// TODO: implement all other From<OpenApiError> for PineconeError?
+
+// Helper function to extract status/error message
+fn get_err_elements<T>(e: openapi::apis::Error<T>) -> (Option<reqwest::StatusCode>, String) {
+    match e {
+        openapi::apis::Error::Reqwest(e) => (e.status(), e.to_string()),
+        openapi::apis::Error::Serde(e) => (None, e.to_string()),
+        openapi::apis::Error::Io(e) => (None, e.to_string()),
+        openapi::apis::Error::ResponseError(e) => (Some(e.status), e.content),
+    }
 }
