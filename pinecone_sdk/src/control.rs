@@ -705,7 +705,7 @@ mod tests {
 
         assert!(matches!(
             create_index_response,
-            PineconeError::CreateIndexError { .. }
+            PineconeError::InternalServerError { .. }
         ));
         mock.assert();
 

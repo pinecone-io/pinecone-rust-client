@@ -1,5 +1,5 @@
 use openapi::apis::manage_indexes_api::CreateIndexError;
-use openapi::apis::Error as OpenApiError;
+use openapi::apis::{Error as OpenApiError, ResponseContent};
 use reqwest;
 use snafu::Snafu;
 
@@ -73,6 +73,15 @@ pub enum PineconeError {
         msg: String,
     },
 
+    /// InvalidRegionError: Provided region is not valid.
+    #[snafu(display("Invalid region."))]
+    InvalidRegionError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
     /// InvalidHeadersError: Provided headers are not valid. Expects JSON.
     #[snafu(display("Failed to parse headers."))]
     InvalidHeadersError {
@@ -134,27 +143,126 @@ pub enum PineconeError {
         /// Error message.
         msg: String,
     },
+
+    // new errors
+    /// ReqwestError: Error caused by Reqwest
+    ReqwestError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// SerdeError: Error caused by Serde
+    SerdeError {
+        /// Error message.
+        msg: String,
+    },
+    
+    /// IoError: Error caused by IO
+    IoError {
+        /// Error message.
+        msg: String,
+    },
+
+    /// BadRequestError: Bad request. The request body included invalid request parameters
+    BadRequestError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
+    UnauthorizedError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// PodQuotaExceededError: Pod quota exceeded
+    PodQuotaExceededError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// IndexAlreadyExistsError: Index of given name already exists
+    IndexAlreadyExistsError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// Unprocessable entity error: The request body could not be deserialized
+    UnprocessableEntityError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
+
+    /// InternalServerError: Internal server error
+    InternalServerError {
+        /// HTTP status code.
+        status: Option<reqwest::StatusCode>,
+        /// Error message.
+        msg: String,
+    },
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
-impl From<(OpenApiError<CreateIndexError>, String)> for PineconeError {
-    fn from((error, message): (OpenApiError<CreateIndexError>, String)) -> Self {
-        let (status, msg) = get_err_elements(error, message);
-        PineconeError::CreateIndexError { status, msg }
+impl<T> From<(OpenApiError<T>, String)> for PineconeError {
+    fn from((error, message): (OpenApiError<T>, String)) -> Self {
+        err_handler(error, message)
     }
 }
 
 // TODO: implement all other From<OpenApiError> for PineconeError?
 
 // Helper function to extract status/error message
-fn get_err_elements<T>(e: openapi::apis::Error<T>, message: String) -> (Option<reqwest::StatusCode>, String) {
-    let (status, err_message) = match e {
-        openapi::apis::Error::Reqwest(e) => (e.status(), e.to_string()),
-        openapi::apis::Error::Serde(e) => (None, e.to_string()),
-        openapi::apis::Error::Io(e) => (None, e.to_string()),
-        openapi::apis::Error::ResponseError(e) => (Some(e.status), e.content),
-    };
+fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
+    match e {
+        OpenApiError::Reqwest(e) => PineconeError::ReqwestError {
+            status: e.status(),
+            msg: e.to_string(),
+        },
+        OpenApiError::Serde(e) => PineconeError::SerdeError { msg: e.to_string() },
+        OpenApiError::Io(e) => PineconeError::IoError { msg: e.to_string() },
+        OpenApiError::ResponseError(e) => {
+            handle_response_error(e, message)
+        },
+    }
+}
 
+fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeError {
+    let err_message = e.content;
+    let status = e.status;
     let msg = format!("{message}: {err_message}");
-    (status, msg)
+
+    match status {
+        reqwest::StatusCode::BAD_REQUEST => PineconeError::BadRequestError {
+            status: Some(status),
+            msg,
+        },
+        reqwest::StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError {
+            status: Some(status),
+            msg,
+        },
+        reqwest::StatusCode::UNPROCESSABLE_ENTITY => PineconeError::UnprocessableEntityError {
+            status: Some(status),
+            msg,
+        },
+        reqwest::StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError {
+            status: Some(status),
+            msg,
+        },
+        _ => PineconeError::ReqwestError {
+            status: Some(status),
+            msg,
+        },
+    }
 }
