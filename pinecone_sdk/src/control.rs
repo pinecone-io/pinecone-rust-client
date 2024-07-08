@@ -94,7 +94,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(|e| PineconeError::from((e, format!("Failed to create index \"{name}\""))))?;
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
@@ -523,6 +523,7 @@ impl PineconeClient {
         }
     }
 
+    // will likely delete this funcion later, so the code in err_handler will eventually not be boilerplate
     fn get_err_elements<T>(
         &self,
         e: openapi::apis::Error<T>,

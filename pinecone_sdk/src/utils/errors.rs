@@ -137,9 +137,9 @@ pub enum PineconeError {
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
-impl From<OpenApiError<CreateIndexError>> for PineconeError {
-    fn from(error: OpenApiError<CreateIndexError>) -> Self {
-        let (status, msg) = get_err_elements(error);
+impl From<(OpenApiError<CreateIndexError>, String)> for PineconeError {
+    fn from((error, message): (OpenApiError<CreateIndexError>, String)) -> Self {
+        let (status, msg) = get_err_elements(error, message);
         PineconeError::CreateIndexError { status, msg }
     }
 }
@@ -147,11 +147,14 @@ impl From<OpenApiError<CreateIndexError>> for PineconeError {
 // TODO: implement all other From<OpenApiError> for PineconeError?
 
 // Helper function to extract status/error message
-fn get_err_elements<T>(e: openapi::apis::Error<T>) -> (Option<reqwest::StatusCode>, String) {
-    match e {
+fn get_err_elements<T>(e: openapi::apis::Error<T>, message: String) -> (Option<reqwest::StatusCode>, String) {
+    let (status, err_message) = match e {
         openapi::apis::Error::Reqwest(e) => (e.status(), e.to_string()),
         openapi::apis::Error::Serde(e) => (None, e.to_string()),
         openapi::apis::Error::Io(e) => (None, e.to_string()),
         openapi::apis::Error::ResponseError(e) => (Some(e.status), e.content),
-    }
+    };
+
+    let msg = format!("{message}: {err_message}");
+    (status, msg)
 }
