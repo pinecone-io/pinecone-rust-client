@@ -6,7 +6,6 @@ use openapi::apis::{
     Error as OpenAPIError,
 };
 use snafu::prelude::*;
-use tonic::Status;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
 #[derive(Debug, Snafu)]
@@ -127,6 +126,6 @@ pub enum PineconeError {
     /// UpsertError: Failed to upsert data.
     UpsertError {
         /// inner: Error object for tonic error.
-        inner: Box<Status>,
+        inner: Box<tonic::Status>,
     },
 }
