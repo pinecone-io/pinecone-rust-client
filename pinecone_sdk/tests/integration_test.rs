@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
+// helpers to generate random test/collection names
 fn generate_random_string() -> String {
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
@@ -25,12 +28,22 @@ fn generate_collection_name() -> String {
     format!("test-collection-{}", generate_random_string())
 }
 
+// helper functions to get index names from environment variables
+fn get_serverless_index() -> String {
+    std::env::var("SERVERLESS_INDEX_NAME").unwrap()
+}
+
+fn get_pod_index() -> String {
+    std::env::var("POD_INDEX_NAME").unwrap()
+}
+
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
     let _ = pinecone
-        .describe_index("valid-index")
+        .describe_index(&get_serverless_index())
         .await
         .expect("Failed to describe index");
 
@@ -41,6 +54,7 @@ async fn test_describe_index() -> Result<(), PineconeError> {
 async fn test_describe_index_fail() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
     let _ = pinecone
         .describe_index("invalid-index")
         .await
@@ -266,7 +280,7 @@ async fn test_configure_index() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index("valid-index-pod", 1, "s1.x1")
+        .configure_index(&get_pod_index(), 1, "s1.x1")
         .await
         .expect("Failed to configure index");
 
@@ -279,7 +293,7 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index("valid-index", 1, "p1.x1")
+        .configure_index(&get_serverless_index(), 1, "p1.x1")
         .await
         .expect_err("Expected to fail configuring serverless index");
 
@@ -303,6 +317,7 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
 async fn test_list_collections() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
     let _ = pinecone
         .list_collections()
         .await
@@ -318,8 +333,19 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
 
     let collection_name = generate_collection_name();
 
+    let index_name = &get_pod_index();
+    loop {
+        if match pinecone.describe_index(index_name).await {
+            Ok(index) => index.status.ready,
+            Err(_) => false,
+        } {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+    }
+
     let response = pinecone
-        .create_collection(&collection_name, "valid-index-pod")
+        .create_collection(&collection_name, index_name)
         .await
         .expect("Failed to create collection");
 
@@ -341,7 +367,7 @@ async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
     let collection_name = generate_collection_name();
 
     let _ = pinecone
-        .create_collection(&collection_name, "valid-index")
+        .create_collection(&collection_name, &get_serverless_index())
         .await
         .expect_err("Expected to fail creating collection from serverless");
 
