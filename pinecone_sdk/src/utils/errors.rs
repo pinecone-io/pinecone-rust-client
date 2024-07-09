@@ -182,7 +182,7 @@ pub enum PineconeError {
     },
 
     /// PodQuotaExceededError: Pod quota exceeded
-    PodQuotaExceededError {
+    QuotaExceededError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
