@@ -1,6 +1,5 @@
-use openapi::apis::manage_indexes_api::CreateIndexError;
 use openapi::apis::{Error as OpenApiError, ResponseContent};
-use reqwest;
+use reqwest::{self, StatusCode};
 use snafu::Snafu;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
@@ -148,7 +147,7 @@ pub enum PineconeError {
     /// ReqwestError: Error caused by Reqwest
     ReqwestError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -158,7 +157,7 @@ pub enum PineconeError {
         /// Error message.
         message: String,
     },
-    
+
     /// IoError: Error caused by IO
     IoError {
         /// Error message.
@@ -168,7 +167,7 @@ pub enum PineconeError {
     /// BadRequestError: Bad request. The request body included invalid request parameters
     BadRequestError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -176,7 +175,7 @@ pub enum PineconeError {
     /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
     UnauthorizedError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -184,7 +183,7 @@ pub enum PineconeError {
     /// PodQuotaExceededError: Pod quota exceeded
     QuotaExceededError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -192,7 +191,7 @@ pub enum PineconeError {
     /// IndexAlreadyExistsError: Index of given name already exists
     IndexAlreadyExistsError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -200,7 +199,7 @@ pub enum PineconeError {
     /// Unprocessable entity error: The request body could not be deserialized
     UnprocessableEntityError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -208,7 +207,7 @@ pub enum PineconeError {
     /// InternalServerError: Internal server error
     InternalServerError {
         /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+        status: StatusCode,
         /// Error message.
         message: String,
     },
@@ -227,14 +226,19 @@ impl<T> From<(OpenApiError<T>, String)> for PineconeError {
 fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
     match e {
         OpenApiError::Reqwest(e) => PineconeError::ReqwestError {
-            status: e.status(),
+            status: match e.status() {
+                Some(status) => status,
+                None => StatusCode::INTERNAL_SERVER_ERROR,
+            },
             message: e.to_string(),
         },
-        OpenApiError::Serde(e) => PineconeError::SerdeError { message: e.to_string() },
-        OpenApiError::Io(e) => PineconeError::IoError { message: e.to_string() },
-        OpenApiError::ResponseError(e) => {
-            handle_response_error(e, message)
+        OpenApiError::Serde(e) => PineconeError::SerdeError {
+            message: e.to_string(),
         },
+        OpenApiError::Io(e) => PineconeError::IoError {
+            message: e.to_string(),
+        },
+        OpenApiError::ResponseError(e) => handle_response_error(e, message),
     }
 }
 
@@ -244,25 +248,12 @@ fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeE
     let message = format!("{message}: {err_message}");
 
     match status {
-        reqwest::StatusCode::BAD_REQUEST => PineconeError::BadRequestError {
-            status: Some(status),
-            message,
-        },
-        reqwest::StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError {
-            status: Some(status),
-            message,
-        },
-        reqwest::StatusCode::UNPROCESSABLE_ENTITY => PineconeError::UnprocessableEntityError {
-            status: Some(status),
-            message,
-        },
-        reqwest::StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError {
-            status: Some(status),
-            message,
-        },
-        _ => PineconeError::ReqwestError {
-            status: Some(status),
-            message,
-        },
+        StatusCode::BAD_REQUEST => PineconeError::BadRequestError { status, message },
+        StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { status, message },
+        StatusCode::UNPROCESSABLE_ENTITY => {
+            PineconeError::UnprocessableEntityError { status, message }
+        }
+        StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError { status, message },
+        _ => PineconeError::ReqwestError { status, message },
     }
 }
