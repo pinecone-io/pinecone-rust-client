@@ -141,7 +141,7 @@ pub enum PineconeError {
     #[snafu(display("Request timed out."))]
     TimeoutError {
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     // new errors
@@ -150,19 +150,19 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// SerdeError: Error caused by Serde
     SerdeError {
         /// Error message.
-        msg: String,
+        message: String,
     },
     
     /// IoError: Error caused by IO
     IoError {
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// BadRequestError: Bad request. The request body included invalid request parameters
@@ -170,7 +170,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
@@ -178,7 +178,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// PodQuotaExceededError: Pod quota exceeded
@@ -186,7 +186,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// IndexAlreadyExistsError: Index of given name already exists
@@ -194,7 +194,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// Unprocessable entity error: The request body could not be deserialized
@@ -202,7 +202,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// InternalServerError: Internal server error
@@ -210,7 +210,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
+        message: String,
     },
 }
 
@@ -228,10 +228,10 @@ fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
     match e {
         OpenApiError::Reqwest(e) => PineconeError::ReqwestError {
             status: e.status(),
-            msg: e.to_string(),
+            message: e.to_string(),
         },
-        OpenApiError::Serde(e) => PineconeError::SerdeError { msg: e.to_string() },
-        OpenApiError::Io(e) => PineconeError::IoError { msg: e.to_string() },
+        OpenApiError::Serde(e) => PineconeError::SerdeError { message: e.to_string() },
+        OpenApiError::Io(e) => PineconeError::IoError { message: e.to_string() },
         OpenApiError::ResponseError(e) => {
             handle_response_error(e, message)
         },
@@ -241,28 +241,28 @@ fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
 fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeError {
     let err_message = e.content;
     let status = e.status;
-    let msg = format!("{message}: {err_message}");
+    let message = format!("{message}: {err_message}");
 
     match status {
         reqwest::StatusCode::BAD_REQUEST => PineconeError::BadRequestError {
             status: Some(status),
-            msg,
+            message,
         },
         reqwest::StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError {
             status: Some(status),
-            msg,
+            message,
         },
         reqwest::StatusCode::UNPROCESSABLE_ENTITY => PineconeError::UnprocessableEntityError {
             status: Some(status),
-            msg,
+            message,
         },
         reqwest::StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError {
             status: Some(status),
-            msg,
+            message,
         },
         _ => PineconeError::ReqwestError {
             status: Some(status),
-            msg,
+            message,
         },
     }
 }

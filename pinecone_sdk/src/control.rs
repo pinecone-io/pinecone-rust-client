@@ -225,8 +225,8 @@ impl PineconeClient {
                     match duration.cmp(&start_time.elapsed()) {
                         // if index not ready after waiting specified duration, return error
                         std::cmp::Ordering::Less => {
-                            let msg = format!("Index {name} not ready");
-                            return Err(PineconeError::TimeoutError { msg });
+                            let message = format!("Index {name} not ready");
+                            return Err(PineconeError::TimeoutError { message });
                         }
                         // if still waiting, sleep for 5 seconds or remaining time
                         std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
