@@ -223,7 +223,7 @@ impl PineconeClient {
                     match duration.cmp(&start_time.elapsed()) {
                         // if index not ready after waiting specified duration, return error
                         std::cmp::Ordering::Less => {
-                            let message = format!("Index {name} not ready");
+                            let message = format!("Index \"{name}\" not ready");
                             return Err(PineconeError::TimeoutError { message });
                         }
                         // if still waiting, sleep for 5 seconds or remaining time
@@ -366,7 +366,7 @@ impl PineconeClient {
             configure_index_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to configure index {name}"))))?;
+        .map_err(|e| PineconeError::from((e, format!("Failed to configure index \"{name}\""))))?;
 
         Ok(res)
     }
@@ -396,7 +396,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to delete index {name}"))))?;
+            .map_err(|e| PineconeError::from((e, format!("Failed to delete index \"{name}\""))))?;
 
         Ok(res)
     }
@@ -441,7 +441,7 @@ impl PineconeClient {
             create_collection_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to create collection {name}"))))?;
+        .map_err(|e| PineconeError::from((e, format!("Failed to create collection \"{name}\""))))?;
 
         Ok(res)
     }
@@ -470,7 +470,9 @@ impl PineconeClient {
     pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
         let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to create collection {name}"))))?;
+            .map_err(|e| {
+                PineconeError::from((e, format!("Failed to describe collection \"{name}\"")))
+            })?;
 
         Ok(res)
     }
@@ -530,7 +532,9 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to delete collection {name}"))))?;
+            .map_err(|e| {
+                PineconeError::from((e, format!("Failed to delete collection \"{name}\"")))
+            })?;
 
         Ok(res)
     }
@@ -2056,7 +2060,7 @@ mod tests {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections/my-collection");
+            when.method(GET).path("/collections/collection-name");
             then.status(200)
                 .header("content-type", "application/json")
                 .body(
@@ -2082,7 +2086,7 @@ mod tests {
 
         // Call describe_collection and verify the result
         let collection = pinecone
-            .describe_collection("my-collection")
+            .describe_collection("collection-name")
             .await
             .expect("Failed to describe collection");
 
