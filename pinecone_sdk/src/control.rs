@@ -192,17 +192,15 @@ impl PineconeClient {
             spec: Some(Box::new(spec)),
         };
 
-        // make openAPI call; poll index status if Ok, return early if Err
-        match manage_indexes_api::create_index(&self.openapi_config(), create_index_request).await {
-            Ok(index) => match self.handle_poll_index(name, timeout).await {
-                Ok(_) => Ok(index),
-                Err(e) => Err(e),
-            },
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to create index {name}: {msg}");
-                Err(PineconeError::CreateIndexError { status, msg })
-            }
+        // make openAPI call
+        let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to create index \"{name}\""))))?;
+
+        // poll index status
+        match self.handle_poll_index(name, timeout).await {
+            Ok(_) => Ok(res),
+            Err(e) => Err(e),
         }
     }
 
@@ -278,15 +276,18 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
-        match manage_indexes_api::describe_index(&self.openapi_config(), name).await {
-            Ok(index) => Ok(index),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to describe index {name}: {msg}");
-                Err(PineconeError::DescribeIndexError { status, msg })
-            }
-        }
+    pub async fn describe_index(
+        &self,
+        name: &str,
+    ) -> Result<IndexModel, PineconeError> {
+        // make openAPI call
+        let res = manage_indexes_api::describe_index(&self.openapi_config(), name)
+            .await
+            .map_err(|e| {
+                PineconeError::from((e, format!("Failed to describe index \"{name}\"")))
+            })?;
+
+        Ok(res)
     }
 
     /// Lists all indexes.
@@ -313,14 +314,12 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
-        match manage_indexes_api::list_indexes(&self.openapi_config()).await {
-            Ok(index_list) => Ok(index_list),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to list indexes: {msg}");
-                Err(PineconeError::ListIndexesError { status, msg })
-            }
-        }
+        // make openAPI call
+        let res = manage_indexes_api::list_indexes(&self.openapi_config())
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to list indexes"))))?;
+
+        Ok(res)
     }
 
     /// Configures an index.
@@ -363,20 +362,12 @@ impl PineconeClient {
             },
         ));
 
-        match manage_indexes_api::configure_index(
-            &self.openapi_config(),
-            name,
-            configure_index_request,
-        )
-        .await
-        {
-            Ok(index) => Ok(index),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to configure index {name}: {msg}");
-                Err(PineconeError::ConfigureIndexError { status, msg })
-            }
-        }
+        // make openAPI call
+        let res = manage_indexes_api::configure_index(&self.openapi_config(), name, configure_index_request)
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to configure index {name}"))))?;
+
+        Ok(res)
     }
 
     /// Deletes an index.
@@ -401,14 +392,12 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
-        match manage_indexes_api::delete_index(&self.openapi_config(), name).await {
-            Ok(_) => Ok(()),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to delete index {name}: {msg}");
-                Err(PineconeError::DeleteIndexError { status, msg })
-            }
-        }
+        // make openAPI call
+        let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to delete index {name}"))))?;
+
+        Ok(res)
     }
 
     /// Creates a collection from an index.
@@ -444,19 +433,13 @@ impl PineconeClient {
             name: name.to_string(),
             source: source.to_string(),
         };
-        match manage_indexes_api::create_collection(
-            &self.openapi_config(),
-            create_collection_request,
-        )
-        .await
-        {
-            Ok(collection) => Ok(collection),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to create collection {name}: {msg}");
-                Err(PineconeError::CreateCollectionError { status, msg })
-            }
-        }
+
+        // make openAPI call
+        let res = manage_indexes_api::create_collection(&self.openapi_config(), create_collection_request)
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to create collection {name}"))))?;
+
+        Ok(res)
     }
 
     /// Lists all collections.
@@ -481,14 +464,12 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn list_collections(&self) -> Result<CollectionList, PineconeError> {
-        match manage_indexes_api::list_collections(&self.openapi_config()).await {
-            Ok(collection_list) => Ok(collection_list),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to list collections: {msg}");
-                Err(PineconeError::ListCollectionsError { status, msg })
-            }
-        }
+        // make openAPI call
+        let res = manage_indexes_api::list_collections(&self.openapi_config())
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to list collections"))))?;
+
+        Ok(res)
     }
 
     /// Deletes a collection.
@@ -513,27 +494,12 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
-        match manage_indexes_api::delete_collection(&self.openapi_config(), name).await {
-            Ok(_) => Ok(()),
-            Err(e) => {
-                let (status, msg) = self.get_err_elements(e);
-                let msg = format!("failed to delete collection {name}: {msg}");
-                Err(PineconeError::DeleteCollectionError { status, msg })
-            }
-        }
-    }
+        // make openAPI call
+        let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
+            .await
+            .map_err(|e| PineconeError::from((e, format!("Failed to delete collection {name}"))))?;
 
-    // will likely delete this funcion later, so the code in err_handler will eventually not be boilerplate
-    fn get_err_elements<T>(
-        &self,
-        e: openapi::apis::Error<T>,
-    ) -> (Option<reqwest::StatusCode>, String) {
-        match e {
-            openapi::apis::Error::Reqwest(e) => (e.status(), e.to_string()),
-            openapi::apis::Error::Serde(e) => (None, e.to_string()),
-            openapi::apis::Error::Io(e) => (None, e.to_string()),
-            openapi::apis::Error::ResponseError(e) => (Some(e.status), e.content),
-        }
+        Ok(res)
     }
 }
 
@@ -791,7 +757,7 @@ mod tests {
                 .body(
                     r#"
                 {
-                    "error": "Index not found"
+                    "error": "Index invalid-index not found"
                 }"#,
                 );
         });
@@ -811,7 +777,7 @@ mod tests {
 
         assert!(matches!(
             describe_index_response,
-            PineconeError::DescribeIndexError { .. }
+            PineconeError::IndexNotFoundError { .. }
         ));
         mock.assert();
 
@@ -842,7 +808,7 @@ mod tests {
 
         assert!(matches!(
             describe_index_response,
-            PineconeError::DescribeIndexError { .. }
+            PineconeError::InternalServerError { .. }
         ));
         mock.assert();
 
@@ -954,7 +920,7 @@ mod tests {
 
         assert!(matches!(
             list_indexes_response,
-            PineconeError::ListIndexesError { .. }
+            PineconeError::InternalServerError { .. }
         ));
         mock.assert();
 
@@ -1176,7 +1142,7 @@ mod tests {
 
         assert!(matches!(
             create_index_response,
-            PineconeError::CreateIndexError { .. }
+            PineconeError::BadRequestError { .. }
         ));
 
         mock.assert();
@@ -1228,7 +1194,7 @@ mod tests {
 
         assert!(matches!(
             create_index_response,
-            PineconeError::CreateIndexError { .. }
+            PineconeError::BadRequestError { .. }
         ));
         mock.assert();
 
@@ -1482,7 +1448,7 @@ mod tests {
 
         assert!(matches!(
             delete_index_response,
-            PineconeError::DeleteIndexError { .. }
+            PineconeError::IndexNotFoundError { .. }
         ));
 
         mock.assert();
@@ -1514,7 +1480,7 @@ mod tests {
 
         assert!(matches!(
             delete_index_response,
-            PineconeError::DeleteIndexError { .. }
+            PineconeError::InternalServerError { .. }
         ));
 
         mock.assert();
@@ -1698,7 +1664,7 @@ mod tests {
 
         assert!(matches!(
             create_collection_response,
-            PineconeError::CreateCollectionError { .. }
+            PineconeError::IndexNotFoundError { .. }
         ));
 
         mock.assert();
@@ -1730,7 +1696,7 @@ mod tests {
 
         assert!(matches!(
             create_collection_response,
-            PineconeError::CreateCollectionError { .. }
+            PineconeError::InternalServerError { .. }
         ));
 
         mock.assert();

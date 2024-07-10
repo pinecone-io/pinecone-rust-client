@@ -1,149 +1,27 @@
 use openapi::apis::{Error as OpenApiError, ResponseContent};
 use reqwest::{self, StatusCode};
-use snafu::Snafu;
 
 /// PineconeError is the error type for all Pinecone SDK errors.
-#[derive(Debug, Snafu)]
+#[derive(Debug)]
 pub enum PineconeError {
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
-    #[snafu(display("API Key is missing"))]
-    APIKeyMissingError,
-
-    /// ConfigureIndexError: Failed to configure an index.
-    #[snafu(display("Failed to configure index: {}", msg))]
-    ConfigureIndexError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
+    APIKeyMissingError {
         /// Error message.
-        msg: String,
-    },
-
-    /// CreateCollectionError: Failed to create a collection.
-    #[snafu(display("Failed to create collection: {}", msg))]
-    CreateCollectionError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// CreateIndexError: Failed to create an index.
-    #[snafu(display("Failed to create an index: {}", msg))]
-    CreateIndexError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// DeleteCollectionError: Failed to delete an index.
-    #[snafu(display("Failed to delete collection: {}", msg))]
-    DeleteCollectionError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// DeleteIndexError: Failed to delete an index.
-    #[snafu(display("Failed to delete index: {}", msg))]
-    DeleteIndexError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// DescribeIndexError: Failed to describe an index.
-    #[snafu(display("Failed to describe the index"))]
-    DescribeIndexError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// InvalidCloudError: Provided cloud is not valid.
-    #[snafu(display("Invalid cloud."))]
-    InvalidCloudError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// InvalidRegionError: Provided region is not valid.
-    #[snafu(display("Invalid region."))]
-    InvalidRegionError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// InvalidHeadersError: Provided headers are not valid. Expects JSON.
-    #[snafu(display("Failed to parse headers."))]
     InvalidHeadersError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
         /// Error message.
-        msg: String,
-    },
-
-    /// InvalidMetricError: Provided metric is not valid.
-    #[snafu(display("Invalid metric."))]
-    InvalidMetricError {
-        /// Error message.
-        msg: String,
-    },
-
-    /// ListCollectionsError: Failed to list indexes.
-    #[snafu(display("Failed to list collections: {}", msg))]
-    ListCollectionsError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// ListIndexesError: Failed to list indexes.
-    #[snafu(display("Failed to list indexes: {}", msg))]
-    ListIndexesError {
-        /// HTTP status code.
-        status: Option<reqwest::StatusCode>,
-        /// Error message.
-        msg: String,
-    },
-
-    /// MissingDimensionError: Index dimension is missing.
-    #[snafu(display("Dimension missing."))]
-    MissingDimensionError {
-        /// Error message.
-        msg: String,
-    },
-
-    /// MissingNameError: Index name is missing.
-    #[snafu(display("Index name missing."))]
-    MissingNameError {
-        /// Error message.
-        msg: String,
-    },
-
-    /// MissingSpecError: Index spec is missing.
-    #[snafu(display("Spec missing."))]
-    MissingSpecError {
-        /// Error message.
-        msg: String,
+        message: String,
     },
 
     /// TimeoutError: Request timed out.
-    #[snafu(display("Request timed out."))]
     TimeoutError {
         /// Error message.
         message: String,
     },
 
-    // new errors
     /// ReqwestError: Error caused by Reqwest
     ReqwestError {
         /// HTTP status code.
@@ -181,7 +59,39 @@ pub enum PineconeError {
     },
 
     /// PodQuotaExceededError: Pod quota exceeded
-    QuotaExceededError {
+    PodQuotaExceededError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
+    /// CollectionsQuotaExceededError: Collections quota exceeded
+    CollectionsQuotaExceededError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
+    /// InvalidCloudError: Provided cloud is not valid.
+    InvalidCloudError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
+    /// InvalidRegionError: Provided region is not valid.
+    InvalidRegionError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
+    /// IndexNotFoundError: Index of given name does not exist
+    IndexNotFoundError {
         /// HTTP status code.
         status: StatusCode,
         /// Error message.
@@ -196,8 +106,24 @@ pub enum PineconeError {
         message: String,
     },
 
+    /// CollectionAlreadyExistsError: Collection of given name already exists
+    CollectionAlreadyExistsError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
     /// Unprocessable entity error: The request body could not be deserialized
     UnprocessableEntityError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String,
+    },
+
+    /// PendingCollectionError: There is a pending collection created from this index
+    PendingCollectionError {
         /// HTTP status code.
         status: StatusCode,
         /// Error message.
@@ -220,28 +146,24 @@ impl<T> From<(OpenApiError<T>, String)> for PineconeError {
     }
 }
 
-// TODO: implement all other From<OpenApiError> for PineconeError?
-
 // Helper function to extract status/error message
 fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
     match e {
-        OpenApiError::Reqwest(e) => PineconeError::ReqwestError {
-            status: match e.status() {
-                Some(status) => status,
-                None => StatusCode::INTERNAL_SERVER_ERROR,
-            },
-            message: e.to_string(),
+        OpenApiError::Reqwest(inner) => PineconeError::ReqwestError {
+            status: inner.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            message: inner.to_string(),
         },
-        OpenApiError::Serde(e) => PineconeError::SerdeError {
-            message: e.to_string(),
+        OpenApiError::Serde(inner) => PineconeError::SerdeError {
+            message: inner.to_string(),
         },
-        OpenApiError::Io(e) => PineconeError::IoError {
-            message: e.to_string(),
+        OpenApiError::Io(inner) => PineconeError::IoError {
+            message: inner.to_string(),
         },
-        OpenApiError::ResponseError(e) => handle_response_error(e, message),
+        OpenApiError::ResponseError(inner) => handle_response_error(inner, message),
     }
 }
 
+// Helper function to handle response errors
 fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeError {
     let err_message = e.content;
     let status = e.status;
@@ -250,10 +172,78 @@ fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeE
     match status {
         StatusCode::BAD_REQUEST => PineconeError::BadRequestError { status, message },
         StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { status, message },
+        StatusCode::FORBIDDEN => parse_quota_exceeded_error(message),
+        StatusCode::NOT_FOUND => parse_not_found_error(message),
+        StatusCode::CONFLICT => parse_conflict_error(message),
+        StatusCode::PRECONDITION_FAILED => {
+            PineconeError::PendingCollectionError { status, message }
+        }
         StatusCode::UNPROCESSABLE_ENTITY => {
             PineconeError::UnprocessableEntityError { status, message }
         }
         StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError { status, message },
         _ => PineconeError::ReqwestError { status, message },
+    }
+}
+
+fn parse_not_found_error(message: String) -> PineconeError {
+    if message.contains("Index") {
+        PineconeError::IndexNotFoundError {
+            status: StatusCode::NOT_FOUND,
+            message,
+        }
+    } else if message.contains("cloud") {
+        PineconeError::InvalidCloudError {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message,
+        }
+    } else if message.contains("region") {
+        PineconeError::InvalidRegionError {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message,
+        }
+    } else {
+        PineconeError::InternalServerError {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message,
+        }
+    }
+}
+
+fn parse_conflict_error(message: String) -> PineconeError {
+    if message.contains("Index") {
+        PineconeError::IndexAlreadyExistsError {
+            status: StatusCode::CONFLICT,
+            message,
+        }
+    } else if message.contains("Collection") {
+        PineconeError::CollectionAlreadyExistsError {
+            status: StatusCode::CONFLICT,
+            message,
+        }
+    } else {
+        PineconeError::InternalServerError {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message,
+        }
+    }
+}
+
+fn parse_quota_exceeded_error(message: String) -> PineconeError {
+    if message.contains("Pod") {
+        PineconeError::PodQuotaExceededError {
+            status: StatusCode::FORBIDDEN,
+            message,
+        }
+    } else if message.contains("Collection") {
+        PineconeError::CollectionsQuotaExceededError {
+            status: StatusCode::FORBIDDEN,
+            message,
+        }
+    } else {
+        PineconeError::InternalServerError {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message,
+        }
     }
 }

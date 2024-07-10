@@ -56,7 +56,10 @@ impl PineconeClient {
             None => match std::env::var("PINECONE_API_KEY") {
                 Ok(key) => key,
                 Err(_) => {
-                    return Err(PineconeError::APIKeyMissingError);
+                    let message = "API key is not provided as an argument nor as an environment variable";
+                    return Err(PineconeError::APIKeyMissingError {
+                        message: message.to_string(),
+                    });
                 }
             },
         };
@@ -71,10 +74,10 @@ impl PineconeClient {
             None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
                 Ok(headers) => match serde_json::from_str(&headers) {
                     Ok(headers) => headers,
-                    Err(json_error) => {
+                    Err(_) => {
+                        let message = "Provided headers are not valid. Expects JSON.";
                         return Err(PineconeError::InvalidHeadersError {
-                            status: None,
-                            msg: json_error.to_string(),
+                            message: message.to_string(),
                         });
                     }
                 },
@@ -183,7 +186,7 @@ mod tests {
             )
             .expect_err("Expected to fail creating Pinecone instance due to missing API key");
 
-            assert!(matches!(pinecone, PineconeError::APIKeyMissingError));
+            assert!(matches!(pinecone, PineconeError::APIKeyMissingError { .. }));
         });
 
         Ok(())
