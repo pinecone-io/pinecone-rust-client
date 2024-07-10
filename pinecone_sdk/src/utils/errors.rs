@@ -28,12 +28,6 @@ pub enum PineconeError {
         inner: Box<dyn std::error::Error>,
     },
 
-    /// ConnectionError: Failed to establish a connection.
-    ConnectionError {
-        /// inner: Error object for connection error.
-        inner: Box<dyn std::error::Error>,
-    },
-
     /// ReqwestError: Error caused by Reqwest
     ReqwestError {
         /// HTTP status code.
