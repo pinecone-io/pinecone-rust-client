@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parent()
         .expect("proto file should reside in a directory");
 
-    let include_dirs = [proto_dir, "imports".as_ref()];
+    let include_dirs = [proto_dir];
 
     tonic_build::configure()
         .protoc_arg("--experimental_allow_proto3_optional")

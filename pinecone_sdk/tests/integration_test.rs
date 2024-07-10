@@ -38,10 +38,6 @@ fn get_pod_index() -> String {
     std::env::var("POD_INDEX_NAME").unwrap()
 }
 
-fn get_data_plane_index() -> String {
-    std::env::var("DATA_PLANE_INDEX_NAME").unwrap()
-}
-
 fn get_collection() -> String {
     std::env::var("COLLECTION_NAME").unwrap()
 }
@@ -444,7 +440,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
     let mut index = pinecone
-        .index(&get_data_plane_index())
+        .index(&get_serverless_index())
         .await
         .expect("Failed to target index");
 
