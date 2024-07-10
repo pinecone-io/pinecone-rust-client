@@ -31,4 +31,5 @@ jobs:
             SERVERLESS_INDEX_NAME: ${{ secrets.SERVERLESS_INDEX_NAME }}
             POD_INDEX_NAME: ${{ secrets.POD_INDEX_NAME }}
             DATA_PLANE_INDEX_NAME: ${{ secrets.DATA_PLANE_INDEX_NAME }}
+            COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
           run: cargo test --verbose

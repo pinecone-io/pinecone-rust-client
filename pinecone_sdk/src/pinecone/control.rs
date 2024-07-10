@@ -221,7 +221,7 @@ impl PineconeClient {
                     match duration.cmp(&start_time.elapsed()) {
                         // if index not ready after waiting specified duration, return error
                         std::cmp::Ordering::Less => {
-                            let message = format!("Index {name} not ready");
+                            let message = format!("Index \"{name}\" not ready");
                             return Err(PineconeError::TimeoutError { message });
                         }
                         // if still waiting, sleep for 5 seconds or remaining time
@@ -362,7 +362,7 @@ impl PineconeClient {
             configure_index_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to configure index {name}"))))?;
+        .map_err(|e| PineconeError::from((e, format!("Failed to configure index \"{name}\""))))?;
 
         Ok(res)
     }
@@ -392,7 +392,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to delete index {name}"))))?;
+            .map_err(|e| PineconeError::from((e, format!("Failed to delete index \"{name}\""))))?;
 
         Ok(res)
     }
@@ -436,7 +436,38 @@ impl PineconeClient {
             create_collection_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to create collection {name}"))))?;
+        .map_err(|e| PineconeError::from((e, format!("Failed to create collection \"{name}\""))))?;
+
+        Ok(res)
+    }
+
+    /// Describe a collection.
+    ///
+    /// ### Arguments
+    /// * name: &str - The name of the collection to describe.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let response = pinecone.describe_collection("collection-name").await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
+        let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
+            .await
+            .map_err(|e| {
+                PineconeError::from((e, format!("Failed to describe collection \"{name}\"")))
+            })?;
 
         Ok(res)
     }
@@ -496,7 +527,9 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to delete collection {name}"))))?;
+            .map_err(|e| {
+                PineconeError::from((e, format!("Failed to delete collection \"{name}\"")))
+            })?;
 
         Ok(res)
     }
@@ -2018,46 +2051,67 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection() -> Result<(), PineconeError> {
+    async fn test_describe_collection() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
-            then.status(202);
+            when.method(GET).path("/collections/collection-name");
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(
+                    r#"{
+                        "dimension": 3,
+                        "environment": "us-east1-gcp",
+                        "name": "tiny-collection",
+                        "size": 3126700,
+                        "status": "Ready",
+                        "vector_count": 99
+                      }"#,
+                );
         });
 
+        // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
+            Some("api-key".to_string()),
             Some(server.base_url()),
             None,
             None,
         )
         .expect("Failed to create Pinecone instance");
 
-        let _ = pinecone
-            .delete_collection("collection-name")
+        // Call describe_collection and verify the result
+        let collection = pinecone
+            .describe_collection("collection-name")
             .await
-            .expect("Failed to delete collection");
+            .expect("Failed to describe collection");
 
+        let expected = CollectionModel {
+            name: "tiny-collection".to_string(),
+            size: Some(3126700),
+            status: Status::Ready,
+            dimension: Some(3),
+            vector_count: Some(99),
+            environment: "us-east1-gcp".to_string(),
+        };
+
+        assert_eq!(collection, expected);
         mock.assert();
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_delete_collection_not_found() -> Result<(), PineconeError> {
+    async fn test_describe_collection_invalid_name() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
+            when.method(GET).path("/collections/invalid-collection");
             then.status(404)
                 .header("content-type", "application/json")
                 .body(
-                    r#"
-                    {
-                        "error": "Collection not found"
-                    }
-                "#,
+                    r#"{
+                    "error": "Collection invalid-collection not found"
+                }"#,
                 );
         });
 
@@ -2069,27 +2123,26 @@ mod tests {
         )
         .expect("Failed to create Pinecone instance");
 
-        let delete_collection_response = pinecone
-            .delete_collection("collection-name")
+        let response = pinecone
+            .describe_collection("invalid-collection")
             .await
-            .expect_err("Expected delete_collection to return an error");
+            .expect_err("Expected describe_collection to return an error");
 
         assert!(matches!(
-            delete_collection_response,
+            response,
             PineconeError::CollectionNotFoundError { .. }
         ));
-
         mock.assert();
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_delete_collection_internal_error() -> Result<(), PineconeError> {
+    async fn test_describe_collection_server_error() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
+            when.method(GET).path("/collections/collection-name");
             then.status(500);
         });
 
@@ -2101,16 +2154,15 @@ mod tests {
         )
         .expect("Failed to create Pinecone instance");
 
-        let delete_collection_response = pinecone
-            .delete_collection("collection-name")
+        let response = pinecone
+            .describe_collection("collection-name")
             .await
-            .expect_err("Expected delete_collection to return an error");
+            .expect_err("Expected describe_collection to return an error");
 
         assert!(matches!(
-            delete_collection_response,
+            response,
             PineconeError::InternalServerError { .. }
         ));
-
         mock.assert();
 
         Ok(())
@@ -2235,6 +2287,105 @@ mod tests {
             list_collections_response,
             PineconeError::InternalServerError { .. }
         ));
+        mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_collection() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(DELETE).path("/collections/collection-name");
+            then.status(202);
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(server.base_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let _ = pinecone
+            .delete_collection("collection-name")
+            .await
+            .expect("Failed to delete collection");
+
+        mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_collection_not_found() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(DELETE).path("/collections/collection-name");
+            then.status(404)
+                .header("content-type", "application/json")
+                .body(
+                    r#"
+                    {
+                        "error": "Collection not found"
+                    }
+                "#,
+                );
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(server.base_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let delete_collection_response = pinecone
+            .delete_collection("collection-name")
+            .await
+            .expect_err("Expected delete_collection to return an error");
+
+        assert!(matches!(
+            delete_collection_response,
+            PineconeError::CollectionNotFoundError { .. }
+        ));
+
+        mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_delete_collection_internal_error() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(DELETE).path("/collections/collection-name");
+            then.status(500);
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api_key".to_string()),
+            Some(server.base_url()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let delete_collection_response = pinecone
+            .delete_collection("collection-name")
+            .await
+            .expect_err("Expected delete_collection to return an error");
+
+        assert!(matches!(
+            delete_collection_response,
+            PineconeError::InternalServerError { .. }
+        ));
+
         mock.assert();
 
         Ok(())

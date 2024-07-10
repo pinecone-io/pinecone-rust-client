@@ -42,6 +42,10 @@ fn get_data_plane_index() -> String {
     std::env::var("DATA_PLANE_INDEX_NAME").unwrap()
 }
 
+fn get_collection() -> String {
+    std::env::var("COLLECTION_NAME").unwrap()
+}
+
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
     let pinecone =
@@ -319,19 +323,6 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_list_collections() -> Result<(), PineconeError> {
-    let pinecone =
-        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
-
-    let _ = pinecone
-        .list_collections()
-        .await
-        .expect("Failed to list collections");
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
@@ -390,6 +381,47 @@ async fn test_create_collection_invalid_err() -> Result<(), PineconeError> {
         .create_collection(&collection_name, "invalid-index")
         .await
         .expect_err("Expected to fail creating collection from invalid index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_describe_collection() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let collection_name = &get_collection();
+
+    let _ = pinecone
+        .describe_collection(&collection_name)
+        .await
+        .expect("Failed to describe collection");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_describe_collection_fail() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let _ = pinecone
+        .describe_collection("invalid-collection")
+        .await
+        .expect_err("Expected to fail describing collection");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_list_collections() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let _ = pinecone
+        .list_collections()
+        .await
+        .expect("Failed to list collections");
 
     Ok(())
 }
