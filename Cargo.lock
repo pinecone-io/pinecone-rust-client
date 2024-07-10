@@ -1319,6 +1319,7 @@ dependencies = [
  "openapi",
  "rand",
  "regex",
+ "reqwest",
  "serde_json",
  "snafu",
  "temp-env",
