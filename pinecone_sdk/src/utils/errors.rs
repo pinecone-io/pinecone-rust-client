@@ -90,6 +90,14 @@ pub enum PineconeError {
         message: String,
     },
 
+    /// CollectionNotFoundError: Collection of given name does not exist
+    CollectionNotFoundError {
+        /// HTTP status code.
+        status: StatusCode,
+        /// Error message.
+        message: String
+    },
+
     /// IndexNotFoundError: Index of given name does not exist
     IndexNotFoundError {
         /// HTTP status code.
@@ -192,14 +200,19 @@ fn parse_not_found_error(message: String) -> PineconeError {
             status: StatusCode::NOT_FOUND,
             message,
         }
-    } else if message.contains("cloud") {
-        PineconeError::InvalidCloudError {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
+    } else if message.contains("Collection") {
+        PineconeError::CollectionNotFoundError {
+            status: StatusCode::NOT_FOUND,
             message,
         }
     } else if message.contains("region") {
         PineconeError::InvalidRegionError {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
+            status: StatusCode::NOT_FOUND,
+            message,
+        }
+    } else if message.contains("cloud") {
+        PineconeError::InvalidCloudError {
+            status: StatusCode::NOT_FOUND,
             message,
         }
     } else {
@@ -211,12 +224,12 @@ fn parse_not_found_error(message: String) -> PineconeError {
 }
 
 fn parse_conflict_error(message: String) -> PineconeError {
-    if message.contains("Index") {
+    if message.contains("index") {
         PineconeError::IndexAlreadyExistsError {
             status: StatusCode::CONFLICT,
             message,
         }
-    } else if message.contains("Collection") {
+    } else if message.contains("collection") {
         PineconeError::CollectionAlreadyExistsError {
             status: StatusCode::CONFLICT,
             message,
@@ -230,7 +243,7 @@ fn parse_conflict_error(message: String) -> PineconeError {
 }
 
 fn parse_quota_exceeded_error(message: String) -> PineconeError {
-    if message.contains("Pod") {
+    if message.contains("index") {
         PineconeError::PodQuotaExceededError {
             status: StatusCode::FORBIDDEN,
             message,
