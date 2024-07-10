@@ -1249,7 +1249,8 @@ mod tests {
 
         let mock = server.mock(|when, then| {
             when.method(POST).path("/indexes");
-            then.status(403).header("content-type", "application/json")
+            then.status(403)
+                .header("content-type", "application/json")
                 .body(
                     r#"
                     {
@@ -1269,7 +1270,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1568,7 +1569,8 @@ mod tests {
 
         let mock = server.mock(|when, then| {
             when.path("/indexes/index-name");
-            then.status(403).header("content-type", "application/json")
+            then.status(403)
+                .header("content-type", "application/json")
                 .body(
                     r#"
                     {
@@ -1587,7 +1589,8 @@ mod tests {
             Some(server.base_url()),
             None,
             None,
-        ).expect("Failed to create Pinecone instance");
+        )
+        .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", 6, "p1.x1")
@@ -1629,7 +1632,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", 6, "p1.x1")
@@ -1671,7 +1674,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", 6, "p1.x1")
@@ -1703,7 +1706,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", 6, "p1.x1")
@@ -1802,7 +1805,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let delete_index_response = pinecone
             .delete_index("index-name")
@@ -1930,7 +1933,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("invalid_collection", "valid-index")
@@ -1970,7 +1973,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("invalid_collection", "valid-index")
@@ -2002,7 +2005,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("collection-name", "index1")
@@ -2034,7 +2037,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let _ = pinecone
             .delete_collection("collection-name")
@@ -2069,7 +2072,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let delete_collection_response = pinecone
             .delete_collection("collection-name")
@@ -2101,7 +2104,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         let delete_collection_response = pinecone
             .delete_collection("collection-name")
@@ -2166,7 +2169,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         // Call list_collections and verify the result
         let collection_list = pinecone
@@ -2225,7 +2228,7 @@ mod tests {
             None,
             None,
         )
-            .expect("Failed to create Pinecone instance");
+        .expect("Failed to create Pinecone instance");
 
         // Call list_collections and verify the result
         let list_collections_response = pinecone
@@ -2233,7 +2236,10 @@ mod tests {
             .await
             .expect_err("Expected to fail to list collections");
 
-        assert!(matches!(list_collections_response, PineconeError::InternalServerError { .. }));
+        assert!(matches!(
+            list_collections_response,
+            PineconeError::InternalServerError { .. }
+        ));
         mock.assert();
 
         Ok(())
