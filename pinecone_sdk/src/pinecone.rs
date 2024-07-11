@@ -49,7 +49,7 @@ impl PineconeClient {
         control_plane_host: Option<String>,
         additional_headers: Option<HashMap<String, String>>,
         source_tag: Option<String>,
-    ) -> Result<Self, PineconeError> {
+    ) -> Result<Self, PineconeError<>> {
         // get api key
         let api_key_str = match api_key {
             Some(key) => key,

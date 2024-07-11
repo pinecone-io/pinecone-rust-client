@@ -3,7 +3,9 @@ use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
-use openapi::apis::manage_indexes_api;
+use openapi::apis::manage_indexes_api::{
+    self, ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError, DeleteIndexError, DescribeCollectionError, DescribeIndexError, ListCollectionsError, ListIndexesError
+};
 
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
@@ -74,7 +76,7 @@ impl PineconeClient {
         cloud: Cloud,
         region: &str,
         timeout: WaitPolicy,
-    ) -> Result<IndexModel, PineconeError> {
+    ) -> Result<IndexModel, PineconeError<CreateIndexError>> {
         // create request specs
         let create_index_request_spec = IndexSpec {
             serverless: Some(Box::new(ServerlessSpec {
@@ -166,7 +168,7 @@ impl PineconeClient {
         metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
         timeout: WaitPolicy,
-    ) -> Result<IndexModel, PineconeError> {
+    ) -> Result<IndexModel, PineconeError<CreateIndexError>> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
 
@@ -209,7 +211,7 @@ impl PineconeClient {
         &self,
         name: &str,
         timeout: WaitPolicy,
-    ) -> Result<(), PineconeError> {
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         match timeout {
             WaitPolicy::WaitFor(duration) => {
                 let start_time = std::time::Instant::now();
@@ -276,7 +278,10 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
+    pub async fn describe_index(
+        &self,
+        name: &str,
+    ) -> Result<IndexModel, PineconeError<DescribeIndexError>> {
         // make openAPI call
         let res = manage_indexes_api::describe_index(&self.openapi_config(), name)
             .await
@@ -310,7 +315,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
+    pub async fn list_indexes(&self) -> Result<IndexList, PineconeError<ListIndexesError>> {
         // make openAPI call
         let res = manage_indexes_api::list_indexes(&self.openapi_config())
             .await
@@ -351,7 +356,7 @@ impl PineconeClient {
         name: &str,
         replicas: i32,
         pod_type: &str,
-    ) -> Result<IndexModel, PineconeError> {
+    ) -> Result<IndexModel, PineconeError<ConfigureIndexError>> {
         let configure_index_request = ConfigureIndexRequest::new(ConfigureIndexRequestSpec::new(
             ConfigureIndexRequestSpecPod {
                 replicas: Some(replicas),
@@ -392,7 +397,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
+    pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError<DeleteIndexError>> {
         // make openAPI call
         let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
             .await
@@ -429,7 +434,7 @@ impl PineconeClient {
         &self,
         name: &str,
         source: &str,
-    ) -> Result<CollectionModel, PineconeError> {
+    ) -> Result<CollectionModel, PineconeError<CreateCollectionError>> {
         let create_collection_request = CreateCollectionRequest {
             name: name.to_string(),
             source: source.to_string(),
@@ -467,7 +472,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
+    pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError<DescribeCollectionError>> {
         let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
             .await
             .map_err(|e| {
@@ -498,7 +503,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn list_collections(&self) -> Result<CollectionList, PineconeError> {
+    pub async fn list_collections(&self) -> Result<CollectionList, PineconeError<ListCollectionsError>> {
         // make openAPI call
         let res = manage_indexes_api::list_collections(&self.openapi_config())
             .await
@@ -528,7 +533,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
+    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError<DeleteCollectionError>> {
         // make openAPI call
         let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
             .await
@@ -544,11 +549,12 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use httpmock::prelude::*;
+    use manage_indexes_api::CreateIndexError;
     use openapi::models::{self, collection_model::Status, IndexList};
     use tokio;
 
     #[tokio::test]
-    async fn test_create_serverless_index() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -613,7 +619,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_defaults() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index_defaults() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -677,7 +683,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_invalid_region() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index_invalid_region() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -725,7 +731,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_index_exists() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index_index_exists() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -773,7 +779,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_unprocessable_entity() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index_unprocessable_entity() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -821,7 +827,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_internal_error() -> Result<(), PineconeError> {
+    async fn test_create_serverless_index_internal_error() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -859,7 +865,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_serverless_index() -> Result<(), PineconeError> {
+    async fn test_describe_serverless_index() -> Result<(), PineconeError<DescribeIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -926,7 +932,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_index_invalid_name() -> Result<(), PineconeError> {
+    async fn test_describe_index_invalid_name() -> Result<(), PineconeError<DescribeIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -963,7 +969,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_index_server_error() -> Result<(), PineconeError> {
+    async fn test_describe_index_server_error() -> Result<(), PineconeError<DescribeIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -994,7 +1000,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_indexes() -> Result<(), PineconeError> {
+    async fn test_list_indexes() -> Result<(), PineconeError<ListIndexesError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1075,7 +1081,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_indexes_server_error() -> Result<(), PineconeError> {
+    async fn test_list_indexes_server_error() -> Result<(), PineconeError<ListIndexesError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1106,7 +1112,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index() -> Result<(), PineconeError> {
+    async fn test_create_pod_index() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1198,7 +1204,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index_with_defaults() -> Result<(), PineconeError> {
+    async fn test_create_pod_index_with_defaults() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1277,7 +1283,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index_quota_exceeded() -> Result<(), PineconeError> {
+    async fn test_create_pod_index_quota_exceeded() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1333,7 +1339,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index_invalid_environment() -> Result<(), PineconeError> {
+    async fn test_create_pod_index_invalid_environment() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1385,7 +1391,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index_invalid_pod_type() -> Result<(), PineconeError> {
+    async fn test_create_pod_index_invalid_pod_type() -> Result<(), PineconeError<CreateIndexError>>
+    {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1436,7 +1443,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_handle_polling_index_ok() -> Result<(), PineconeError> {
+    async fn test_handle_polling_index_ok() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1483,7 +1490,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_handle_polling_index_err() -> Result<(), PineconeError> {
+    async fn test_handle_polling_index_err() -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1534,7 +1541,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index() -> Result<(), PineconeError> {
+    async fn test_configure_index() -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1597,7 +1604,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError> {
+    async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1641,7 +1648,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_not_found() -> Result<(), PineconeError> {
+    async fn test_configure_index_not_found() -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1683,7 +1690,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_unprocessable_entity() -> Result<(), PineconeError> {
+    async fn test_configure_index_unprocessable_entity() -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1725,7 +1732,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_internal_error() -> Result<(), PineconeError> {
+    async fn test_configure_index_internal_error() -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1745,19 +1752,19 @@ mod tests {
             .configure_index("index-name", 6, "p1.x1")
             .await
             .expect_err("Expected to fail to configure index");
+        eprintln!("hi");
 
         assert!(matches!(
             configure_index_response,
             PineconeError::InternalServerError { .. }
         ));
-
         mock.assert();
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_delete_index() -> Result<(), PineconeError> {
+    async fn test_delete_index() -> Result<(), PineconeError<DeleteIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1784,7 +1791,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_index_invalid_name() -> Result<(), PineconeError> {
+    async fn test_delete_index_invalid_name() -> Result<(), PineconeError<DeleteIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1824,7 +1831,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_index_pending_collection() -> Result<(), PineconeError> {
+    async fn test_delete_index_pending_collection() -> Result<(), PineconeError<DeleteIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1856,7 +1863,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_index_server_error() -> Result<(), PineconeError> {
+    async fn test_delete_index_server_error() -> Result<(), PineconeError<DeleteIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1888,7 +1895,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection() -> Result<(), PineconeError> {
+    async fn test_create_collection() -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1940,7 +1947,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_quota_exceeded() -> Result<(), PineconeError> {
+    async fn test_create_collection_quota_exceeded() -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1984,7 +1991,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_invalid_name() -> Result<(), PineconeError> {
+    async fn test_create_collection_invalid_name() -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2024,7 +2031,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_server_error() -> Result<(), PineconeError> {
+    async fn test_create_collection_server_error() -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2056,7 +2063,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_collection() -> Result<(), PineconeError> {
+    async fn test_describe_collection() -> Result<(), PineconeError<DescribeCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2106,7 +2113,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_collection_invalid_name() -> Result<(), PineconeError> {
+    async fn test_describe_collection_invalid_name() -> Result<(), PineconeError<DescribeCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2143,7 +2150,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_collection_server_error() -> Result<(), PineconeError> {
+    async fn test_describe_collection_server_error() -> Result<(), PineconeError<DescribeCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2174,7 +2181,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_collections() -> Result<(), PineconeError> {
+    async fn test_list_collections() -> Result<(), PineconeError<ListCollectionsError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2266,7 +2273,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_collections_error() -> Result<(), PineconeError> {
+    async fn test_list_collections_error() -> Result<(), PineconeError<ListCollectionsError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2298,7 +2305,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection() -> Result<(), PineconeError> {
+    async fn test_delete_collection() -> Result<(), PineconeError<DeleteCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2325,7 +2332,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection_not_found() -> Result<(), PineconeError> {
+    async fn test_delete_collection_not_found() -> Result<(), PineconeError<DeleteCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2365,7 +2372,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection_internal_error() -> Result<(), PineconeError> {
+    async fn test_delete_collection_internal_error() -> Result<(), PineconeError<DeleteCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
