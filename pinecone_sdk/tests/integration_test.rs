@@ -439,10 +439,15 @@ async fn test_delete_collection_err() -> Result<(), PineconeError> {
 async fn test_upsert() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
-    let mut index = pinecone
-        .index(&get_serverless_index())
+    let host = pinecone
+        .describe_index(&get_serverless_index())
         .await
-        .expect("Failed to target index");
+        .unwrap()
+        .host;
+
+    let host = &format!("https://{}", host);
+
+    let mut index = pinecone.index(host).await.expect("Failed to target index");
 
     let vectors = vec![Vector {
         id: "1".to_string(),

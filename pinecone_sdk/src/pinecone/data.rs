@@ -35,7 +35,7 @@ impl Interceptor for ApiKeyInterceptor {
 #[derive(Debug)]
 pub struct Index {
     /// The name of the index.
-    name: String,
+    host: String,
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
 }
 
@@ -115,36 +115,24 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn index(&self, name: &str) -> Result<Index, PineconeError> {
+    pub async fn index(&self, host: &str) -> Result<Index, PineconeError> {
         let index = Index {
-            name: name.to_string(),
-            connection: self.new_index_connection(name).await?,
+            host: host.to_string(),
+            connection: self.new_index_connection(host).await?,
         };
 
         Ok(index)
     }
 
-    async fn get_index_host(&self, name: &str) -> Result<String, PineconeError> {
-        let index_host = self.describe_index(name).await?.host;
-        // prepend with "https://" if not already present
-        let index_host = if index_host.starts_with("https://") {
-            index_host
-        } else {
-            format!("https://{}", index_host)
-        };
-        Ok(index_host)
-    }
-
     async fn new_index_connection(
         &self,
-        name: &str,
+        host: &str,
     ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
     {
-        let index_host = self.get_index_host(name).await?;
         let tls_config = tonic::transport::ClientTlsConfig::default();
 
         // connect to server
-        let endpoint = match Channel::from_shared(index_host) {
+        let endpoint = match Channel::from_shared(host.to_string()) {
             Ok(endpoint) => match endpoint.tls_config(tls_config) {
                 Ok(configured_endpoint) => configured_endpoint,
                 Err(e) => {
@@ -169,47 +157,5 @@ impl PineconeClient {
         let inner = VectorServiceClient::with_interceptor(channel, add_api_key_interceptor);
 
         Ok(inner)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use httpmock::prelude::*;
-    use tokio;
-
-    #[tokio::test]
-    async fn test_index_connection_failed() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/indexes/serverless-index");
-            then.status(404)
-                .header("content-type", "application/json")
-                .body(
-                    r#"{
-                        "error": {
-                            "code": "NOT_FOUND",
-                            "message": "Index serverless-index not found."
-                        },
-                        "status": 404
-                    }"#,
-                );
-        });
-
-        let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
-            None,
-            None,
-        )
-        .expect("Failed to create Pinecone client");
-        let _ = pinecone
-            .index("serverless-index")
-            .await
-            .expect_err("Expected index connection to fail");
-
-        mock.assert();
-
-        Ok(())
     }
 }
