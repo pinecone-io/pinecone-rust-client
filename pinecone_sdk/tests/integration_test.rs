@@ -447,7 +447,10 @@ async fn test_upsert() -> Result<(), PineconeError> {
 
     let host = &format!("https://{}", host);
 
-    let mut index = pinecone.index(host).await.expect("Failed to target index");
+    let mut index = pinecone
+        .index(host, None, None)
+        .await
+        .expect("Failed to target index");
 
     let vectors = vec![Vector {
         id: "1".to_string(),

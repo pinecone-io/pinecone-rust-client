@@ -59,7 +59,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let mut index = pinecone.index("my-index").await.unwrap();
+    /// let mut index = pinecone.index("index-name", None, None).await.unwrap();
     ///
     /// let vectors = vec![Vector {
     ///     id: "vector-id".to_string(),
@@ -96,7 +96,9 @@ impl PineconeClient {
     /// Target an index for data operations.
     ///
     /// ### Arguments
-    /// * `name: &str` - The name of the index to target.
+    /// * `host: &str` - The host of the index to target.
+    /// * `secure: Option<bool>` - Whether to use a secure connection. If not provided, defaults to `true`.
+    /// * `port: Option<u32>` - The port of the index to target. If not provided, defaults to `443`.
     ///
     /// ### Return
     /// * `Result<Index, PineconeError>` - A Pinecone index object.
@@ -111,13 +113,43 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let index = pinecone.index("my-index").await.unwrap();
+    /// let index = pinecone.index("index-name", None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn index(&self, host: &str) -> Result<Index, PineconeError> {
+    pub async fn index(
+        &self,
+        host: &str,
+        secure: Option<bool>,
+        port: Option<u32>,
+    ) -> Result<Index, PineconeError> {
+        let secure = match secure {
+            Some(secure) => secure,
+            None => true,
+        };
+
+        let port = match port {
+            Some(port) => port,
+            None => 443,
+        };
+
+        let endpoint = host.to_string();
+
+        let endpoint = if endpoint.contains("://") {
+            endpoint.to_string()
+        } else {
+            let scheme = if secure { "https" } else { "http" };
+            format!("{}://{}", scheme, endpoint)
+        };
+
+        let endpoint = if endpoint.contains(":") {
+            endpoint.to_string()
+        } else {
+            format!("{}:{}", endpoint, port)
+        };
+
         let index = Index {
-            host: host.to_string(),
+            host: endpoint.to_string(),
             connection: self.new_index_connection(host).await?,
         };
 
