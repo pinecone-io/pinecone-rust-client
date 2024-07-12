@@ -28,6 +28,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: reqwest::Error,
     },
 
@@ -35,6 +36,7 @@ pub enum PineconeError<T> {
     SerdeError {
         /// Error message.
         message: String,
+        /// Source error.
         source: serde_json::Error,
     },
 
@@ -42,6 +44,7 @@ pub enum PineconeError<T> {
     IoError {
         /// Error message.
         message: String,
+        /// Source error.
         source: std::io::Error,
     },
 
@@ -51,6 +54,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -60,6 +64,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -69,6 +74,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -78,6 +84,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -87,6 +94,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -96,6 +104,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -105,6 +114,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -114,6 +124,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -123,6 +134,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -132,6 +144,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -141,6 +154,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -150,6 +164,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
@@ -159,6 +174,7 @@ pub enum PineconeError<T> {
         status: StatusCode,
         /// Error message.
         message: String,
+        /// Source error.
         source: ResponseContent<T>,
     },
 
