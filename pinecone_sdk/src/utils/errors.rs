@@ -2,38 +2,6 @@ use openapi::apis::{Error as OpenApiError, ResponseContent};
 
 use reqwest::{self, StatusCode};
 
-pub struct WrappedResponseContent {
-    pub status: reqwest::StatusCode,
-    pub content: String,
-}
-
-impl<T> From<ResponseContent<T>> for WrappedResponseContent {
-    fn from(rc: ResponseContent<T>) -> Self {
-        WrappedResponseContent {
-            status: rc.status,
-            content: rc.content,
-        }
-    }
-}
-
-impl std::error::Error for WrappedResponseContent {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-impl std::fmt::Display for WrappedResponseContent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "status: {} content: {}", self.status, self.content)
-    }
-}
-
-impl std::fmt::Debug for WrappedResponseContent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "status: {} content: {}", self.status, self.content)
-    }
-}
-
 /// PineconeError is the error type for all Pinecone SDK errors.
 #[derive(Debug)]
 pub enum PineconeError {
@@ -480,5 +448,37 @@ impl std::error::Error for PineconeError {
             PineconeError::InvalidHeadersError { message: _ } => None,
             PineconeError::TimeoutError { message: _ } => None,
         }
+    }
+}
+
+pub struct WrappedResponseContent {
+    pub status: reqwest::StatusCode,
+    pub content: String,
+}
+
+impl<T> From<ResponseContent<T>> for WrappedResponseContent {
+    fn from(rc: ResponseContent<T>) -> Self {
+        WrappedResponseContent {
+            status: rc.status,
+            content: rc.content,
+        }
+    }
+}
+
+impl std::error::Error for WrappedResponseContent {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+impl std::fmt::Display for WrappedResponseContent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "status: {} content: {}", self.status, self.content)
+    }
+}
+
+impl std::fmt::Debug for WrappedResponseContent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "status: {} content: {}", self.status, self.content)
     }
 }
