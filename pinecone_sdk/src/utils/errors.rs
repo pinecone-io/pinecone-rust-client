@@ -2,51 +2,41 @@ use openapi::apis::{Error as OpenApiError, ResponseContent};
 
 use reqwest::{self, StatusCode};
 
-pub struct WrappedResponseContent<T> {
-    pub response_content: ResponseContent<T>,
+pub struct WrappedResponseContent {
+    pub status: reqwest::StatusCode,
+    pub content: String,
 }
 
-impl<T> From<ResponseContent<T>> for WrappedResponseContent<T> {
-    fn from(response_content: ResponseContent<T>) -> Self {
+impl<T> From<ResponseContent<T>> for WrappedResponseContent {
+    fn from(rc: ResponseContent<T>) -> Self {
         WrappedResponseContent {
-            response_content: ResponseContent {
-                status: response_content.status,
-                content: response_content.content,
-                entity: response_content.entity,
-            },
+            status: rc.status,
+            content: rc.content,
         }
     }
 }
 
-impl<T> std::error::Error for WrappedResponseContent<T> {
+impl std::error::Error for WrappedResponseContent {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
 }
 
-impl<T> std::fmt::Display for WrappedResponseContent<T> {
+impl std::fmt::Display for WrappedResponseContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "status: {} content: {}",
-            self.response_content.status, self.response_content.content
-        )
+        write!(f, "status: {} content: {}", self.status, self.content)
     }
 }
 
-impl<T> std::fmt::Debug for WrappedResponseContent<T> {
+impl std::fmt::Debug for WrappedResponseContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "status: {} content: {}",
-            self.response_content.status, self.response_content.content
-        )
+        write!(f, "status: {} content: {}", self.status, self.content)
     }
 }
 
 /// PineconeError is the error type for all Pinecone SDK errors.
 #[derive(Debug)]
-pub enum PineconeError<T> {
+pub enum PineconeError {
     /// UnknownResponseError: Unknown response error.
     UnknownResponseError {
         /// status code
@@ -93,7 +83,7 @@ pub enum PineconeError<T> {
     /// BadRequestError: Bad request. The request body included invalid request parameters
     BadRequestError {
         /// error
-        source: WrappedResponseContent<T>,
+        source: WrappedResponseContent,
     },
 
     /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
@@ -194,18 +184,18 @@ pub enum PineconeError<T> {
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
-impl<T: std::fmt::Display> From<(OpenApiError<T>, String)> for PineconeError<T> {
+impl<T: std::fmt::Display> From<(OpenApiError<T>, String)> for PineconeError {
     fn from((error, message): (OpenApiError<T>, String)) -> Self {
         err_handler(error, message)
     }
 }
 
 // Helper function to extract status/error message
-fn err_handler<T: std::fmt::Display>(e: OpenApiError<T>, message: String) -> PineconeError<T> {
+fn err_handler<T: std::fmt::Display>(e: OpenApiError<T>, message: String) -> PineconeError {
     match e {
-        OpenApiError::Reqwest(inner) => PineconeError::<T>::ReqwestError { source: inner },
-        OpenApiError::Serde(inner) => PineconeError::<T>::SerdeError { source: inner },
-        OpenApiError::Io(inner) => PineconeError::<T>::IoError {
+        OpenApiError::Reqwest(inner) => PineconeError::ReqwestError { source: inner },
+        OpenApiError::Serde(inner) => PineconeError::SerdeError { source: inner },
+        OpenApiError::Io(inner) => PineconeError::IoError {
             message: inner.to_string(),
         },
         OpenApiError::ResponseError(inner) => handle_response_error(inner, message),
@@ -216,7 +206,7 @@ fn err_handler<T: std::fmt::Display>(e: OpenApiError<T>, message: String) -> Pin
 fn handle_response_error<T: std::fmt::Display>(
     e: ResponseContent<T>,
     message: String,
-) -> PineconeError<T> {
+) -> PineconeError {
     // let err_message = e.content.;
     let status = e.status;
     let message = format!("{message}: {}", e.content);
@@ -241,74 +231,74 @@ fn handle_response_error<T: std::fmt::Display>(
     }
 }
 
-fn parse_not_found_error<T: std::fmt::Display>(message: String) -> PineconeError<T> {
+fn parse_not_found_error(message: String) -> PineconeError {
     if message.contains("Index") {
-        PineconeError::<T>::IndexNotFoundError {
+        PineconeError::IndexNotFoundError {
             status: StatusCode::NOT_FOUND,
             message,
         }
     } else if message.contains("Collection") {
-        PineconeError::<T>::CollectionNotFoundError {
+        PineconeError::CollectionNotFoundError {
             status: StatusCode::NOT_FOUND,
             message,
         }
     } else if message.contains("region") {
-        PineconeError::<T>::InvalidRegionError {
+        PineconeError::InvalidRegionError {
             status: StatusCode::NOT_FOUND,
             message,
         }
     } else if message.contains("cloud") {
-        PineconeError::<T>::InvalidCloudError {
+        PineconeError::InvalidCloudError {
             status: StatusCode::NOT_FOUND,
             message,
         }
     } else {
-        PineconeError::<T>::InternalServerError {
+        PineconeError::InternalServerError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message,
         }
     }
 }
 
-fn parse_conflict_error<T: std::fmt::Display>(message: String) -> PineconeError<T> {
+fn parse_conflict_error(message: String) -> PineconeError {
     if message.contains("index") {
-        PineconeError::<T>::IndexAlreadyExistsError {
+        PineconeError::IndexAlreadyExistsError {
             status: StatusCode::CONFLICT,
             message,
         }
     } else if message.contains("collection") {
-        PineconeError::<T>::CollectionAlreadyExistsError {
+        PineconeError::CollectionAlreadyExistsError {
             status: StatusCode::CONFLICT,
             message,
         }
     } else {
-        PineconeError::<T>::InternalServerError {
+        PineconeError::InternalServerError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message,
         }
     }
 }
 
-fn parse_quota_exceeded_error<T: std::fmt::Display>(message: String) -> PineconeError<T> {
+fn parse_quota_exceeded_error(message: String) -> PineconeError {
     if message.contains("index") {
-        PineconeError::<T>::PodQuotaExceededError {
+        PineconeError::PodQuotaExceededError {
             status: StatusCode::FORBIDDEN,
             message,
         }
     } else if message.contains("Collection") {
-        PineconeError::<T>::CollectionsQuotaExceededError {
+        PineconeError::CollectionsQuotaExceededError {
             status: StatusCode::FORBIDDEN,
             message,
         }
     } else {
-        PineconeError::<T>::InternalServerError {
+        PineconeError::InternalServerError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message,
         }
     }
 }
 
-impl<T: std::fmt::Display> std::fmt::Display for PineconeError<T> {
+impl std::fmt::Display for PineconeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PineconeError::UnknownResponseError { status, message } => {
@@ -427,7 +417,7 @@ impl<T: std::fmt::Display> std::fmt::Display for PineconeError<T> {
     }
 }
 
-impl<T: std::fmt::Display + std::fmt::Debug + 'static> std::error::Error for PineconeError<T> {
+impl std::error::Error for PineconeError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             PineconeError::UnknownResponseError {
