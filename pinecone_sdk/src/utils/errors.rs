@@ -152,14 +152,14 @@ pub enum PineconeError {
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
-impl<T: std::fmt::Display> From<(OpenApiError<T>, String)> for PineconeError {
+impl<T> From<(OpenApiError<T>, String)> for PineconeError {
     fn from((error, message): (OpenApiError<T>, String)) -> Self {
         err_handler(error, message)
     }
 }
 
 // Helper function to extract status/error message
-fn err_handler<T: std::fmt::Display>(e: OpenApiError<T>, message: String) -> PineconeError {
+fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
     match e {
         OpenApiError::Reqwest(inner) => PineconeError::ReqwestError { source: inner },
         OpenApiError::Serde(inner) => PineconeError::SerdeError { source: inner },
@@ -171,10 +171,7 @@ fn err_handler<T: std::fmt::Display>(e: OpenApiError<T>, message: String) -> Pin
 }
 
 // Helper function to handle response errors
-fn handle_response_error<T: std::fmt::Display>(
-    e: ResponseContent<T>,
-    message: String,
-) -> PineconeError {
+fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeError {
     // let err_message = e.content.;
     let status = e.status;
     let message = format!("{message}: {}", e.content);
@@ -451,8 +448,11 @@ impl std::error::Error for PineconeError {
     }
 }
 
+/// WrappedResponseContent is a wrapper around ResponseContent.
 pub struct WrappedResponseContent {
+    /// status code
     pub status: reqwest::StatusCode,
+    /// content
     pub content: String,
 }
 
