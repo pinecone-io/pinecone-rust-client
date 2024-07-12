@@ -3,10 +3,12 @@ use std::time::Duration;
 
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
-use openapi::apis::manage_indexes_api::{
-    self, ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError, DeleteIndexError, DescribeCollectionError, DescribeIndexError, ListCollectionsError, ListIndexesError
-};
 
+pub use openapi::apis::manage_indexes_api::{
+    self, ConfigureIndexError, CreateCollectionError, CreateIndexError, DeleteCollectionError,
+    DeleteIndexError, DescribeCollectionError, DescribeIndexError, ListCollectionsError,
+    ListIndexesError,
+};
 pub use openapi::models::create_index_request::Metric;
 pub use openapi::models::serverless_spec::Cloud;
 pub use openapi::models::{
@@ -49,14 +51,14 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
+    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel, CreateIndexError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<CreateIndexError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create an index.
-    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
+    /// let create_index_response: Result<IndexModel, PineconeError<CreateIndexError>> = pinecone.create_serverless_index(
     ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
@@ -121,21 +123,21 @@ impl PineconeClient {
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
-    /// * Returns a `Result<IndexModel, PineconeError>` object.
+    /// * Returns a `Result<IndexModel, PineconeError<CreateIndexError>>` object.
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
+    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel, CreateIndexError};
     /// use std::time::Duration;
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError> {
+    /// # async fn main() -> Result<(), PineconeError<CreateIndexError>> {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create a pod index.
-    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
+    /// let create_index_response: Result<IndexModel, PineconeError<CreateIndexError>> = pinecone.create_pod_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
@@ -261,20 +263,20 @@ impl PineconeClient {
     /// * `name: &str` - Name of the index to describe.
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>`
+    /// * `Result<IndexModel, PineconeError<DescribeIndexError>>`
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexModel;
+    /// use pinecone_sdk::control::{IndexModel, DescribeIndexError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<DescribeIndexError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let describe_index_response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
+    /// let describe_index_response: Result<IndexModel, PineconeError<DescribeIndexError>> = pinecone.describe_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -298,20 +300,20 @@ impl PineconeClient {
     /// index name, dimension, metric, status, and spec.
     ///
     /// ### Return
-    /// * `Result<IndexList, PineconeError>`
+    /// * `Result<IndexList, PineconeError<ListIndexesError>>`
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexList;
+    /// use pinecone_sdk::control::{IndexList, ListIndexesError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<ListIndexesError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // List all indexes in the project.
-    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
+    /// let index_list_response: Result<IndexList, PineconeError<ListIndexesError>> = pinecone.list_indexes().await;
     /// # Ok(())
     /// # }
     /// ```
@@ -336,18 +338,19 @@ impl PineconeClient {
     /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>`
+    /// * `Result<IndexModel, PineconeError<ConfigureIndexError>>`
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::{IndexModel, ConfigureIndexError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<ConfigureIndexError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let response = pinecone.configure_index("index-name", 6, "s1").await;
+    /// let response: Result<IndexModel, PineconeError<ConfigureIndexError>> = pinecone.configure_index("index-name", 6, "s1").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -382,18 +385,19 @@ impl PineconeClient {
     /// * name: &str - The name of the index to be deleted.
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * Returns a `Result<(), PineconeError<DeleteIndexError>>` object.
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::DeleteIndexError;
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<DeleteIndexError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let delete_index_response: Result<(), PineconeError> = pinecone.delete_index("index-name").await;
+    /// let delete_index_response: Result<(), PineconeError<DeleteIndexError>> = pinecone.delete_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -413,20 +417,20 @@ impl PineconeClient {
     /// * `source: &str` - Name of the index to be used as the source for the collection.
     ///
     /// ### Return
-    /// * `Result<CollectionModel, PineconeError>`
+    /// * `Result<CollectionModel, PineconeError<CreateCollectionError>>`
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::CollectionModel;
+    /// use pinecone_sdk::control::{CollectionModel, CreateCollectionError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<CreateCollectionError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let create_collection_response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
+    /// let create_collection_response: Result<CollectionModel, PineconeError<CreateCollectionError>> = pinecone.create_collection("collection-name", "index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -457,22 +461,26 @@ impl PineconeClient {
     /// * name: &str - The name of the collection to describe.
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * Returns a `Result<(), PineconeError<DescribeCollectionError>>` object.
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::{CollectionModel, DescribeCollectionError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<DescribeCollectionError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let response = pinecone.describe_collection("collection-name").await;
+    /// let response: Result<CollectionModel, PineconeError<DescribeCollectionError>> = pinecone.describe_collection("collection-name").await;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError<DescribeCollectionError>> {
+    pub async fn describe_collection(
+        &self,
+        name: &str,
+    ) -> Result<CollectionModel, PineconeError<DescribeCollectionError>> {
         let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
             .await
             .map_err(|e| {
@@ -493,17 +501,20 @@ impl PineconeClient {
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::{CollectionList, ListCollectionsError};
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<ListCollectionsError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // List all collections in the project.
-    /// let collection_list = pinecone.list_collections().await.unwrap();
+    /// let collection_list:Result<CollectionList, PineconeError<ListCollectionsError>> = pinecone.list_collections().await;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn list_collections(&self) -> Result<CollectionList, PineconeError<ListCollectionsError>> {
+    pub async fn list_collections(
+        &self,
+    ) -> Result<CollectionList, PineconeError<ListCollectionsError>> {
         // make openAPI call
         let res = manage_indexes_api::list_collections(&self.openapi_config())
             .await
@@ -518,22 +529,26 @@ impl PineconeClient {
     /// * name: &str - The name of the collection to be deleted.
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * Returns a `Result<(), PineconeError<DeleteCollectionError>>` object.
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use pinecone_sdk::control::DeleteCollectionError;
     ///
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
+    /// # async fn main() -> Result<(), PineconeError<DeleteCollectionError>>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// /// let response = pinecone.delete_collection("collection-name").await;
+    /// let response: Result<(), PineconeError<DeleteCollectionError>> = pinecone.delete_collection("collection-name").await;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError<DeleteCollectionError>> {
+    pub async fn delete_collection(
+        &self,
+        name: &str,
+    ) -> Result<(), PineconeError<DeleteCollectionError>> {
         // make openAPI call
         let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
             .await
@@ -619,7 +634,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_defaults() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_serverless_index_defaults() -> Result<(), PineconeError<CreateIndexError>>
+    {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -683,7 +699,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_invalid_region() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_serverless_index_invalid_region(
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -731,7 +748,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_index_exists() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_serverless_index_index_exists(
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -779,7 +797,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_unprocessable_entity() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_serverless_index_unprocessable_entity(
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -827,7 +846,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_serverless_index_internal_error() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_serverless_index_internal_error(
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1339,7 +1359,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_pod_index_invalid_environment() -> Result<(), PineconeError<CreateIndexError>> {
+    async fn test_create_pod_index_invalid_environment(
+    ) -> Result<(), PineconeError<CreateIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1604,7 +1625,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError<ConfigureIndexError>> {
+    async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError<ConfigureIndexError>>
+    {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1690,7 +1712,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_unprocessable_entity() -> Result<(), PineconeError<ConfigureIndexError>> {
+    async fn test_configure_index_unprocessable_entity(
+    ) -> Result<(), PineconeError<ConfigureIndexError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1732,7 +1755,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_internal_error() -> Result<(), PineconeError<ConfigureIndexError>> {
+    async fn test_configure_index_internal_error() -> Result<(), PineconeError<ConfigureIndexError>>
+    {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1947,7 +1971,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_quota_exceeded() -> Result<(), PineconeError<CreateCollectionError>> {
+    async fn test_create_collection_quota_exceeded(
+    ) -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -1991,7 +2016,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_invalid_name() -> Result<(), PineconeError<CreateCollectionError>> {
+    async fn test_create_collection_invalid_name(
+    ) -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2031,7 +2057,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_collection_server_error() -> Result<(), PineconeError<CreateCollectionError>> {
+    async fn test_create_collection_server_error(
+    ) -> Result<(), PineconeError<CreateCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2113,7 +2140,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_collection_invalid_name() -> Result<(), PineconeError<DescribeCollectionError>> {
+    async fn test_describe_collection_invalid_name(
+    ) -> Result<(), PineconeError<DescribeCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2150,7 +2178,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_describe_collection_server_error() -> Result<(), PineconeError<DescribeCollectionError>> {
+    async fn test_describe_collection_server_error(
+    ) -> Result<(), PineconeError<DescribeCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2332,7 +2361,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection_not_found() -> Result<(), PineconeError<DeleteCollectionError>> {
+    async fn test_delete_collection_not_found() -> Result<(), PineconeError<DeleteCollectionError>>
+    {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -2372,7 +2402,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_collection_internal_error() -> Result<(), PineconeError<DeleteCollectionError>> {
+    async fn test_delete_collection_internal_error(
+    ) -> Result<(), PineconeError<DeleteCollectionError>> {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {

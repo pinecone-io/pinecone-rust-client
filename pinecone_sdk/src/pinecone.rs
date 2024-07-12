@@ -49,7 +49,7 @@ impl PineconeClient {
         control_plane_host: Option<String>,
         additional_headers: Option<HashMap<String, String>>,
         source_tag: Option<String>,
-    ) -> Result<Self, PineconeError<>> {
+    ) -> Result<Self, PineconeError<()>> {
         // get api key
         let api_key_str = match api_key {
             Some(key) => key,
@@ -122,7 +122,7 @@ mod tests {
     use tokio;
 
     #[tokio::test]
-    async fn test_arg_api_key() -> Result<(), PineconeError> {
+    async fn test_arg_api_key() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
@@ -147,7 +147,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_env_api_key() -> Result<(), PineconeError> {
+    async fn test_env_api_key() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-env-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
@@ -174,7 +174,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_no_api_key() -> Result<(), PineconeError> {
+    async fn test_no_api_key() -> Result<(), PineconeError<()>> {
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
         temp_env::with_var_unset("PINECONE_API_KEY", || {
@@ -193,7 +193,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_arg_host() -> Result<(), PineconeError> {
+    async fn test_arg_host() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let pinecone = PineconeClient::new(
@@ -210,7 +210,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_env_host() -> Result<(), PineconeError> {
+    async fn test_env_host() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-env-controller-host".to_string();
 
@@ -234,7 +234,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_default_host() -> Result<(), PineconeError> {
+    async fn test_default_host() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
 
         temp_env::with_var_unset("PINECONE_CONTROLLER_HOST", || {
@@ -258,7 +258,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_arg_headers() -> Result<(), PineconeError> {
+    async fn test_arg_headers() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let mock_headers = HashMap::from([
@@ -280,7 +280,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_env_headers() -> Result<(), PineconeError> {
+    async fn test_env_headers() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
         let mock_headers = HashMap::from([
@@ -308,7 +308,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_invalid_env_headers() -> Result<(), PineconeError> {
+    async fn test_invalid_env_headers() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
@@ -331,7 +331,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_default_headers() -> Result<(), PineconeError> {
+    async fn test_default_headers() -> Result<(), PineconeError<()>> {
         let mock_api_key = "mock-arg-api-key".to_string();
         let mock_controller_host = "mock-arg-controller-host".to_string();
 
@@ -351,7 +351,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_arg_overrides_env() -> Result<(), PineconeError> {
+    async fn test_arg_overrides_env() -> Result<(), PineconeError<()>> {
         let mock_arg_api_key = "mock-arg-api-key".to_string();
         let mock_arg_controller_host = "mock-arg-controller-host".to_string();
         let mock_arg_headers = HashMap::from([
