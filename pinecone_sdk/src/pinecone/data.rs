@@ -81,12 +81,13 @@ impl Index {
             namespace: namespace.unwrap_or_default(),
         };
 
-        let response = match self.connection.upsert(request).await {
-            Ok(response) => response.get_ref().clone(),
-            Err(e) => {
-                return Err(PineconeError::UpsertError { inner: Box::new(e) });
-            }
-        };
+        let response = self
+            .connection
+            .upsert(request)
+            .await
+            .map_err(|e| PineconeError::UpsertError { inner: Box::new(e) })?
+            .get_ref()
+            .clone();
 
         Ok(response)
     }
@@ -123,15 +124,8 @@ impl PineconeClient {
         secure: Option<bool>,
         port: Option<u32>,
     ) -> Result<Index, PineconeError> {
-        let secure = match secure {
-            Some(secure) => secure,
-            None => true,
-        };
-
-        let port = match port {
-            Some(port) => port,
-            None => 443,
-        };
+        let secure = secure.unwrap_or(true);
+        let port = port.unwrap_or(433);
 
         let endpoint = host.to_string();
 
@@ -164,24 +158,15 @@ impl PineconeClient {
         let tls_config = tonic::transport::ClientTlsConfig::default();
 
         // connect to server
-        let endpoint = match Channel::from_shared(host.to_string()) {
-            Ok(endpoint) => match endpoint.tls_config(tls_config) {
-                Ok(configured_endpoint) => configured_endpoint,
-                Err(e) => {
-                    return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-                }
-            },
-            Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-            }
-        };
+        let endpoint = Channel::from_shared(host.to_string())
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?
+            .tls_config(tls_config)
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
 
-        let channel = match endpoint.connect().await {
-            Ok(channel) => channel,
-            Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-            }
-        };
+        let channel = endpoint
+            .connect()
+            .await
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
