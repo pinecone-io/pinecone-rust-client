@@ -439,8 +439,14 @@ async fn test_delete_collection_err() -> Result<(), PineconeError> {
 async fn test_upsert() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
     let mut index = pinecone
-        .index(&get_serverless_index())
+        .index(host.as_str())
         .await
         .expect("Failed to target index");
 

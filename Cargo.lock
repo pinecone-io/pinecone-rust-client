@@ -1458,6 +1458,7 @@ name = "pinecone_sdk"
 version = "0.1.0"
 dependencies = [
  "httpmock",
+ "once_cell",
  "openapi",
  "prost",
  "prost-types",

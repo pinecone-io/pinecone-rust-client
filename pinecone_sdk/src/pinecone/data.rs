@@ -1,5 +1,6 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
+use once_cell::sync::Lazy;
 use pb::vector_service_client::VectorServiceClient;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
@@ -35,7 +36,7 @@ impl Interceptor for ApiKeyInterceptor {
 #[derive(Debug)]
 pub struct Index {
     /// The name of the index.
-    name: String,
+    host: String,
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
 }
 
@@ -59,7 +60,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let mut index = pinecone.index("my-index").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = vec![Vector {
     ///     id: "vector-id".to_string(),
@@ -81,22 +82,46 @@ impl Index {
             namespace: namespace.unwrap_or_default(),
         };
 
-        let response = match self.connection.upsert(request).await {
-            Ok(response) => response.get_ref().clone(),
-            Err(e) => {
-                return Err(PineconeError::UpsertError { inner: Box::new(e) });
-            }
-        };
+        let response = self
+            .connection
+            .upsert(request)
+            .await
+            .map_err(|e| PineconeError::UpsertError { inner: Box::new(e) })?
+            .into_inner();
 
         Ok(response)
     }
 }
 
 impl PineconeClient {
+    /// Match the scheme in a host string.
+    ///
+    /// ### Arguments
+    /// * `host: &str` - The host string to match.
+    ///
+    /// ### Return
+    /// * `bool` - True if the host string contains a scheme, false otherwise.
+    fn has_scheme(host: &str) -> bool {
+        static RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"^[a-zA-Z]+://").unwrap());
+        RE.is_match(host)
+    }
+
+    /// Match the port in a host string.
+    ///
+    /// ### Arguments
+    /// * `host: &str` - The host string to match.
+    ///
+    /// ### Return
+    /// * `bool` - True if the host string contains a port, false otherwise.
+    fn has_port(host: &str) -> bool {
+        static RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r":\d+$").unwrap());
+        RE.is_match(host)
+    }
+
     /// Target an index for data operations.
     ///
     /// ### Arguments
-    /// * `name: &str` - The name of the index to target.
+    /// * `host: &str` - The host of the index to target. If the host does not contain a scheme, it will default to `https://`. If the host does not contain a port, it will default to `443`.
     ///
     /// ### Return
     /// * `Result<Index, PineconeError>` - A Pinecone index object.
@@ -111,57 +136,50 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let index = pinecone.index("my-index").await.unwrap();
+    /// let index = pinecone.index("index-host").await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn index(&self, name: &str) -> Result<Index, PineconeError> {
+    pub async fn index(&self, host: &str) -> Result<Index, PineconeError> {
+        let endpoint = host.to_string();
+
+        let endpoint = if PineconeClient::has_scheme(&endpoint) {
+            endpoint
+        } else {
+            format!("https://{}", endpoint)
+        };
+
+        let endpoint = if PineconeClient::has_port(&endpoint) {
+            endpoint
+        } else {
+            format!("{}:443", endpoint)
+        };
+
         let index = Index {
-            name: name.to_string(),
-            connection: self.new_index_connection(name).await?,
+            host: endpoint.clone(),
+            connection: self.new_index_connection(endpoint).await?,
         };
 
         Ok(index)
     }
 
-    async fn get_index_host(&self, name: &str) -> Result<String, PineconeError> {
-        let index_host = self.describe_index(name).await?.host;
-        // prepend with "https://" if not already present
-        let index_host = if index_host.starts_with("https://") {
-            index_host
-        } else {
-            format!("https://{}", index_host)
-        };
-        Ok(index_host)
-    }
-
     async fn new_index_connection(
         &self,
-        name: &str,
+        host: String,
     ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
     {
-        let index_host = self.get_index_host(name).await?;
         let tls_config = tonic::transport::ClientTlsConfig::default();
 
         // connect to server
-        let endpoint = match Channel::from_shared(index_host) {
-            Ok(endpoint) => match endpoint.tls_config(tls_config) {
-                Ok(configured_endpoint) => configured_endpoint,
-                Err(e) => {
-                    return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-                }
-            },
-            Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-            }
-        };
+        let endpoint = Channel::from_shared(host)
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?
+            .tls_config(tls_config)
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
 
-        let channel = match endpoint.connect().await {
-            Ok(channel) => channel,
-            Err(e) => {
-                return Err(PineconeError::ConnectionError { inner: Box::new(e) });
-            }
-        };
+        let channel = endpoint
+            .connect()
+            .await
+            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
@@ -176,40 +194,77 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use httpmock::prelude::*;
-    use tokio;
 
     #[tokio::test]
-    async fn test_index_connection_failed() -> Result<(), PineconeError> {
+    async fn test_index_full_endpoint() {
         let server = MockServer::start();
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/indexes/serverless-index");
-            then.status(404)
-                .header("content-type", "application/json")
-                .body(
-                    r#"{
-                        "error": {
-                            "code": "NOT_FOUND",
-                            "message": "Index serverless-index not found."
-                        },
-                        "status": 404
-                    }"#,
-                );
+
+        // server url contains scheme and port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
         });
 
-        let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
-            None,
-            None,
-        )
-        .expect("Failed to create Pinecone client");
-        let _ = pinecone
-            .index("serverless-index")
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let index = pinecone.index(server.base_url().as_str()).await.unwrap();
+
+        assert_eq!(index.host, server.base_url());
+    }
+
+    #[tokio::test]
+    async fn test_index_no_scheme() {
+        let server = MockServer::start();
+
+        // server url contains no scheme
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let addr = server.address().to_string();
+
+        let _index = pinecone
+            .index(addr.as_str())
             .await
-            .expect_err("Expected index connection to fail");
+            .expect_err("Expected connection error");
+    }
 
-        mock.assert();
+    #[tokio::test]
+    async fn test_index_no_port() {
+        let server = MockServer::start();
 
-        Ok(())
+        // server url contains no port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let scheme_host = format!("http://{}", server.host());
+
+        let _index = pinecone
+            .index(scheme_host.as_str())
+            .await
+            .expect_err("Expected connection error");
+    }
+
+    #[tokio::test]
+    async fn test_index_no_scheme_no_port() {
+        let server = MockServer::start();
+
+        // server url contains no scheme and no port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let host = server.host();
+
+        let _index = pinecone
+            .index(host.as_str())
+            .await
+            .expect_err("Expected connection error");
     }
 }
