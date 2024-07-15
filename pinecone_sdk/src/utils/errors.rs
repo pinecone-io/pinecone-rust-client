@@ -30,6 +30,12 @@ pub enum PineconeError {
         message: String,
     },
 
+    /// ConnectionError: Failed to establish a connection.
+    ConnectionError {
+        /// inner: Error object for connection error.
+        inner: Box<dyn std::error::Error>,
+    },
+
     /// ReqwestError: Error caused by Reqwest
     ReqwestError {
         /// Source error
@@ -124,6 +130,12 @@ pub enum PineconeError {
     InternalServerError {
         /// error
         source: WrappedResponseContent,
+    },
+
+    /// UpsertError: Failed to upsert data.
+    UpsertError {
+        /// inner: Error object for tonic error.
+        inner: Box<tonic::Status>,
     },
 }
 

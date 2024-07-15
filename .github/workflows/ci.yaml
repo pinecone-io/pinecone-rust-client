@@ -19,6 +19,8 @@ jobs:
         - uses: hecrj/setup-rust-action@v2
           with:
             rust-version: ${{ matrix.rust }}
+        - name: Install protoc
+          uses: arduino/setup-protoc@v3
         - name: Build SDK
           run: cargo build
         - name: Build documentation

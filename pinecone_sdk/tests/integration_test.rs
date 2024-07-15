@@ -1,10 +1,11 @@
-use std::time::Duration;
-
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::control::{Cloud, Metric, WaitPolicy};
+use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
+use pinecone_sdk::pinecone::data::Vector;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
+use std::time::Duration;
+use std::vec;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -430,6 +431,35 @@ async fn test_delete_collection_err() -> Result<(), PineconeError> {
         .delete_collection("invalid-collection")
         .await
         .expect_err("Expected to fail deleting collection");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_upsert() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = vec![Vector {
+        id: "1".to_string(),
+        values: vec![1.0, 2.0, 3.0, 5.5],
+        sparse_values: None,
+        metadata: None,
+    }];
+
+    let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
+
+    assert_eq!(upsert_response.upserted_count, 1);
 
     Ok(())
 }
