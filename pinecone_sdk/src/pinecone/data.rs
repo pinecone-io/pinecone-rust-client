@@ -59,7 +59,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let mut index = pinecone.index("index-name", None, None).await.unwrap();
+    /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = vec![Vector {
     ///     id: "vector-id".to_string(),
@@ -97,9 +97,7 @@ impl PineconeClient {
     /// Target an index for data operations.
     ///
     /// ### Arguments
-    /// * `host: &str` - The host of the index to target.
-    /// * `secure: Option<bool>` - Whether to use a secure connection. If not provided, defaults to `true`.
-    /// * `port: Option<u32>` - The port of the index to target. If not provided, defaults to `443`.
+    /// * `host: &str` - The host of the index to target. If the host does not contain a scheme, it will default to `https://`. If the host does not contain a port, it will default to `443`.
     ///
     /// ### Return
     /// * `Result<Index, PineconeError>` - A Pinecone index object.
@@ -114,34 +112,25 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let index = pinecone.index("index-name", None, None).await.unwrap();
+    /// let index = pinecone.index("index-host").await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn index(
-        &self,
-        host: &str,
-        secure: Option<bool>,
-        port: Option<u32>,
-    ) -> Result<Index, PineconeError> {
-        let secure = secure.unwrap_or(true);
-        let port = port.unwrap_or(443);
-
+    pub async fn index(&self, host: &str) -> Result<Index, PineconeError> {
         let endpoint = host.to_string();
 
         let re_scheme = regex::Regex::new(r"^[a-zA-Z]+://").unwrap();
         let endpoint = if re_scheme.is_match(&endpoint) {
             endpoint.to_string()
         } else {
-            let scheme = if secure { "https" } else { "http" };
-            format!("{}://{}", scheme, endpoint)
+            format!("https://{}", endpoint)
         };
 
         let re_port = regex::Regex::new(r":\d+$").unwrap();
         let endpoint = if re_port.is_match(&endpoint) {
             endpoint.to_string()
         } else {
-            format!("{}:{}", endpoint, port)
+            format!("{}:443", endpoint)
         };
 
         let index = Index {
@@ -195,10 +184,7 @@ mod tests {
 
         let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
-        let index = pinecone
-            .index(server.base_url().as_str(), None, None)
-            .await
-            .unwrap();
+        let index = pinecone.index(server.base_url().as_str()).await.unwrap();
 
         assert_eq!(index.host, server.base_url());
     }
@@ -216,12 +202,10 @@ mod tests {
 
         let addr = server.address().to_string();
 
-        let index = pinecone
-            .index(addr.as_str(), Some(false), None)
+        let _index = pinecone
+            .index(addr.as_str())
             .await
-            .unwrap();
-
-        assert_eq!(index.host, format!("http://{}", addr));
+            .expect_err("Expected connection error");
     }
 
     #[tokio::test]
@@ -236,14 +220,11 @@ mod tests {
         let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
         let scheme_host = format!("http://{}", server.host());
-        let port = server.port();
 
-        let index = pinecone
-            .index(scheme_host.as_str(), None, Some(port.into()))
+        let _index = pinecone
+            .index(scheme_host.as_str())
             .await
-            .unwrap();
-
-        assert_eq!(index.host, format!("{}:{}", scheme_host, port));
+            .expect_err("Expected connection error");
     }
 
     #[tokio::test]
@@ -258,13 +239,10 @@ mod tests {
         let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
         let host = server.host();
-        let port = server.port();
 
-        let index = pinecone
-            .index(host.as_str(), Some(false), Some(port.into()))
+        let _index = pinecone
+            .index(host.as_str())
             .await
-            .unwrap();
-
-        assert_eq!(index.host, format!("http://{}:{}", host, port));
+            .expect_err("Expected connection error");
     }
 }

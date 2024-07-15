@@ -446,7 +446,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         .host;
 
     let mut index = pinecone
-        .index(host.as_str(), None, None)
+        .index(host.as_str())
         .await
         .expect("Failed to target index");
 
