@@ -56,98 +56,74 @@ pub enum PineconeError {
 
     /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
     UnauthorizedError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// PodQuotaExceededError: Pod quota exceeded
     PodQuotaExceededError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// CollectionsQuotaExceededError: Collections quota exceeded
     CollectionsQuotaExceededError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
     InvalidCloudError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// InvalidRegionError: Provided region is not valid.
     InvalidRegionError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// CollectionNotFoundError: Collection of given name does not exist
     CollectionNotFoundError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// IndexNotFoundError: Index of given name does not exist
     IndexNotFoundError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// IndexAlreadyExistsError: Index of given name already exists
     IndexAlreadyExistsError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// CollectionAlreadyExistsError: Collection of given name already exists
     CollectionAlreadyExistsError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// Unprocessable entity error: The request body could not be deserialized
     UnprocessableEntityError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// PendingCollectionError: There is a pending collection created from this index
     PendingCollectionError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 
     /// InternalServerError: Internal server error
     InternalServerError {
-        /// HTTP status code.
-        status: StatusCode,
-        /// Error message.
-        message: String,
+        /// error
+        source: WrappedResponseContent,
     },
 }
 
@@ -166,100 +142,60 @@ fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
         OpenApiError::Io(inner) => PineconeError::IoError {
             message: inner.to_string(),
         },
-        OpenApiError::ResponseError(inner) => handle_response_error(inner, message),
+        OpenApiError::ResponseError(inner) => handle_response_error(inner.into(), message),
     }
 }
 
 // Helper function to handle response errors
-fn handle_response_error<T>(e: ResponseContent<T>, message: String) -> PineconeError {
+fn handle_response_error(source: WrappedResponseContent, message: String) -> PineconeError {
     // let err_message = e.content.;
-    let status = e.status;
-    let message = format!("{message}: {}", e.content);
+    let status = source.status;
+    let message = format!("{message}: {}", source.content);
 
     match status {
-        StatusCode::BAD_REQUEST => PineconeError::BadRequestError { source: e.into() },
-        StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { status, message },
-        StatusCode::FORBIDDEN => parse_quota_exceeded_error(message),
-        StatusCode::NOT_FOUND => parse_not_found_error(message),
-        StatusCode::CONFLICT => parse_conflict_error(message),
-        StatusCode::PRECONDITION_FAILED => {
-            PineconeError::PendingCollectionError { status, message }
-        }
-        StatusCode::UNPROCESSABLE_ENTITY => {
-            PineconeError::UnprocessableEntityError { status, message }
-        }
-        StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError { status, message },
-        _ => PineconeError::UnknownResponseError {
-            status,
-            message: e.content,
-        },
+        StatusCode::BAD_REQUEST => PineconeError::BadRequestError { source },
+        StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { source },
+        StatusCode::FORBIDDEN => parse_quota_exceeded_error(source, message),
+        StatusCode::NOT_FOUND => parse_not_found_error(source, message),
+        StatusCode::CONFLICT => parse_conflict_error(source, message),
+        StatusCode::PRECONDITION_FAILED => PineconeError::PendingCollectionError { source },
+        StatusCode::UNPROCESSABLE_ENTITY => PineconeError::UnprocessableEntityError { source },
+        StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError { source },
+        _ => PineconeError::UnknownResponseError { status, message },
     }
 }
 
-fn parse_not_found_error(message: String) -> PineconeError {
+fn parse_not_found_error(source: WrappedResponseContent, message: String) -> PineconeError {
     if message.contains("Index") {
-        PineconeError::IndexNotFoundError {
-            status: StatusCode::NOT_FOUND,
-            message,
-        }
+        PineconeError::IndexNotFoundError { source }
     } else if message.contains("Collection") {
-        PineconeError::CollectionNotFoundError {
-            status: StatusCode::NOT_FOUND,
-            message,
-        }
+        PineconeError::CollectionNotFoundError { source }
     } else if message.contains("region") {
-        PineconeError::InvalidRegionError {
-            status: StatusCode::NOT_FOUND,
-            message,
-        }
+        PineconeError::InvalidRegionError { source }
     } else if message.contains("cloud") {
-        PineconeError::InvalidCloudError {
-            status: StatusCode::NOT_FOUND,
-            message,
-        }
+        PineconeError::InvalidCloudError { source }
     } else {
-        PineconeError::InternalServerError {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-            message,
-        }
+        PineconeError::InternalServerError { source }
     }
 }
 
-fn parse_conflict_error(message: String) -> PineconeError {
+fn parse_conflict_error(source: WrappedResponseContent, message: String) -> PineconeError {
     if message.contains("index") {
-        PineconeError::IndexAlreadyExistsError {
-            status: StatusCode::CONFLICT,
-            message,
-        }
+        PineconeError::IndexAlreadyExistsError { source }
     } else if message.contains("collection") {
-        PineconeError::CollectionAlreadyExistsError {
-            status: StatusCode::CONFLICT,
-            message,
-        }
+        PineconeError::CollectionAlreadyExistsError { source }
     } else {
-        PineconeError::InternalServerError {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-            message,
-        }
+        PineconeError::InternalServerError { source }
     }
 }
 
-fn parse_quota_exceeded_error(message: String) -> PineconeError {
+fn parse_quota_exceeded_error(source: WrappedResponseContent, message: String) -> PineconeError {
     if message.contains("index") {
-        PineconeError::PodQuotaExceededError {
-            status: StatusCode::FORBIDDEN,
-            message,
-        }
+        PineconeError::PodQuotaExceededError { source }
     } else if message.contains("Collection") {
-        PineconeError::CollectionsQuotaExceededError {
-            status: StatusCode::FORBIDDEN,
-            message,
-        }
+        PineconeError::CollectionsQuotaExceededError { source }
     } else {
-        PineconeError::InternalServerError {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-            message,
-        }
+        PineconeError::InternalServerError { source }
     }
 }
 
@@ -273,34 +209,42 @@ impl std::fmt::Display for PineconeError {
                     status, message
                 )
             }
-            PineconeError::CollectionAlreadyExistsError { status, message } => {
-                write!(
-                    f,
-                    "Collection already exists error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::UnprocessableEntityError { status, message } => {
-                write!(
-                    f,
-                    "Unprocessable entity error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::PendingCollectionError { status, message } => {
-                write!(
-                    f,
-                    "Pending collection error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::InternalServerError { status, message } => {
-                write!(
-                    f,
-                    "Internal server error: status: {}, message: {}",
-                    status, message
-                )
-            }
+            PineconeError::CollectionAlreadyExistsError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Collection already exists error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::UnprocessableEntityError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Unprocessable entity error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::PendingCollectionError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Pending collection error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::InternalServerError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Internal server error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
             PineconeError::ReqwestError { source } => {
                 write!(f, "Reqwest error: {}", source.to_string())
             }
@@ -313,70 +257,86 @@ impl std::fmt::Display for PineconeError {
             PineconeError::BadRequestError { source } => {
                 write!(f, "Bad request error: {}", source)
             }
-            PineconeError::UnauthorizedError { status, message } => {
-                write!(
-                    f,
-                    "Unauthorized error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::PodQuotaExceededError { status, message } => {
-                write!(
-                    f,
-                    "Pod quota exceeded error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::CollectionsQuotaExceededError { status, message } => {
-                write!(
-                    f,
-                    "Collections quota exceeded error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::InvalidCloudError { status, message } => {
-                write!(
-                    f,
-                    "Invalid cloud error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::InvalidRegionError { status, message } => {
-                write!(
-                    f,
-                    "Invalid region error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::CollectionNotFoundError { status, message } => {
-                write!(
-                    f,
-                    "Collection not found error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::IndexNotFoundError { status, message } => {
-                write!(
-                    f,
-                    "Index not found error: status: {}, message: {}",
-                    status, message
-                )
-            }
-            PineconeError::IndexAlreadyExistsError { status, message } => {
-                write!(
-                    f,
-                    "Index already exists error: status: {}, message: {}",
-                    status, message
-                )
-            }
+            PineconeError::UnauthorizedError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Unauthorized error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::PodQuotaExceededError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Pod quota exceeded error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::CollectionsQuotaExceededError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Collections quota exceeded error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::InvalidCloudError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Invalid cloud error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::InvalidRegionError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Invalid region error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::CollectionNotFoundError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Collection not found error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::IndexNotFoundError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Index not found error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
+            PineconeError::IndexAlreadyExistsError { source } => match source {
+                WrappedResponseContent { status, content } => {
+                    write!(
+                        f,
+                        "Index already exists error: status: {}, message: {}",
+                        status, content
+                    )
+                }
+            },
             PineconeError::APIKeyMissingError { message } => {
                 write!(f, "API key missing error: {}", message)
             }
             PineconeError::InvalidHeadersError { message } => {
-                write!(f, "Invalid headers error: message: {}", message)
+                write!(f, "Invalid headers error: {}", message)
             }
             PineconeError::TimeoutError { message } => {
-                write!(f, "Timeout error: message: {}", message)
+                write!(f, "Timeout error: {}", message)
             }
         }
     }
@@ -393,54 +353,18 @@ impl std::error::Error for PineconeError {
             PineconeError::SerdeError { source } => Some(source),
             PineconeError::IoError { message: _ } => None,
             PineconeError::BadRequestError { source } => Some(source),
-            PineconeError::UnauthorizedError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::PodQuotaExceededError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::CollectionsQuotaExceededError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::InvalidCloudError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::InvalidRegionError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::CollectionNotFoundError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::IndexNotFoundError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::IndexAlreadyExistsError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::CollectionAlreadyExistsError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::UnprocessableEntityError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::PendingCollectionError {
-                status: _,
-                message: _,
-            } => None,
-            PineconeError::InternalServerError {
-                status: _,
-                message: _,
-            } => None,
+            PineconeError::UnauthorizedError { source } => Some(source),
+            PineconeError::PodQuotaExceededError { source } => Some(source),
+            PineconeError::CollectionsQuotaExceededError { source } => Some(source),
+            PineconeError::InvalidCloudError { source } => Some(source),
+            PineconeError::InvalidRegionError { source } => Some(source),
+            PineconeError::CollectionNotFoundError { source } => Some(source),
+            PineconeError::IndexNotFoundError { source } => Some(source),
+            PineconeError::IndexAlreadyExistsError { source } => Some(source),
+            PineconeError::CollectionAlreadyExistsError { source } => Some(source),
+            PineconeError::UnprocessableEntityError { source } => Some(source),
+            PineconeError::PendingCollectionError { source } => Some(source),
+            PineconeError::InternalServerError { source } => Some(source),
             PineconeError::APIKeyMissingError { message: _ } => None,
             PineconeError::InvalidHeadersError { message: _ } => None,
             PineconeError::TimeoutError { message: _ } => None,
