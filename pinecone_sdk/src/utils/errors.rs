@@ -33,7 +33,7 @@ pub enum PineconeError {
     /// ConnectionError: Failed to establish a connection.
     ConnectionError {
         /// inner: Error object for connection error.
-        inner: Box<dyn std::error::Error>,
+        source: Box<dyn std::error::Error>,
     },
 
     /// ReqwestError: Error caused by Reqwest
@@ -134,8 +134,8 @@ pub enum PineconeError {
 
     /// UpsertError: Failed to upsert data.
     UpsertError {
-        /// inner: Error object for tonic error.
-        inner: Box<tonic::Status>,
+        /// source: Error object for tonic error.
+        source: Box<tonic::Status>,
     },
 }
 
@@ -221,26 +221,18 @@ impl std::fmt::Display for PineconeError {
                     status, message
                 )
             }
-            PineconeError::CollectionAlreadyExistsError { source } => write!(
-                f,
-                "Collection already exists error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::UnprocessableEntityError { source } => write!(
-                f,
-                "Unprocessable entity error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::PendingCollectionError { source } => write!(
-                f,
-                "Pending collection error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::InternalServerError { source } => write!(
-                f,
-                "Internal server error: status: {}, message: {}",
-                source.status, source.content
-            ),
+            PineconeError::CollectionAlreadyExistsError { source } => {
+                write!(f, "Collection already exists error: {}", source)
+            }
+            PineconeError::UnprocessableEntityError { source } => {
+                write!(f, "Unprocessable entity error: {}", source)
+            }
+            PineconeError::PendingCollectionError { source } => {
+                write!(f, "Pending collection error: {}", source)
+            }
+            PineconeError::InternalServerError { source } => {
+                write!(f, "Internal server error: {}", source)
+            }
             PineconeError::ReqwestError { source } => {
                 write!(f, "Reqwest error: {}", source.to_string())
             }
@@ -253,46 +245,30 @@ impl std::fmt::Display for PineconeError {
             PineconeError::BadRequestError { source } => {
                 write!(f, "Bad request error: {}", source)
             }
-            PineconeError::UnauthorizedError { source } => write!(
-                f,
-                "Unauthorized error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::PodQuotaExceededError { source } => write!(
-                f,
-                "Pod quota exceeded error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::CollectionsQuotaExceededError { source } => write!(
-                f,
-                "Collections quota exceeded error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::InvalidCloudError { source } => write!(
-                f,
-                "Invalid cloud error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::InvalidRegionError { source } => write!(
-                f,
-                "Invalid region error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::CollectionNotFoundError { source } => write!(
-                f,
-                "Collection not found error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::IndexNotFoundError { source } => write!(
-                f,
-                "Index not found error: status: {}, message: {}",
-                source.status, source.content
-            ),
-            PineconeError::IndexAlreadyExistsError { source } => write!(
-                f,
-                "Index already exists error: status: {}, message: {}",
-                source.status, source.content
-            ),
+            PineconeError::UnauthorizedError { source } => {
+                write!(f, "Unauthorized error: status: {}", source)
+            }
+            PineconeError::PodQuotaExceededError { source } => {
+                write!(f, "Pod quota exceeded error: {}", source)
+            }
+            PineconeError::CollectionsQuotaExceededError { source } => {
+                write!(f, "Collections quota exceeded error: {}", source)
+            }
+            PineconeError::InvalidCloudError { source } => {
+                write!(f, "Invalid cloud error: status: {}", source)
+            }
+            PineconeError::InvalidRegionError { source } => {
+                write!(f, "Invalid region error: {}", source)
+            }
+            PineconeError::CollectionNotFoundError { source } => {
+                write!(f, "Collection not found error: {}", source)
+            }
+            PineconeError::IndexNotFoundError { source } => {
+                write!(f, "Index not found error: status: {}", source)
+            }
+            PineconeError::IndexAlreadyExistsError { source } => {
+                write!(f, "Index already exists error: {}", source)
+            }
             PineconeError::APIKeyMissingError { message } => {
                 write!(f, "API key missing error: {}", message)
             }
@@ -301,6 +277,12 @@ impl std::fmt::Display for PineconeError {
             }
             PineconeError::TimeoutError { message } => {
                 write!(f, "Timeout error: {}", message)
+            }
+            PineconeError::ConnectionError { source } => {
+                write!(f, "Connection error: {}", source)
+            }
+            PineconeError::UpsertError { source } => {
+                write!(f, "Upsert error: {}", source)
             }
         }
     }
@@ -332,11 +314,14 @@ impl std::error::Error for PineconeError {
             PineconeError::APIKeyMissingError { message: _ } => None,
             PineconeError::InvalidHeadersError { message: _ } => None,
             PineconeError::TimeoutError { message: _ } => None,
+            PineconeError::ConnectionError { source } => Some(source.as_ref()),
+            PineconeError::UpsertError { source } => Some(source),
         }
     }
 }
 
 /// WrappedResponseContent is a wrapper around ResponseContent.
+#[derive(Debug)]
 pub struct WrappedResponseContent {
     /// status code
     pub status: reqwest::StatusCode,
@@ -360,12 +345,6 @@ impl std::error::Error for WrappedResponseContent {
 }
 
 impl std::fmt::Display for WrappedResponseContent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "status: {} content: {}", self.status, self.content)
-    }
-}
-
-impl std::fmt::Debug for WrappedResponseContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "status: {} content: {}", self.status, self.content)
     }
