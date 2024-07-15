@@ -1,5 +1,6 @@
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
+use once_cell::sync::Lazy;
 use pb::vector_service_client::VectorServiceClient;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
@@ -94,6 +95,30 @@ impl Index {
 }
 
 impl PineconeClient {
+    /// Match the scheme in a host string.
+    ///
+    /// ### Arguments
+    /// * `host: &str` - The host string to match.
+    ///
+    /// ### Return
+    /// * `bool` - True if the host string contains a scheme, false otherwise.
+    fn has_scheme(host: &str) -> bool {
+        static re: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"^[a-zA-Z]+://").unwrap());
+        re.is_match(host)
+    }
+
+    /// Match the port in a host string.
+    ///
+    /// ### Arguments
+    /// * `host: &str` - The host string to match.
+    ///
+    /// ### Return
+    /// * `bool` - True if the host string contains a port, false otherwise.
+    fn has_port(host: &str) -> bool {
+        static re: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r":\d+$").unwrap());
+        re.is_match(host)
+    }
+
     /// Target an index for data operations.
     ///
     /// ### Arguments
@@ -119,23 +144,21 @@ impl PineconeClient {
     pub async fn index(&self, host: &str) -> Result<Index, PineconeError> {
         let endpoint = host.to_string();
 
-        let re_scheme = regex::Regex::new(r"^[a-zA-Z]+://").unwrap();
-        let endpoint = if re_scheme.is_match(&endpoint) {
-            endpoint.to_string()
+        let endpoint = if PineconeClient::has_scheme(&endpoint) {
+            endpoint
         } else {
             format!("https://{}", endpoint)
         };
 
-        let re_port = regex::Regex::new(r":\d+$").unwrap();
-        let endpoint = if re_port.is_match(&endpoint) {
-            endpoint.to_string()
+        let endpoint = if PineconeClient::has_port(&endpoint) {
+            endpoint
         } else {
             format!("{}:443", endpoint)
         };
 
         let index = Index {
-            host: endpoint.to_string(),
-            connection: self.new_index_connection(&endpoint).await?,
+            host: endpoint.clone(),
+            connection: self.new_index_connection(endpoint).await?,
         };
 
         Ok(index)
@@ -143,13 +166,13 @@ impl PineconeClient {
 
     async fn new_index_connection(
         &self,
-        host: &str,
+        host: String,
     ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
     {
         let tls_config = tonic::transport::ClientTlsConfig::default();
 
         // connect to server
-        let endpoint = Channel::from_shared(host.to_string())
+        let endpoint = Channel::from_shared(host)
             .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?
             .tls_config(tls_config)
             .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
