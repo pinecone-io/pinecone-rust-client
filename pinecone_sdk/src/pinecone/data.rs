@@ -87,8 +87,7 @@ impl Index {
             .upsert(request)
             .await
             .map_err(|e| PineconeError::UpsertError { inner: Box::new(e) })?
-            .get_ref()
-            .clone();
+            .into_inner();
 
         Ok(response)
     }
@@ -103,8 +102,8 @@ impl PineconeClient {
     /// ### Return
     /// * `bool` - True if the host string contains a scheme, false otherwise.
     fn has_scheme(host: &str) -> bool {
-        static re: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"^[a-zA-Z]+://").unwrap());
-        re.is_match(host)
+        static RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r"^[a-zA-Z]+://").unwrap());
+        RE.is_match(host)
     }
 
     /// Match the port in a host string.
@@ -115,8 +114,8 @@ impl PineconeClient {
     /// ### Return
     /// * `bool` - True if the host string contains a port, false otherwise.
     fn has_port(host: &str) -> bool {
-        static re: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r":\d+$").unwrap());
-        re.is_match(host)
+        static RE: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r":\d+$").unwrap());
+        RE.is_match(host)
     }
 
     /// Target an index for data operations.
