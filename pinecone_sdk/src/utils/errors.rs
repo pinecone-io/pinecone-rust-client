@@ -56,79 +56,79 @@ pub enum PineconeError {
 
     /// BadRequestError: Bad request. The request body included invalid request parameters
     BadRequestError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// UnauthorizedError: Unauthorized. Possibly caused by invalid API key
     UnauthorizedError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// PodQuotaExceededError: Pod quota exceeded
     PodQuotaExceededError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// CollectionsQuotaExceededError: Collections quota exceeded
     CollectionsQuotaExceededError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// InvalidCloudError: Provided cloud is not valid.
     InvalidCloudError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// InvalidRegionError: Provided region is not valid.
     InvalidRegionError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// CollectionNotFoundError: Collection of given name does not exist
     CollectionNotFoundError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// IndexNotFoundError: Index of given name does not exist
     IndexNotFoundError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// ResourceAlreadyExistsError: Resource of given name already exists
     ResourceAlreadyExistsError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// Unprocessable entity error: The request body could not be deserialized
     UnprocessableEntityError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// PendingCollectionError: There is a pending collection created from this index
     PendingCollectionError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// InternalServerError: Internal server error
     InternalServerError {
-        /// error
+        /// Source error
         source: WrappedResponseContent,
     },
 
     /// UpsertError: Failed to upsert data.
     UpsertError {
-        /// source: Error object for tonic error.
+        /// Source error
         source: tonic::Status,
     },
 }
