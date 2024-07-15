@@ -129,22 +129,28 @@ impl PineconeClient {
 
         let endpoint = host.to_string();
 
-        let endpoint = if endpoint.contains("://") {
+        let re_scheme = regex::Regex::new(r"^[a-zA-Z]+://").unwrap();
+        let endpoint = if re_scheme.is_match(&endpoint) {
+            println!("{} has scheme", endpoint);
             endpoint.to_string()
         } else {
             let scheme = if secure { "https" } else { "http" };
             format!("{}://{}", scheme, endpoint)
         };
 
-        let endpoint = if endpoint.contains(":") {
+        let re_port = regex::Regex::new(r":\d+$").unwrap();
+        let endpoint = if re_port.is_match(&endpoint) {
+            println!("{} has port", endpoint);
             endpoint.to_string()
         } else {
             format!("{}:{}", endpoint, port)
         };
 
+        println!("endpoint: {}", endpoint);
+
         let index = Index {
             host: endpoint.to_string(),
-            connection: self.new_index_connection(host).await?,
+            connection: self.new_index_connection(&endpoint).await?,
         };
 
         Ok(index)
@@ -174,5 +180,95 @@ impl PineconeClient {
         let inner = VectorServiceClient::with_interceptor(channel, add_api_key_interceptor);
 
         Ok(inner)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use httpmock::prelude::*;
+
+    #[tokio::test]
+    async fn test_index_full_endpoint() {
+        let server = MockServer::start();
+
+        // server url contains scheme and port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let index = pinecone
+            .index(server.base_url().as_str(), None, None)
+            .await
+            .unwrap();
+
+        assert_eq!(index.host, server.base_url());
+    }
+
+    #[tokio::test]
+    async fn test_index_no_scheme() {
+        let server = MockServer::start();
+
+        // server url contains no scheme
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let addr = server.address().to_string();
+
+        let index = pinecone
+            .index(addr.as_str(), Some(false), None)
+            .await
+            .unwrap();
+
+        assert_eq!(index.host, format!("http://{}", addr));
+    }
+
+    #[tokio::test]
+    async fn test_index_no_port() {
+        let server = MockServer::start();
+
+        // server url contains no port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let scheme_host = format!("http://{}", server.host());
+        let port = server.port();
+
+        let index = pinecone
+            .index(scheme_host.as_str(), None, Some(port.into()))
+            .await
+            .unwrap();
+
+        assert_eq!(index.host, format!("{}:{}", scheme_host, port));
+    }
+
+    #[tokio::test]
+    async fn test_index_no_scheme_no_port() {
+        let server = MockServer::start();
+
+        // server url contains no scheme and no port
+        let _mock = server.mock(|_when, then| {
+            then.status(200);
+        });
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let host = server.host();
+        let port = server.port();
+
+        let index = pinecone
+            .index(host.as_str(), Some(false), Some(port.into()))
+            .await
+            .unwrap();
+
+        assert_eq!(index.host, format!("http://{}:{}", host, port));
     }
 }
