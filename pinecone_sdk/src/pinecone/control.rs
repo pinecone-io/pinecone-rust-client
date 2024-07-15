@@ -45,9 +45,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
@@ -123,9 +122,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::{Metric, Cloud, WaitPolicy, IndexModel};
     /// use std::time::Duration;
     ///
     /// # #[tokio::main]
@@ -263,9 +261,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexModel;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
@@ -297,9 +294,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::IndexList};
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::IndexList;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
@@ -412,9 +408,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::CollectionModel};
     /// use pinecone_sdk::utils::errors::PineconeError;
-    /// use pinecone_sdk::control::CollectionModel;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
@@ -868,21 +863,21 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(
                     r#"{
-                    "dimension": 1536,
-                    "host": "mock-host",
-                    "metric": "cosine",
-                    "name": "serverless-index",
-                    "spec": {
-                        "serverless": {
-                        "cloud": "aws",
-                        "region": "us-east-1"
+                        "dimension": 1536,
+                        "host": "mock-host",
+                        "metric": "cosine",
+                        "name": "serverless-index",
+                        "spec": {
+                            "serverless": {
+                            "cloud": "aws",
+                            "region": "us-east-1"
+                            }
+                        },
+                        "status": {
+                            "ready": true,
+                            "state": "Ready"
                         }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "Ready"
-                    }
-                }"#,
+                    }"#,
                 );
         });
 

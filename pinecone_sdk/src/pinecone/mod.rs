@@ -6,6 +6,12 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
+/// Control plane module.
+pub mod control;
+
+/// Data plane module.
+pub mod data;
+
 /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct PineconeClient {
