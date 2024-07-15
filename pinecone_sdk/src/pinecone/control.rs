@@ -93,7 +93,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to create index \"{name}\""))))?;
+            .map_err(|e| PineconeError::from(e))?;
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
@@ -193,7 +193,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to create index \"{name}\""))))?;
+            .map_err(|e| PineconeError::from(e))?;
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
@@ -277,9 +277,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::describe_index(&self.openapi_config(), name)
             .await
-            .map_err(|e| {
-                PineconeError::from((e, format!("Failed to describe index \"{name}\"")))
-            })?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -310,7 +308,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::list_indexes(&self.openapi_config())
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to list indexes"))))?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -362,7 +360,7 @@ impl PineconeClient {
             configure_index_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to configure index \"{name}\""))))?;
+        .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -392,7 +390,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to delete index \"{name}\""))))?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -436,7 +434,7 @@ impl PineconeClient {
             create_collection_request,
         )
         .await
-        .map_err(|e| PineconeError::from((e, format!("Failed to create collection \"{name}\""))))?;
+        .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -465,9 +463,7 @@ impl PineconeClient {
     pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
         let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
             .await
-            .map_err(|e| {
-                PineconeError::from((e, format!("Failed to describe collection \"{name}\"")))
-            })?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -497,7 +493,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::list_collections(&self.openapi_config())
             .await
-            .map_err(|e| PineconeError::from((e, format!("Failed to list collections"))))?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -527,9 +523,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
             .await
-            .map_err(|e| {
-                PineconeError::from((e, format!("Failed to delete collection \"{name}\"")))
-            })?;
+            .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -760,7 +754,7 @@ mod tests {
 
         assert!(matches!(
             create_index_response,
-            PineconeError::IndexAlreadyExistsError { .. }
+            PineconeError::ResourceAlreadyExistsError { .. }
         ));
         mock.assert();
 
@@ -2010,7 +2004,7 @@ mod tests {
 
         assert!(matches!(
             create_collection_response,
-            PineconeError::CollectionAlreadyExistsError { .. }
+            PineconeError::ResourceAlreadyExistsError { .. }
         ));
 
         mock.assert();

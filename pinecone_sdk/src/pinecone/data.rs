@@ -86,7 +86,7 @@ impl Index {
             .connection
             .upsert(request)
             .await
-            .map_err(|e| PineconeError::UpsertError { source: Box::new(e) })?
+            .map_err(|e| PineconeError::UpsertError { source: e })?
             .into_inner();
 
         Ok(response)

@@ -102,14 +102,8 @@ pub enum PineconeError {
         source: WrappedResponseContent,
     },
 
-    /// IndexAlreadyExistsError: Index of given name already exists
-    IndexAlreadyExistsError {
-        /// error
-        source: WrappedResponseContent,
-    },
-
-    /// CollectionAlreadyExistsError: Collection of given name already exists
-    CollectionAlreadyExistsError {
+    /// ResourceAlreadyExistsError: Resource of given name already exists
+    ResourceAlreadyExistsError {
         /// error
         source: WrappedResponseContent,
     },
@@ -135,41 +129,35 @@ pub enum PineconeError {
     /// UpsertError: Failed to upsert data.
     UpsertError {
         /// source: Error object for tonic error.
-        source: Box<tonic::Status>,
+        source: tonic::Status,
     },
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
-impl<T> From<(OpenApiError<T>, String)> for PineconeError {
-    fn from((error, message): (OpenApiError<T>, String)) -> Self {
-        err_handler(error, message)
-    }
-}
-
-// Helper function to extract status/error message
-fn err_handler<T>(e: OpenApiError<T>, message: String) -> PineconeError {
-    match e {
-        OpenApiError::Reqwest(inner) => PineconeError::ReqwestError { source: inner },
-        OpenApiError::Serde(inner) => PineconeError::SerdeError { source: inner },
-        OpenApiError::Io(inner) => PineconeError::IoError {
-            message: inner.to_string(),
-        },
-        OpenApiError::ResponseError(inner) => handle_response_error(inner.into(), message),
+impl<T> From<OpenApiError<T>> for PineconeError {
+    fn from(error: OpenApiError<T>) -> Self {
+        match error {
+            OpenApiError::Reqwest(inner) => PineconeError::ReqwestError { source: inner },
+            OpenApiError::Serde(inner) => PineconeError::SerdeError { source: inner },
+            OpenApiError::Io(inner) => PineconeError::IoError {
+                message: inner.to_string(),
+            },
+            OpenApiError::ResponseError(inner) => handle_response_error(inner.into()),
+        }
     }
 }
 
 // Helper function to handle response errors
-fn handle_response_error(source: WrappedResponseContent, message: String) -> PineconeError {
-    // let err_message = e.content.;
+fn handle_response_error(source: WrappedResponseContent) -> PineconeError {
     let status = source.status;
-    let message = format!("{message}: {}", source.content);
+    let message = source.content.clone();
 
     match status {
         StatusCode::BAD_REQUEST => PineconeError::BadRequestError { source },
         StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { source },
         StatusCode::FORBIDDEN => parse_quota_exceeded_error(source, message),
         StatusCode::NOT_FOUND => parse_not_found_error(source, message),
-        StatusCode::CONFLICT => parse_conflict_error(source, message),
+        StatusCode::CONFLICT => PineconeError::ResourceAlreadyExistsError { source },
         StatusCode::PRECONDITION_FAILED => PineconeError::PendingCollectionError { source },
         StatusCode::UNPROCESSABLE_ENTITY => PineconeError::UnprocessableEntityError { source },
         StatusCode::INTERNAL_SERVER_ERROR => PineconeError::InternalServerError { source },
@@ -186,16 +174,6 @@ fn parse_not_found_error(source: WrappedResponseContent, message: String) -> Pin
         PineconeError::InvalidRegionError { source }
     } else if message.contains("cloud") {
         PineconeError::InvalidCloudError { source }
-    } else {
-        PineconeError::InternalServerError { source }
-    }
-}
-
-fn parse_conflict_error(source: WrappedResponseContent, message: String) -> PineconeError {
-    if message.contains("index") {
-        PineconeError::IndexAlreadyExistsError { source }
-    } else if message.contains("collection") {
-        PineconeError::CollectionAlreadyExistsError { source }
     } else {
         PineconeError::InternalServerError { source }
     }
@@ -221,8 +199,8 @@ impl std::fmt::Display for PineconeError {
                     status, message
                 )
             }
-            PineconeError::CollectionAlreadyExistsError { source } => {
-                write!(f, "Collection already exists error: {}", source)
+            PineconeError::ResourceAlreadyExistsError { source } => {
+                write!(f, "Resource already exists error: {}", source)
             }
             PineconeError::UnprocessableEntityError { source } => {
                 write!(f, "Unprocessable entity error: {}", source)
@@ -266,9 +244,6 @@ impl std::fmt::Display for PineconeError {
             PineconeError::IndexNotFoundError { source } => {
                 write!(f, "Index not found error: status: {}", source)
             }
-            PineconeError::IndexAlreadyExistsError { source } => {
-                write!(f, "Index already exists error: {}", source)
-            }
             PineconeError::APIKeyMissingError { message } => {
                 write!(f, "API key missing error: {}", message)
             }
@@ -306,8 +281,7 @@ impl std::error::Error for PineconeError {
             PineconeError::InvalidRegionError { source } => Some(source),
             PineconeError::CollectionNotFoundError { source } => Some(source),
             PineconeError::IndexNotFoundError { source } => Some(source),
-            PineconeError::IndexAlreadyExistsError { source } => Some(source),
-            PineconeError::CollectionAlreadyExistsError { source } => Some(source),
+            PineconeError::ResourceAlreadyExistsError { source } => Some(source),
             PineconeError::UnprocessableEntityError { source } => Some(source),
             PineconeError::PendingCollectionError { source } => Some(source),
             PineconeError::InternalServerError { source } => Some(source),
