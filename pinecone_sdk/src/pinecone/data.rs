@@ -125,13 +125,12 @@ impl PineconeClient {
         port: Option<u32>,
     ) -> Result<Index, PineconeError> {
         let secure = secure.unwrap_or(true);
-        let port = port.unwrap_or(433);
+        let port = port.unwrap_or(443);
 
         let endpoint = host.to_string();
 
         let re_scheme = regex::Regex::new(r"^[a-zA-Z]+://").unwrap();
         let endpoint = if re_scheme.is_match(&endpoint) {
-            println!("{} has scheme", endpoint);
             endpoint.to_string()
         } else {
             let scheme = if secure { "https" } else { "http" };
@@ -140,13 +139,10 @@ impl PineconeClient {
 
         let re_port = regex::Regex::new(r":\d+$").unwrap();
         let endpoint = if re_port.is_match(&endpoint) {
-            println!("{} has port", endpoint);
             endpoint.to_string()
         } else {
             format!("{}:{}", endpoint, port)
         };
-
-        println!("endpoint: {}", endpoint);
 
         let index = Index {
             host: endpoint.to_string(),
