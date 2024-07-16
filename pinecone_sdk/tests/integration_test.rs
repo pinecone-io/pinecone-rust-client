@@ -577,7 +577,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_query() -> Result<(), PineconeError> {
+async fn test_query_by_id() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
     let host = pinecone
@@ -591,8 +591,33 @@ async fn test_query() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let query_response = index
+    let _query_response = index
         .query_by_id("1".to_string(), 10, None, None, None, None)
+        .await
+        .expect("Failed to query");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_query_by_value() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vector = vec![1.0, 2.0, 3.0, 5.5];
+
+    let _query_response = index
+        .query_by_value(vector, None, 10, None, None, None, None)
         .await
         .expect("Failed to query");
 
