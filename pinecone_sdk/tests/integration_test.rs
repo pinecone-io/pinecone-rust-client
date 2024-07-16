@@ -611,7 +611,10 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
     ];
 
     let namespace = &generate_namespace_name();
-    let _ = index.upsert(vectors, Some(namespace.to_string())).await.expect("Failed to upsert");
+    let _ = index
+        .upsert(vectors, Some(namespace.to_string()))
+        .await
+        .expect("Failed to upsert");
 
     let ids = vec!["1".to_string(), "2".to_string()];
 
@@ -652,12 +655,88 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
             metadata: None,
         },
     ];
-    
+
     let namespace = &generate_namespace_name();
-    let _ = index.upsert(vectors, Some(namespace.to_string())).await.expect("Failed to upsert");
+    let _ = index
+        .upsert(vectors, Some(namespace.to_string()))
+        .await
+        .expect("Failed to upsert");
 
     let _ = index
         .delete_all(Some(namespace.to_string()))
+        .await
+        .expect("Failed to delete all vectors");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_delete_by_filter() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_pod_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = vec![
+        Vector {
+            id: "1".to_string(),
+            values: vec![1.0; 12],
+            sparse_values: None,
+            metadata: Some(MetadataFilter {
+                fields: vec![(
+                    "key".to_string(),
+                    Value {
+                        kind: Some(Kind::StringValue("value1".to_string())),
+                    },
+                )]
+                .into_iter()
+                .collect(),
+            }),
+        },
+        Vector {
+            id: "2".to_string(),
+            values: vec![2.0; 12],
+            sparse_values: None,
+            metadata: Some(MetadataFilter {
+                fields: vec![(
+                    "key".to_string(),
+                    Value {
+                        kind: Some(Kind::StringValue("value2".to_string())),
+                    },
+                )]
+                .into_iter()
+                .collect(),
+            }),
+        },
+    ];
+
+    let namespace = &generate_namespace_name();
+    let _ = index
+        .upsert(vectors, Some(namespace.to_string()))
+        .await
+        .expect("Failed to upsert");
+
+    let filter = MetadataFilter {
+        fields: vec![(
+            "key".to_string(),
+            Value {
+                kind: Some(Kind::StringValue("value1".to_string())),
+            },
+        )]
+        .into_iter()
+        .collect(),
+    };
+
+    let _ = index
+        .delete_by_filter(filter, Some(namespace.to_string()))
         .await
         .expect("Failed to delete all vectors");
 

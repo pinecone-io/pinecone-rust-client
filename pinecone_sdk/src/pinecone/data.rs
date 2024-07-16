@@ -153,9 +153,9 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
+    /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::pinecone::data::{Value, Kind, MetadataFilter};
-    /// use std::collections::BTreeMap;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -164,10 +164,10 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let mut filter = BTreeMap::new();
-    /// filter.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let mut fields = BTreeMap::new();
+    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.describe_index_stats(Some(MetadataFilter { fields: filter })).await.unwrap();
+    /// let response = index.describe_index_stats(Some(MetadataFilter { fields })).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -208,7 +208,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let ids = vec!["vector-id".to_string()];
-    /// index.delete_by_ids(ids, Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_by_ids(ids, Some("namespace".to_string())).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -252,7 +252,7 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// index.delete_all(Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_all(Some("namespace".to_string())).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -262,6 +262,56 @@ impl Index {
             delete_all: true,
             namespace: namespace.unwrap_or_default(),
             filter: None,
+        };
+
+        let _ = self
+            .connection
+            .delete(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
+
+        Ok(())
+    }
+
+    /// The delete_by_filter operation deletes the vectors from a namespace that satisfy the filter.
+    ///
+    /// ### Arguments
+    /// * `filter: MetadataFilter` - The filter to specify which vectors to delete.
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{MetadataFilter, Value, Kind};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let mut fields = BTreeMap::new();
+    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    ///
+    /// let response = index.delete_by_filter(MetadataFilter{ fields }, Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_by_filter(
+        &mut self,
+        filter: MetadataFilter,
+        namespace: Option<String>,
+    ) -> Result<(), PineconeError> {
+        let request = pb::DeleteRequest {
+            ids: vec![],
+            delete_all: false,
+            namespace: namespace.unwrap_or_default(),
+            filter: Some(filter),
         };
 
         let _ = self
