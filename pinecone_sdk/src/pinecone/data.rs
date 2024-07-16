@@ -15,7 +15,7 @@ pub use prost_types::{value::Kind, Struct, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
-    tonic::include_proto!("_");
+    include!("../../../protos/_.rs");
 }
 
 #[derive(Debug, Clone)]
