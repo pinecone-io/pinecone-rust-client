@@ -8,7 +8,8 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{ListResponse, UpsertResponse, Vector};
+pub use pb::{ListResponse, DescribeIndexStatsResponse, UpsertResponse, Vector};
+pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -53,7 +54,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::pb::Vector;
+    /// use pinecone_sdk::pinecone::data::Vector;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -135,6 +136,50 @@ impl Index {
         let response = self
             .connection
             .list(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
+    /// The describe_index_stats operation returns statistics about the index.
+    ///
+    /// ### Arguments
+    /// * `filter: Option<MetadataFilter>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    ///
+    /// ### Return
+    /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, MetadataFilter};
+    /// use std::collections::BTreeMap;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let mut filter = BTreeMap::new();
+    /// filter.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    ///
+    /// let response = index.describe_index_stats(Some(MetadataFilter { fields: filter })).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn describe_index_stats(
+        &mut self,
+        filter: Option<MetadataFilter>,
+    ) -> Result<DescribeIndexStatsResponse, PineconeError> {
+        let request = pb::DescribeIndexStatsRequest { filter };
+
+        let response = self
+            .connection
+            .describe_index_stats(request)
             .await
             .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();

@@ -1,9 +1,10 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::Vector;
+use pinecone_sdk::pinecone::data::{Kind, Value, Vector, MetadataFilter};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
+use std::collections::BTreeMap;
 use std::time::Duration;
 use std::vec;
 
@@ -490,6 +491,64 @@ async fn test_upsert() -> Result<(), PineconeError> {
     let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_pod_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let mut filter = BTreeMap::new();
+    filter.insert(
+        "id".to_string(),
+        Value {
+            kind: Some(Kind::BoolValue(false)),
+        },
+    );
+
+    let describe_index_stats_response = index
+        .describe_index_stats(Some(MetadataFilter { fields: filter }))
+        .await
+        .expect("Failed to describe index stats");
+
+    assert_eq!(describe_index_stats_response.dimension, 12);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_describe_index_stats_no_filter() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let describe_index_stats_response = index
+        .describe_index_stats(None)
+        .await
+        .expect("Failed to describe index stats");
+
+    assert_eq!(describe_index_stats_response.dimension, 4);
 
     Ok(())
 }
