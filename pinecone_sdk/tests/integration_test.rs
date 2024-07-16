@@ -30,6 +30,10 @@ fn generate_collection_name() -> String {
     format!("test-collection-{}", generate_random_string())
 }
 
+fn generate_namespace_name() -> String {
+    format!("test-namespace-{}", generate_random_string())
+}
+
 // helper functions to get index names from environment variables
 fn get_serverless_index() -> String {
     std::env::var("SERVERLESS_INDEX_NAME").unwrap()
@@ -606,14 +610,56 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         },
     ];
 
-    let _ = index.upsert(vectors, None).await.expect("Failed to upsert");
+    let namespace = &generate_namespace_name();
+    let _ = index.upsert(vectors, Some(namespace.to_string())).await.expect("Failed to upsert");
 
     let ids = vec!["1".to_string(), "2".to_string()];
 
     let _ = index
-        .delete_by_ids(ids, None)
+        .delete_by_ids(ids, Some(namespace.to_string()))
         .await
         .expect("Failed to delete vectors by ids");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_delete_all_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = vec![
+        Vector {
+            id: "1".to_string(),
+            values: vec![1.0, 2.0, 3.0, 5.5],
+            sparse_values: None,
+            metadata: None,
+        },
+        Vector {
+            id: "2".to_string(),
+            values: vec![1.0, 2.0, 3.0, 5.5],
+            sparse_values: None,
+            metadata: None,
+        },
+    ];
+    
+    let namespace = &generate_namespace_name();
+    let _ = index.upsert(vectors, Some(namespace.to_string())).await.expect("Failed to upsert");
+
+    let _ = index
+        .delete_all(Some(namespace.to_string()))
+        .await
+        .expect("Failed to delete all vectors");
 
     Ok(())
 }

@@ -232,6 +232,46 @@ impl Index {
 
         Ok(())
     }
+
+    /// The delete_all operation deletes all vectors from a namespace.
+    ///
+    /// ### Arguments
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// index.delete_all(Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_all(&mut self, namespace: Option<String>) -> Result<(), PineconeError> {
+        let request = pb::DeleteRequest {
+            ids: vec![],
+            delete_all: true,
+            namespace: namespace.unwrap_or_default(),
+            filter: None,
+        };
+
+        let _ = self
+            .connection
+            .delete(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
+
+        Ok(())
+    }
 }
 
 impl PineconeClient {
