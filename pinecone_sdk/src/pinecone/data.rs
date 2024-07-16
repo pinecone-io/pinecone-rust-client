@@ -252,20 +252,6 @@ mod tests {
     use super::*;
     use httpmock::prelude::*;
 
-    #[rstest::fixture]
-    async fn index() -> Index {
-        let server = MockServer::start();
-
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
-
-        let index = pinecone
-            .index(&server.base_url())
-            .await
-            .expect("Expected index to be created");
-
-        index
-    }
-
     #[tokio::test]
     async fn test_index_full_endpoint() {
         let server = MockServer::start();
