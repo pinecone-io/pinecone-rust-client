@@ -8,7 +8,7 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{UpsertResponse, Vector};
+pub use pb::{ListResponse, UpsertResponse, Vector};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -101,7 +101,7 @@ impl Index {
     /// * `pagination_token: Option<String>` - The token for paginating through results.
     ///
     /// ### Return
-    /// * ??
+    /// * `Result<ListResponse, PineconeError>` - A response object.
     ///
     /// ### Example
     /// ```no_run
@@ -124,7 +124,7 @@ impl Index {
         prefix: Option<String>,
         limit: Option<u32>,
         pagination_token: Option<String>,
-    ) -> Result<pb::ListResponse, PineconeError> {
+    ) -> Result<ListResponse, PineconeError> {
         let request = pb::ListRequest {
             namespace,
             prefix,
@@ -137,8 +137,7 @@ impl Index {
             .list(request)
             .await
             .map_err(|e| PineconeError::DataPlaneError { status: e })?
-            .get_ref()
-            .clone();
+            .into_inner();
 
         Ok(response)
     }
