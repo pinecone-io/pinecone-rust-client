@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use once_cell::sync::Lazy;
@@ -8,7 +10,8 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{UpsertResponse, Vector};
+pub use pb::{DescribeIndexStatsResponse, UpsertResponse, Vector};
+pub use prost_types::{value::Kind, Struct, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -53,7 +56,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::pb::Vector;
+    /// use pinecone_sdk::pinecone::data::Vector;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -87,6 +90,54 @@ impl Index {
             .upsert(request)
             .await
             .map_err(|e| PineconeError::UpsertError { source: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
+    /// The describe_index_stats operation returns statistics about the index.
+    ///
+    /// ### Arguments
+    /// * `filter: Option<BTreeMap<String, Value>>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    ///
+    /// ### Return
+    /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Value, Kind};
+    /// use std::collections::BTreeMap;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let mut filter = BTreeMap::new();
+    /// filter.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    ///
+    /// let response = index.describe_index_stats(None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn describe_index_stats(
+        &mut self,
+        filter: Option<BTreeMap<String, Value>>,
+    ) -> Result<DescribeIndexStatsResponse, PineconeError> {
+        let filter = match filter {
+            Some(filter) => Some(Struct { fields: filter }),
+            None => None,
+        };
+        let request = pb::DescribeIndexStatsRequest { filter };
+
+        let response = self
+            .connection
+            .describe_index_stats(request)
+            .await
+            .map_err(|e| PineconeError::DescribeIndexStatsError { source: e })?
             .into_inner();
 
         Ok(response)
@@ -172,14 +223,20 @@ impl PineconeClient {
 
         // connect to server
         let endpoint = Channel::from_shared(host)
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?
             .tls_config(tls_config)
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         let channel = endpoint
             .connect()
             .await
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
