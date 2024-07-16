@@ -224,13 +224,7 @@ impl Index {
             filter: None,
         };
 
-        let _ = self
-            .connection
-            .delete(request)
-            .await
-            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
-
-        Ok(())
+        self.delete(request).await
     }
 
     /// The delete_all operation deletes all vectors from a namespace.
@@ -264,13 +258,7 @@ impl Index {
             filter: None,
         };
 
-        let _ = self
-            .connection
-            .delete(request)
-            .await
-            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
-
-        Ok(())
+        self.delete(request).await
     }
 
     /// The delete_by_filter operation deletes the vectors from a namespace that satisfy the filter.
@@ -314,6 +302,11 @@ impl Index {
             filter: Some(filter),
         };
 
+        self.delete(request).await
+    }
+
+    // Helper function to call delete operation
+    async fn delete(&mut self, request: pb::DeleteRequest) -> Result<(), PineconeError> {
         let _ = self
             .connection
             .delete(request)
