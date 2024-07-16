@@ -436,6 +436,36 @@ async fn test_delete_collection_err() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
+async fn test_index() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let _ = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_index_err() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let _ = pinecone
+        .index("invalid-host")
+        .await
+        .expect_err("Expected to fail targeting index");
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_upsert() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
@@ -460,6 +490,29 @@ async fn test_upsert() -> Result<(), PineconeError> {
     let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_list_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let list_response = index
+        .list("".to_string(), None, None, None)
+        .await
+        .expect("Failed to list vectors");
 
     Ok(())
 }
