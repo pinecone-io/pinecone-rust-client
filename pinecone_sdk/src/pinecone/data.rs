@@ -8,7 +8,7 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{ListResponse, DescribeIndexStatsResponse, UpsertResponse, Vector};
+pub use pb::{DeleteResponse, DescribeIndexStatsResponse, ListResponse, UpsertResponse, Vector};
 pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
 
 /// Generated protobuf module for data plane.
@@ -180,6 +180,44 @@ impl Index {
         let response = self
             .connection
             .describe_index_stats(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
+    /// Brief description of the purpose of this code.
+    ///
+    /// A longer description about the code, if that's necessary.
+    ///
+    /// ### Arguments
+    /// * `arg1: type` - The thing that does this for the function.
+    ///
+    /// ### Return
+    /// * Returns a `type` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// // put a good example here of how the developer should use it
+    /// ```
+    pub async fn delete(
+        &mut self,
+        ids: Vec<String>,
+        delete_all: bool,
+        namespace: String,
+        filter: Option<MetadataFilter>,
+    ) -> Result<DeleteResponse, PineconeError> {
+        let request = pb::DeleteRequest {
+            ids,
+            delete_all,
+            namespace,
+            filter,
+        };
+
+        let response = self
+            .connection
+            .delete(request)
             .await
             .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();
