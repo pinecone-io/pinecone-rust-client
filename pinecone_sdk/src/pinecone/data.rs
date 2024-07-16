@@ -8,7 +8,7 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{UpsertResponse, Vector};
+pub use pb::{ListResponse, UpsertResponse, Vector};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -86,7 +86,57 @@ impl Index {
             .connection
             .upsert(request)
             .await
-            .map_err(|e| PineconeError::UpsertError { source: e })?
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
+    /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
+    ///
+    /// ### Arguments
+    /// * `namespace: Option<String>` - The namespace to list vectors from.
+    /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
+    /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
+    /// * `pagination_token: Option<String>` - The token for paginating through results.
+    ///
+    /// ### Return
+    /// * `Result<ListResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let response = index.list("namespace".to_string(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn list(
+        &mut self,
+        namespace: String,
+        prefix: Option<String>,
+        limit: Option<u32>,
+        pagination_token: Option<String>,
+    ) -> Result<ListResponse, PineconeError> {
+        let request = pb::ListRequest {
+            namespace,
+            prefix,
+            limit,
+            pagination_token,
+        };
+
+        let response = self
+            .connection
+            .list(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();
 
         Ok(response)
@@ -172,14 +222,20 @@ impl PineconeClient {
 
         // connect to server
         let endpoint = Channel::from_shared(host)
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?
             .tls_config(tls_config)
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         let channel = endpoint
             .connect()
             .await
-            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();

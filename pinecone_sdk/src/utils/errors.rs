@@ -126,10 +126,10 @@ pub enum PineconeError {
         source: WrappedResponseContent,
     },
 
-    /// UpsertError: Failed to upsert data.
-    UpsertError {
-        /// Source error
-        source: tonic::Status,
+    /// DataPlaneError: Failed to perform a data plane operation.
+    DataPlaneError {
+        /// Error status
+        status: tonic::Status,
     },
 }
 
@@ -256,8 +256,8 @@ impl std::fmt::Display for PineconeError {
             PineconeError::ConnectionError { source } => {
                 write!(f, "Connection error: {}", source)
             }
-            PineconeError::UpsertError { source } => {
-                write!(f, "Upsert error: {}", source)
+            PineconeError::DataPlaneError { status } => {
+                write!(f, "Data plane error: {}", status)
             }
         }
     }
@@ -289,7 +289,7 @@ impl std::error::Error for PineconeError {
             PineconeError::InvalidHeadersError { message: _ } => None,
             PineconeError::TimeoutError { message: _ } => None,
             PineconeError::ConnectionError { source } => Some(source.as_ref()),
-            PineconeError::UpsertError { source } => Some(source),
+            PineconeError::DataPlaneError { status } => Some(status),
         }
     }
 }
