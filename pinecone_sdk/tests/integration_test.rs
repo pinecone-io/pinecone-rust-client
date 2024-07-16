@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Value, Vector, MetadataFilter};
+use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -572,6 +572,29 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .list("".to_string(), None, None, None)
         .await
         .expect("Failed to list vectors");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_query() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let query_response = index
+        .query_by_id("1".to_string(), 10, None, None, None, None)
+        .await
+        .expect("Failed to query");
 
     Ok(())
 }
