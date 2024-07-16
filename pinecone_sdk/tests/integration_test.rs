@@ -509,7 +509,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let list_response = index
+    let _list_response = index
         .list("".to_string(), None, None, None)
         .await
         .expect("Failed to list vectors");

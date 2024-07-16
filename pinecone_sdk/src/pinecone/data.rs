@@ -86,7 +86,7 @@ impl Index {
             .connection
             .upsert(request)
             .await
-            .map_err(|e| PineconeError::UpsertError { inner: Box::new(e) })?
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();
 
         Ok(response)
@@ -112,7 +112,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let mut index = pinecone.index("index-name", None, None).await.unwrap();
+    /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let response = index.list("namespace".to_string(), None, None, None).await.unwrap();
     /// # Ok(())
@@ -136,7 +136,7 @@ impl Index {
             .connection
             .list(request)
             .await
-            .map_err(|e| PineconeError::ListError { inner: Box::new(e) })?
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .get_ref()
             .clone();
 
@@ -223,14 +223,20 @@ impl PineconeClient {
 
         // connect to server
         let endpoint = Channel::from_shared(host)
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?
             .tls_config(tls_config)
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         let channel = endpoint
             .connect()
             .await
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError {
+                source: Box::new(e),
+            })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
@@ -243,10 +249,6 @@ impl PineconeClient {
 
 #[cfg(test)]
 mod tests {
-    use std::future::Future;
-
-    use crate::pinecone::data;
-
     use super::*;
     use httpmock::prelude::*;
 
@@ -331,7 +333,7 @@ mod tests {
 
         let host = server.host();
 
-        let index = pinecone
+        let _index = pinecone
             .index(host.as_str())
             .await
             .expect_err("Expected connection error");
