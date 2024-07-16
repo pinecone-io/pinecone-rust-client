@@ -101,7 +101,7 @@ pub enum PineconeError {
         /// HTTP status code.
         status: StatusCode,
         /// Error message.
-        message: String
+        message: String,
     },
 
     /// IndexNotFoundError: Index of given name does not exist
@@ -154,6 +154,12 @@ pub enum PineconeError {
 
     /// UpsertError: Failed to upsert data.
     UpsertError {
+        /// inner: Error object for tonic error.
+        inner: Box<tonic::Status>,
+    },
+
+    /// ListError: Failed to list data.
+    ListError {
         /// inner: Error object for tonic error.
         inner: Box<tonic::Status>,
     },

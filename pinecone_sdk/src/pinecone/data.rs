@@ -91,6 +91,57 @@ impl Index {
 
         Ok(response)
     }
+
+    /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
+    ///
+    /// ### Arguments
+    /// * `namespace: Option<String>` - The namespace to list vectors from.
+    /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
+    /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
+    /// * `pagination_token: Option<String>` - The token for paginating through results.
+    ///
+    /// ### Return
+    /// * ??
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-name", None, None).await.unwrap();
+    ///
+    /// let response = index.list("namespace".to_string(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn list(
+        &mut self,
+        namespace: String,
+        prefix: Option<String>,
+        limit: Option<u32>,
+        pagination_token: Option<String>,
+    ) -> Result<pb::ListResponse, PineconeError> {
+        let request = pb::ListRequest {
+            namespace,
+            prefix,
+            limit,
+            pagination_token,
+        };
+
+        let response = self
+            .connection
+            .list(request)
+            .await
+            .map_err(|e| PineconeError::ListError { inner: Box::new(e) })?
+            .get_ref()
+            .clone();
+
+        Ok(response)
+    }
 }
 
 impl PineconeClient {
@@ -192,8 +243,26 @@ impl PineconeClient {
 
 #[cfg(test)]
 mod tests {
+    use std::future::Future;
+
+    use crate::pinecone::data;
+
     use super::*;
     use httpmock::prelude::*;
+
+    #[rstest::fixture]
+    async fn index() -> Index {
+        let server = MockServer::start();
+
+        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+        let index = pinecone
+            .index(&server.base_url())
+            .await
+            .expect("Expected index to be created");
+
+        index
+    }
 
     #[tokio::test]
     async fn test_index_full_endpoint() {
@@ -262,7 +331,7 @@ mod tests {
 
         let host = server.host();
 
-        let _index = pinecone
+        let index = pinecone
             .index(host.as_str())
             .await
             .expect_err("Expected connection error");
