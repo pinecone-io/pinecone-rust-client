@@ -3,12 +3,12 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 outdir="protos"
 
-pushd codegen/apis
+OUT_DIR=$SCRIPT_DIR/../$outdir
+
+pushd $SCRIPT_DIR/apis
 	just build
 popd
 
-export OUT_DIR=$SCRIPT_DIR/../$outdir
-
-pushd codegen/proto_build
-	cargo run
+pushd $SCRIPT_DIR/proto_build
+	cargo run -- $OUT_DIR
 popd

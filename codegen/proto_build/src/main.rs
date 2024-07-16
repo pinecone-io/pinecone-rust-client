@@ -1,10 +1,18 @@
+use std::error::Error;
 use std::path::Path;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let proto_path: &Path = "../apis/_build/2024-07/data_2024-07.proto".as_ref();
+fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = std::env::args().collect();
 
-    // print OUT_DIR env
-    println!("OUT_DIR: {:?}", std::env::var("OUT_DIR").unwrap());
+    let out_dir: &str;
+    if args.len() > 1 {
+        out_dir = &args[1];
+        println!("OUT_DIR: {:?}", out_dir);
+    } else {
+        return Err("missing out_dir argument".into());
+    }
+
+    let proto_path: &Path = "../apis/_build/2024-07/data_2024-07.proto".as_ref();
 
     // directory the main .proto file resides in
     let proto_dir = proto_path
@@ -17,6 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let include_dirs = [proto_dir, include_dir];
 
     tonic_build::configure()
+        .out_dir(out_dir)
         .protoc_arg("--experimental_allow_proto3_optional")
         .compile(&[proto_path], &include_dirs[..])?;
 
