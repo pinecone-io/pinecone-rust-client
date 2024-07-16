@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Value, Vector, MetadataFilter};
+use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -572,6 +572,48 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .list("".to_string(), None, None, None)
         .await
         .expect("Failed to list vectors");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = vec![
+        Vector {
+            id: "1".to_string(),
+            values: vec![1.0, 2.0, 3.0, 5.5],
+            sparse_values: None,
+            metadata: None,
+        },
+        Vector {
+            id: "2".to_string(),
+            values: vec![1.0, 2.0, 3.0, 5.5],
+            sparse_values: None,
+            metadata: None,
+        },
+    ];
+
+    let _ = index.upsert(vectors, None).await.expect("Failed to upsert");
+
+    let ids = vec!["1".to_string(), "2".to_string()];
+
+    let _ = index
+        .delete_by_ids(ids, None)
+        .await
+        .expect("Failed to delete vectors by ids");
 
     Ok(())
 }

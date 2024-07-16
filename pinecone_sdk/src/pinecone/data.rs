@@ -8,7 +8,7 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{DeleteResponse, DescribeIndexStatsResponse, ListResponse, UpsertResponse, Vector};
+pub use pb::{DescribeIndexStatsResponse, ListResponse, UpsertResponse, Vector};
 pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
 
 /// Generated protobuf module for data plane.
@@ -187,42 +187,50 @@ impl Index {
         Ok(response)
     }
 
-    /// Brief description of the purpose of this code.
-    ///
-    /// A longer description about the code, if that's necessary.
+    /// The delete_by_ids operation deletes vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `arg1: type` - The thing that does this for the function.
+    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
     ///
     /// ### Return
-    /// * Returns a `type` object.
+    /// * Returns a `Result<(), PineconeError>` object.
     ///
     /// ### Example
     /// ```no_run
-    /// // put a good example here of how the developer should use it
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let ids = vec!["vector-id".to_string()];
+    /// index.delete_by_ids(ids, Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
     /// ```
-    pub async fn delete(
+    pub async fn delete_by_ids(
         &mut self,
         ids: Vec<String>,
-        delete_all: bool,
-        namespace: String,
-        filter: Option<MetadataFilter>,
-    ) -> Result<DeleteResponse, PineconeError> {
+        namespace: Option<String>,
+    ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids,
-            delete_all,
-            namespace,
-            filter,
+            delete_all: false,
+            namespace: namespace.unwrap_or_default(),
+            filter: None,
         };
 
-        let response = self
+        let _ = self
             .connection
             .delete(request)
             .await
-            .map_err(|e| PineconeError::DataPlaneError { status: e })?
-            .into_inner();
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
 
-        Ok(response)
+        Ok(())
     }
 }
 
