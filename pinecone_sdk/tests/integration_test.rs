@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Value, Vector};
+use pinecone_sdk::pinecone::data::{Kind, Value, Vector, MetadataFilter};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -489,7 +489,7 @@ async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
     );
 
     let describe_index_stats_response = index
-        .describe_index_stats(Some(filter))
+        .describe_index_stats(Some(MetadataFilter { fields: filter }))
         .await
         .expect("Failed to describe index stats");
 

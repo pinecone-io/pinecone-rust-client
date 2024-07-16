@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 use once_cell::sync::Lazy;
@@ -11,7 +9,7 @@ use tonic::transport::Channel;
 use tonic::{Request, Status};
 
 pub use pb::{DescribeIndexStatsResponse, UpsertResponse, Vector};
-pub use prost_types::{value::Kind, Struct, Value};
+pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -98,7 +96,7 @@ impl Index {
     /// The describe_index_stats operation returns statistics about the index.
     ///
     /// ### Arguments
-    /// * `filter: Option<BTreeMap<String, Value>>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    /// * `filter: Option<MetadataFilter>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
     ///
     /// ### Return
     /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
@@ -106,7 +104,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind};
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, MetadataFilter};
     /// use std::collections::BTreeMap;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
@@ -119,15 +117,14 @@ impl Index {
     /// let mut filter = BTreeMap::new();
     /// filter.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.describe_index_stats(None).await.unwrap();
+    /// let response = index.describe_index_stats(Some(MetadataFilter { fields: filter })).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn describe_index_stats(
         &mut self,
-        filter: Option<BTreeMap<String, Value>>,
+        filter: Option<MetadataFilter>,
     ) -> Result<DescribeIndexStatsResponse, PineconeError> {
-        let filter = filter.map(|f| Struct { fields: f });
         let request = pb::DescribeIndexStatsRequest { filter };
 
         let response = self
