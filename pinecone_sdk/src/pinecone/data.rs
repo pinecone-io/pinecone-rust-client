@@ -86,7 +86,7 @@ impl Index {
             .connection
             .upsert(request)
             .await
-            .map_err(|e| PineconeError::UpsertError { inner: Box::new(e) })?
+            .map_err(|e| PineconeError::UpsertError { source: e })?
             .into_inner();
 
         Ok(response)
@@ -172,14 +172,14 @@ impl PineconeClient {
 
         // connect to server
         let endpoint = Channel::from_shared(host)
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?
+            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?
             .tls_config(tls_config)
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
 
         let channel = endpoint
             .connect()
             .await
-            .map_err(|e| PineconeError::ConnectionError { inner: Box::new(e) })?;
+            .map_err(|e| PineconeError::ConnectionError { source: Box::new(e) })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
