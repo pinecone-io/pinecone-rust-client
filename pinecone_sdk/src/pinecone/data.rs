@@ -127,10 +127,7 @@ impl Index {
         &mut self,
         filter: Option<BTreeMap<String, Value>>,
     ) -> Result<DescribeIndexStatsResponse, PineconeError> {
-        let filter = match filter {
-            Some(filter) => Some(Struct { fields: filter }),
-            None => None,
-        };
+        let filter = filter.map(|f| Struct { fields: f });
         let request = pb::DescribeIndexStatsRequest { filter };
 
         let response = self
