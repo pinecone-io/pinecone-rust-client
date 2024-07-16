@@ -12,7 +12,7 @@ pub use pb::{UpsertResponse, Vector};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
-    tonic::include_proto!("_");
+    include!("../../../protos/_.rs");
 }
 
 #[derive(Debug, Clone)]
