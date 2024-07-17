@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Value, Vector, MetadataFilter};
+use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -572,6 +572,93 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .list("".to_string(), None, None, None)
         .await
         .expect("Failed to list vectors");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_vector() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let _update_response = index
+        .update(
+            "valid-vector".to_string(),
+            vec![1.0, 2.0, 3.0, 5.5],
+            None,
+            None,
+            "".to_string(),
+        )
+        .await
+        .expect("Failed to update vector");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let _update_response = index
+        .update(
+            "invalid_id!@*!@&".to_string(),
+            vec![1.0, 2.0, 3.0, 5.5],
+            None,
+            None,
+            "namespace".to_string(),
+        )
+        .await
+        .expect_err("Expected to fail updating vector");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let _update_response = index
+        .update(
+            "some-id".to_string(),
+            vec![1.0, 2.0, 3.0, 5.5],
+            None,
+            None,
+            "invalid-namespace".to_string(),
+        )
+        .await
+        .expect_err("Expected to fail updating vector");
 
     Ok(())
 }
