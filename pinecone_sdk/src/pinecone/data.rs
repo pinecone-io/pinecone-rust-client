@@ -249,7 +249,7 @@ impl Index {
             sparse_vector: None,
         };
 
-        Ok(self.query(request).await?)
+        self.query(request).await
     }
 
     /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
@@ -303,7 +303,7 @@ impl Index {
             sparse_vector,
         };
 
-        Ok(self.query(request).await?)
+        self.query(request).await
     }
 }
 
