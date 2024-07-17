@@ -1,12 +1,13 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, Value, Vector};
+use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::time::Duration;
 use std::vec;
+use tonic::metadata;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -591,12 +592,23 @@ async fn test_update_vector() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
+    let mut metadata = BTreeMap::new();
+    metadata.insert(
+        "key".to_string(),
+        Value {
+            kind: Some(Kind::StringValue("value".to_string())),
+        },
+    );
+
     let _update_response = index
         .update(
             "valid-vector".to_string(),
-            vec![1.0, 2.0, 3.0, 5.5],
-            None,
-            None,
+            vec![1.0, 2.0, 3.0, 123947.5],
+            Some(SparseValues {
+                indices: vec![1, 20],
+                values: vec![2.0, 3.0],
+            }),
+            Some(MetadataFilter { fields: metadata }),
             "".to_string(),
         )
         .await
