@@ -8,7 +8,7 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{DescribeIndexStatsResponse, ListResponse, UpsertResponse, Vector};
+pub use pb::{DescribeIndexStatsResponse, FetchResponse, ListResponse, UpsertResponse, Vector};
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
 /// Generated protobuf module for data plane.
@@ -314,6 +314,41 @@ impl Index {
             .map_err(|e| PineconeError::DataPlaneError { status: e })?;
 
         Ok(())
+    }
+
+    /// The fetch operation retrieves vectors by ID from a namespace.
+    ///
+    /// ### Arguments
+    /// * `ids: Vec<String>` - The ids of vectors to fetch.
+    /// * `namespace: Option<String>` - The namespace to fetch vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<FetchResponse, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// // put a good example here of how the developer should use it
+    /// # start the line like this if you don't want this to be shown to the dev
+    /// # but it's needed to run properly during doc tests
+    /// ```
+    pub async fn fetch(
+        &mut self,
+        ids: Vec<String>,
+        namespace: Option<String>,
+    ) -> Result<FetchResponse, PineconeError> {
+        let request = pb::FetchRequest {
+            ids,
+            namespace: namespace.unwrap_or_default(),
+        };
+
+        let response = self
+            .connection
+            .fetch(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
     }
 }
 

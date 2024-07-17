@@ -742,3 +742,76 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_fetch_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = vec![
+        Vector {
+            id: "1".to_string(),
+            values: vec![5.0, 6.0, 7.0, 8.0],
+            sparse_values: None,
+            metadata: None,
+        },
+        Vector {
+            id: "2".to_string(),
+            values: vec![9.0, 10.0, 11.0, 12.0],
+            sparse_values: None,
+            metadata: None,
+        },
+    ];
+
+    let namespace = &generate_namespace_name();
+    eprintln!("namespace: {}", namespace);
+    //let namespace = "test_namespace";
+
+    let _ = index
+        .upsert(vectors, Some(namespace.to_string()))
+        .await
+        .expect("Failed to upsert");
+
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
+    let fetch_response = index
+        .fetch(
+            vec!["1".to_string(), "2".to_string()],
+            Some(namespace.to_string()),
+        )
+        .await
+        .expect("Failed to fetch vectors");
+
+    assert_eq!(fetch_response.namespace, namespace.to_string());
+    let vectors = fetch_response.vectors;
+    assert_eq!(
+        *vectors.get("1").unwrap(),
+        Vector {
+            id: "1".to_string(),
+            values: vec![5.0, 6.0, 7.0, 8.0],
+            sparse_values: None,
+            metadata: None,
+        }
+    );
+    assert_eq!(
+        *vectors.get("2").unwrap(),
+        Vector {
+            id: "2".to_string(),
+            values: vec![9.0, 10.0, 11.0, 12.0],
+            sparse_values: None,
+            metadata: None,
+        }
+    );
+
+    Ok(())
+}
