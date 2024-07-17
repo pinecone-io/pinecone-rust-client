@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Metadata, SparseValues, Value, Vector};
+use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -30,8 +30,9 @@ fn generate_collection_name() -> String {
     format!("test-collection-{}", generate_random_string())
 }
 
-fn generate_namespace_name() -> String {
-    format!("test-namespace-{}", generate_random_string())
+fn generate_namespace_name() -> Namespace {
+    let name = format!("test-namespace-{}", generate_random_string());
+    Namespace::new(&name)
 }
 
 // helper functions to get index names from environment variables
@@ -492,7 +493,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         metadata: None,
     }];
 
-    let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
+    let upsert_response = index.upsert(vectors, &Default::default()).await.expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
 
@@ -573,7 +574,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _list_response = index
-        .list("".to_string(), None, None, None)
+        .list(&Default::default(), None, None, None)
         .await
         .expect("Failed to list vectors");
 
@@ -612,7 +613,7 @@ async fn test_update_vector() -> Result<(), PineconeError> {
                 values: vec![2.0, 3.0],
             }),
             Some(Metadata { fields: metadata }),
-            "".to_string(),
+            &Default::default(),
         )
         .await
         .expect("Failed to update vector");
@@ -641,7 +642,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            "namespace".to_string(),
+            &Namespace::new("test-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -670,7 +671,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            "invalid-namespace".to_string(),
+            &Namespace::new("invalid-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -710,14 +711,14 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
     let ids = vec!["1".to_string(), "2".to_string()];
 
     let _ = index
-        .delete_by_id(ids, Some(namespace.to_string()))
+        .delete_by_id(ids, namespace)
         .await
         .expect("Failed to delete vectors by ids");
 
@@ -756,12 +757,12 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
     let _ = index
-        .delete_all(Some(namespace.to_string()))
+        .delete_all(namespace)
         .await
         .expect("Failed to delete all vectors");
 
@@ -818,7 +819,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
@@ -834,7 +835,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
     };
 
     let _ = index
-        .delete_by_filter(filter, Some(namespace.to_string()))
+        .delete_by_filter(filter, namespace)
         .await
         .expect("Failed to delete all vectors");
 
