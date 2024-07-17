@@ -619,7 +619,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
     let ids = vec!["1".to_string(), "2".to_string()];
 
     let _ = index
-        .delete_by_ids(ids, Some(namespace.to_string()))
+        .delete_by_id(ids, Some(namespace.to_string()))
         .await
         .expect("Failed to delete vectors by ids");
 

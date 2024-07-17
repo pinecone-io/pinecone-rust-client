@@ -187,7 +187,7 @@ impl Index {
         Ok(response)
     }
 
-    /// The delete_by_ids operation deletes vectors by ID from a namespace.
+    /// The delete_by_id operation deletes vectors by ID from a namespace.
     ///
     /// ### Arguments
     /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
@@ -208,11 +208,11 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let ids = vec!["vector-id".to_string()];
-    /// let response = index.delete_by_ids(ids, Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_by_id(ids, Some("namespace".to_string())).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_by_ids(
+    pub async fn delete_by_id(
         &mut self,
         ids: Vec<String>,
         namespace: Option<String>,
