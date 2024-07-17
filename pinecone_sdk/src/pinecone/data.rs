@@ -8,7 +8,9 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{DescribeIndexStatsResponse, FetchResponse, ListResponse, UpsertResponse, Vector};
+pub use pb::{
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, SparseValues, UpdateResponse, UpsertResponse, Vector,
+};
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
 /// Generated protobuf module for data plane.
@@ -180,6 +182,61 @@ impl Index {
         let response = self
             .connection
             .describe_index_stats(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
+    /// The update operation updates a vector in a namespace. If a value is included, it will overwrite the previous value.
+    /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
+    ///
+    /// ### Arguments
+    /// * `id: String` - The vector's unique ID.
+    /// * `values: Vec<f32>` - The vector data.
+    /// * `sparse_values: Option<SparseValues>` - The sparse vector data.
+    /// * `metadata: Option<MetadataFilter>` - The metadata to set for the vector.
+    /// * `namespace: String` - The namespace containing the vector to update.
+    ///
+    /// ### Return
+    /// * `Result<UpsertResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{SparseValues, Metadata};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, "namespace".to_string()).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn update(
+        &mut self,
+        id: String,
+        values: Vec<f32>,
+        sparse_values: Option<SparseValues>,
+        metadata: Option<Metadata>,
+        namespace: String,
+    ) -> Result<UpdateResponse, PineconeError> {
+        let request = pb::UpdateRequest {
+            id,
+            values,
+            sparse_values,
+            set_metadata: metadata,
+            namespace,
+        };
+
+        let response = self
+            .connection
+            .update(request)
             .await
             .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();
