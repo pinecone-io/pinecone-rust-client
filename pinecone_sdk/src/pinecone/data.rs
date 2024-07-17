@@ -11,7 +11,7 @@ use tonic::{Request, Status};
 pub use pb::{
     DescribeIndexStatsResponse, ListResponse, QueryResponse, SparseValues, UpsertResponse, Vector,
 };
-pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
+pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -148,16 +148,16 @@ impl Index {
     /// The describe_index_stats operation returns statistics about the index.
     ///
     /// ### Arguments
-    /// * `filter: Option<MetadataFilter>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    /// * `filter: Option<Metadata>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
     ///
     /// ### Return
     /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind, MetadataFilter};
     /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -166,16 +166,16 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let mut filter = BTreeMap::new();
-    /// filter.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let mut fields = BTreeMap::new();
+    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.describe_index_stats(Some(MetadataFilter { fields: filter })).await.unwrap();
+    /// let response = index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn describe_index_stats(
         &mut self,
-        filter: Option<MetadataFilter>,
+        filter: Option<Metadata>,
     ) -> Result<DescribeIndexStatsResponse, PineconeError> {
         let request = pb::DescribeIndexStatsRequest { filter };
 
@@ -206,7 +206,7 @@ impl Index {
     /// * `id: String` - The id of the query vector.
     /// * `top_k: u32` - The number of results to return.
     /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
-    /// * `filter: Option<MetadataFilter>` - The filter to apply to limit your search by vector metadata.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
     /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
@@ -233,7 +233,7 @@ impl Index {
         id: String,
         top_k: u32,
         namespace: Option<String>,
-        filter: Option<MetadataFilter>,
+        filter: Option<Metadata>,
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
@@ -259,7 +259,7 @@ impl Index {
     /// * `sparse_vector: Option<SparseValues>` - Vector sparse data.
     /// * `top_k: u32` - The number of results to return.
     /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
-    /// * `filter: Option<MetadataFilter>` - The filter to apply to limit your search by vector metadata.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
     /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
@@ -287,7 +287,7 @@ impl Index {
         sparse_vector: Option<SparseValues>,
         top_k: u32,
         namespace: Option<String>,
-        filter: Option<MetadataFilter>,
+        filter: Option<Metadata>,
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
@@ -304,6 +304,135 @@ impl Index {
         };
 
         self.query(request).await
+    }
+
+    /// The delete_by_id operation deletes vectors by ID from a namespace.
+    ///
+    /// ### Arguments
+    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let ids = vec!["vector-id".to_string()];
+    /// let response = index.delete_by_id(ids, Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_by_id(
+        &mut self,
+        ids: Vec<String>,
+        namespace: Option<String>,
+    ) -> Result<(), PineconeError> {
+        let request = pb::DeleteRequest {
+            ids,
+            delete_all: false,
+            namespace: namespace.unwrap_or_default(),
+            filter: None,
+        };
+
+        self.delete(request).await
+    }
+
+    /// The delete_all operation deletes all vectors from a namespace.
+    ///
+    /// ### Arguments
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let response = index.delete_all(Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_all(&mut self, namespace: Option<String>) -> Result<(), PineconeError> {
+        let request = pb::DeleteRequest {
+            ids: vec![],
+            delete_all: true,
+            namespace: namespace.unwrap_or_default(),
+            filter: None,
+        };
+
+        self.delete(request).await
+    }
+
+    /// The delete_by_filter operation deletes the vectors from a namespace that satisfy the filter.
+    ///
+    /// ### Arguments
+    /// * `filter: Metadata` - The filter to specify which vectors to delete.
+    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let mut fields = BTreeMap::new();
+    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    ///
+    /// let response = index.delete_by_filter(Metadata { fields }, Some("namespace".to_string())).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn delete_by_filter(
+        &mut self,
+        filter: Metadata,
+        namespace: Option<String>,
+    ) -> Result<(), PineconeError> {
+        let request = pb::DeleteRequest {
+            ids: vec![],
+            delete_all: false,
+            namespace: namespace.unwrap_or_default(),
+            filter: Some(filter),
+        };
+
+        self.delete(request).await
+    }
+
+    // Helper function to call delete operation
+    async fn delete(&mut self, request: pb::DeleteRequest) -> Result<(), PineconeError> {
+        let _ = self
+            .connection
+            .delete(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?;
+
+        Ok(())
     }
 }
 
