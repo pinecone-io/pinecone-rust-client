@@ -320,16 +320,29 @@ impl Index {
     ///
     /// ### Arguments
     /// * `ids: Vec<String>` - The ids of vectors to fetch.
-    /// * `namespace: Option<String>` - The namespace to fetch vectors from.
+    /// * `namespace: Option<String>` - The namespace to fetch vectors from. None is default namespace.
     ///
     /// ### Return
     /// * Returns a `Result<FetchResponse, PineconeError>` object.
     ///
     /// ### Example
     /// ```no_run
-    /// // put a good example here of how the developer should use it
-    /// # start the line like this if you don't want this to be shown to the dev
-    /// # but it's needed to run properly during doc tests
+    /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let vectors = vec!["1".to_string(), "2".to_string()];
+    ///
+    /// let response = index.fetch(vectors, None).await.unwrap();
+    /// Ok(())
+    /// }
     /// ```
     pub async fn fetch(
         &mut self,
