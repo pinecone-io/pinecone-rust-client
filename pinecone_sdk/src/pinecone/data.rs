@@ -189,7 +189,7 @@ impl Index {
         Ok(response)
     }
 
-    /// The update operation updates a vector in a namespace. If a valid is included, it will overwrite the previous value.
+    /// The update operation updates a vector in a namespace. If a value is included, it will overwrite the previous value.
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
     /// ### Arguments
