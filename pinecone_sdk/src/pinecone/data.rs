@@ -9,7 +9,7 @@ use tonic::transport::Channel;
 use tonic::{Request, Status};
 
 pub use pb::{DescribeIndexStatsResponse, ListResponse, UpsertResponse, Vector};
-pub use prost_types::{value::Kind, Struct as MetadataFilter, Value};
+pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
@@ -146,7 +146,7 @@ impl Index {
     /// The describe_index_stats operation returns statistics about the index.
     ///
     /// ### Arguments
-    /// * `filter: Option<MetadataFilter>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    /// * `filter: Option<Metadata>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
     ///
     /// ### Return
     /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
@@ -155,7 +155,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind, MetadataFilter};
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -167,13 +167,13 @@ impl Index {
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.describe_index_stats(Some(MetadataFilter { fields })).await.unwrap();
+    /// let response = index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn describe_index_stats(
         &mut self,
-        filter: Option<MetadataFilter>,
+        filter: Option<Metadata>,
     ) -> Result<DescribeIndexStatsResponse, PineconeError> {
         let request = pb::DescribeIndexStatsRequest { filter };
 
@@ -264,7 +264,7 @@ impl Index {
     /// The delete_by_filter operation deletes the vectors from a namespace that satisfy the filter.
     ///
     /// ### Arguments
-    /// * `filter: MetadataFilter` - The filter to specify which vectors to delete.
+    /// * `filter: Metadata` - The filter to specify which vectors to delete.
     /// * `namespace: Option<String>` - The namespace to delete vectors from.
     ///
     /// ### Return
@@ -274,7 +274,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{MetadataFilter, Value, Kind};
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -286,13 +286,13 @@ impl Index {
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.delete_by_filter(MetadataFilter{ fields }, Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_by_filter(Metadata { fields }, Some("namespace".to_string())).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_filter(
         &mut self,
-        filter: MetadataFilter,
+        filter: Metadata,
         namespace: Option<String>,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {

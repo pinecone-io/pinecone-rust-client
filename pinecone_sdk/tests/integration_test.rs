@@ -1,7 +1,7 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, MetadataFilter, Value, Vector};
+use pinecone_sdk::pinecone::data::{Kind, Metadata, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
@@ -523,7 +523,7 @@ async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
     );
 
     let describe_index_stats_response = index
-        .describe_index_stats(Some(MetadataFilter { fields: filter }))
+        .describe_index_stats(Some(Metadata { fields: filter }))
         .await
         .expect("Failed to describe index stats");
 
@@ -690,7 +690,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
             id: "1".to_string(),
             values: vec![1.0; 12],
             sparse_values: None,
-            metadata: Some(MetadataFilter {
+            metadata: Some(Metadata {
                 fields: vec![(
                     "key".to_string(),
                     Value {
@@ -705,7 +705,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
             id: "2".to_string(),
             values: vec![2.0; 12],
             sparse_values: None,
-            metadata: Some(MetadataFilter {
+            metadata: Some(Metadata {
                 fields: vec![(
                     "key".to_string(),
                     Value {
@@ -724,7 +724,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
         .await
         .expect("Failed to upsert");
 
-    let filter = MetadataFilter {
+    let filter = Metadata {
         fields: vec![(
             "key".to_string(),
             Value {
