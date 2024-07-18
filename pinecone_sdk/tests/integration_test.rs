@@ -7,6 +7,7 @@ use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::time::Duration;
 use std::vec;
+use rand::Rng;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -33,6 +34,11 @@ fn generate_collection_name() -> String {
 fn generate_namespace_name() -> Namespace {
     let name = format!("test-namespace-{}", generate_random_string());
     name.into()
+}
+
+fn generate_vector(length: usize) -> Vec<f32> {
+    let mut rng = rand::thread_rng();
+    (0..length).map(|_| rng.gen()).collect()
 }
 
 // helper functions to get index names from environment variables
@@ -486,7 +492,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![Vector {
+    let vectors = &[Vector {
         id: "1".to_string(),
         values: vec![1.0, 2.0, 3.0, 5.5],
         sparse_values: None,
@@ -499,6 +505,49 @@ async fn test_upsert() -> Result<(), PineconeError> {
         .expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let mut vectors = vec![];
+
+    for i in 0..100 {
+        vectors.push(Vector {
+            id: i.to_string(),
+            values: generate_vector(4),
+            sparse_values: None,
+            metadata: None,
+        });
+    }
+
+    let mut upserted_count = 0;
+
+    for i in 0..10 {
+        let slice = &vectors[i * 10..(i + 1) * 10];
+        let upsert_response = index
+            .upsert(slice, &Default::default())
+            .await
+            .expect("Failed to upsert");
+
+        upserted_count += upsert_response.upserted_count;
+    }
+
+    assert_eq!(upserted_count, 100);
 
     Ok(())
 }
@@ -697,7 +746,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0, 2.0, 3.0, 5.5],
@@ -718,7 +767,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         .await
         .expect("Failed to upsert");
 
-    let ids = vec!["1".to_string(), "2".to_string()];
+    let ids = &["1".to_string(), "2".to_string()];
 
     let _ = index
         .delete_by_id(ids, namespace)
@@ -743,7 +792,7 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0, 2.0, 3.0, 5.5],
@@ -787,7 +836,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0; 12],

@@ -86,23 +86,23 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let vectors = vec![Vector {
+    /// let vectors = [Vector {
     ///     id: "vector-id".to_string(),
     ///     values: vec![1.0, 2.0, 3.0, 4.0],
     ///     sparse_values: None,
     ///     metadata: None,
     /// }];
-    /// let response = index.upsert(vectors, &"namespace".into()).await.unwrap();
+    /// let response = index.upsert(&vectors, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn upsert(
         &mut self,
-        vectors: Vec<Vector>,
+        vectors: &[Vector],
         namespace: &Namespace,
     ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
-            vectors,
+            vectors: vectors.to_vec(),
             namespace: namespace.name.clone(),
         };
 
@@ -287,18 +287,18 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = vec!["vector-id".to_string()];
-    /// let response = index.delete_by_id(ids, &"namespace".into()).await.unwrap();
+    /// let ids = ["vector-id".to_string()];
+    /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
-        ids: Vec<String>,
+        ids: &[String],
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
-            ids,
+            ids: ids.to_vec(),
             delete_all: false,
             namespace: namespace.name.clone(),
             filter: None,
