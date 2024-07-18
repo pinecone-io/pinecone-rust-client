@@ -2,11 +2,14 @@
 name = "pinecone_sdk"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Pinecone Rust SDK"
+repository = "https://github.com/pinecone-io/pinecone-rust-client"
+rust-version = "1.78.0"
+readme = "../README.md"
+include = ["../protos"]
 
 [dependencies]
-openapi = { path = "../openapi" }
+openapi = { version = "0", path = "../openapi" }
 tokio = { version = "1", features = ["full"] }
 regex = "1.10.4"
 serde_json = "1.0.117"
