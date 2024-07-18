@@ -89,7 +89,7 @@ impl Index {
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
     ///
     /// ### Arguments
-    /// * `vectors: Vec<pb::Vector>` - A list of vectors to upsert.
+    /// * `vectors: Vec<Vector>` - A list of vectors to upsert.
     ///
     /// ### Return
     /// * `Result<UpsertResponse, PineconeError>` - A response object.
@@ -118,7 +118,7 @@ impl Index {
     /// ```
     pub async fn upsert(
         &mut self,
-        vectors: Vec<pb::Vector>,
+        vectors: Vec<Vector>,
         namespace: Namespace,
     ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
