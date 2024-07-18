@@ -911,6 +911,11 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
         }
     );
 
+    let _ = index
+        .delete_all(Some(namespace.to_string()))
+        .await
+        .expect("Failed to delete all vectors");
+
     Ok(())
 }
 
