@@ -70,20 +70,6 @@ impl From<&str> for Namespace {
     }
 }
 
-impl Namespace {
-    /// Creates a new namespace.
-    pub fn new(name: String) -> Self {
-        Self { name }
-    }
-
-    /// Creates a new namespace from a &str.
-    pub fn new_str(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-        }
-    }
-}
-
 impl Index {
     /// The upsert operation writes vectors into a namespace.
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.

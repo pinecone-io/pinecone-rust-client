@@ -645,7 +645,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            Namespace::new_str("test-namespace"),
+            Namespace::from("test-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -674,7 +674,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            Namespace::new_str("invalid-namespace"),
+            Namespace::from("invalid-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
