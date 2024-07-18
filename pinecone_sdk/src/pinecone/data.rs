@@ -98,18 +98,18 @@ impl Index {
     ///     sparse_values: None,
     ///     metadata: None,
     /// }];
-    /// let response = index.upsert(vectors, "namespace".into()).await.unwrap();
+    /// let response = index.upsert(vectors, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn upsert(
         &mut self,
         vectors: Vec<Vector>,
-        namespace: Namespace,
+        namespace: &Namespace,
     ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
             vectors,
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
         };
 
         let response = self
@@ -145,19 +145,19 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.list("namespace".into(), None, None, None).await.unwrap();
+    /// let response = index.list(&"namespace".into(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn list(
         &mut self,
-        namespace: Namespace,
+        namespace: &Namespace,
         prefix: Option<String>,
         limit: Option<u32>,
         pagination_token: Option<String>,
     ) -> Result<ListResponse, PineconeError> {
         let request = pb::ListRequest {
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
             prefix,
             limit,
             pagination_token,
@@ -242,7 +242,7 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, "namespace".into()).await.unwrap();
+    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -252,14 +252,14 @@ impl Index {
         values: Vec<f32>,
         sparse_values: Option<SparseValues>,
         metadata: Option<Metadata>,
-        namespace: Namespace,
+        namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
         let request = pb::UpdateRequest {
             id,
             values,
             sparse_values,
             set_metadata: metadata,
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
         };
 
         let response = self
@@ -294,19 +294,19 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let ids = vec!["vector-id".to_string()];
-    /// let response = index.delete_by_id(ids, "namespace".into()).await.unwrap();
+    /// let response = index.delete_by_id(ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
         ids: Vec<String>,
-        namespace: Namespace,
+        namespace: &Namespace,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids,
             delete_all: false,
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
             filter: None,
         };
 
@@ -333,15 +333,15 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.delete_all("namespace".into()).await.unwrap();
+    /// let response = index.delete_all(&"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_all(&mut self, namespace: Namespace) -> Result<(), PineconeError> {
+    pub async fn delete_all(&mut self, namespace: &Namespace) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids: vec![],
             delete_all: true,
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
             filter: None,
         };
 
@@ -373,19 +373,19 @@ impl Index {
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.delete_by_filter(Metadata { fields }, "namespace".into()).await.unwrap();
+    /// let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_filter(
         &mut self,
         filter: Metadata,
-        namespace: Namespace,
+        namespace: &Namespace,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids: vec![],
             delete_all: false,
-            namespace: namespace.into(),
+            namespace: namespace.name.clone(),
             filter: Some(filter),
         };
 

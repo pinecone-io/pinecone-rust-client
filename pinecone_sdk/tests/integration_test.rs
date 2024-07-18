@@ -494,7 +494,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
     }];
 
     let upsert_response = index
-        .upsert(vectors, Default::default())
+        .upsert(vectors, &Default::default())
         .await
         .expect("Failed to upsert");
 
@@ -577,7 +577,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _list_response = index
-        .list(Default::default(), None, None, None)
+        .list(&Default::default(), None, None, None)
         .await
         .expect("Failed to list vectors");
 
@@ -616,7 +616,7 @@ async fn test_update_vector() -> Result<(), PineconeError> {
                 values: vec![2.0, 3.0],
             }),
             Some(Metadata { fields: metadata }),
-            Default::default(),
+            &Default::default(),
         )
         .await
         .expect("Failed to update vector");
@@ -645,7 +645,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            Namespace::from("test-namespace"),
+            &Namespace::from("test-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -674,7 +674,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            Namespace::from("invalid-namespace"),
+            &Namespace::from("invalid-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -712,9 +712,9 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         },
     ];
 
-    let namespace = generate_namespace_name();
+    let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, namespace.clone())
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
@@ -758,9 +758,9 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
         },
     ];
 
-    let namespace = generate_namespace_name();
+    let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, namespace.clone())
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
@@ -820,9 +820,9 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
         },
     ];
 
-    let namespace = generate_namespace_name();
+    let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, namespace.clone())
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
