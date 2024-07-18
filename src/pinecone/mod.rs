@@ -62,7 +62,8 @@ impl PineconeClient {
             None => match std::env::var("PINECONE_API_KEY") {
                 Ok(key) => key,
                 Err(_) => {
-                    let message = "API key is not provided as an argument nor as an environment variable";
+                    let message =
+                        "API key is not provided as an argument nor as an environment variable";
                     return Err(PineconeError::APIKeyMissingError {
                         message: message.to_string(),
                     });
