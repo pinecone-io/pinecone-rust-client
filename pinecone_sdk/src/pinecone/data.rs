@@ -50,12 +50,6 @@ pub struct Namespace {
     name: String,
 }
 
-impl From<Namespace> for String {
-    fn from(namespace: Namespace) -> Self {
-        namespace.name
-    }
-}
-
 impl From<String> for Namespace {
     fn from(name: String) -> Self {
         Self { name }
