@@ -566,8 +566,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -630,8 +630,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -685,8 +685,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -733,8 +733,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -781,8 +781,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -819,8 +819,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -877,8 +877,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -930,8 +930,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -961,8 +961,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1023,8 +1023,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1073,8 +1073,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1135,8 +1135,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1221,8 +1221,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1287,8 +1287,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1339,8 +1339,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1391,8 +1391,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1454,8 +1454,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1501,8 +1501,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1562,8 +1562,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1607,8 +1607,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1649,8 +1649,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1691,8 +1691,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1723,8 +1723,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1755,8 +1755,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1790,8 +1790,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1822,8 +1822,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1854,8 +1854,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1900,8 +1900,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1950,8 +1950,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -1990,8 +1990,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2022,8 +2022,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2066,8 +2066,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2110,8 +2110,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2141,8 +2141,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2205,8 +2205,8 @@ mod tests {
 
         // Construct Pinecone instance with the mock server URL
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2264,8 +2264,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api-key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2296,8 +2296,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2331,8 +2331,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
@@ -2363,8 +2363,8 @@ mod tests {
         });
 
         let pinecone = PineconeClient::new(
-            Some("api_key".to_string()),
-            Some(server.base_url()),
+            Some("api_key"),
+            Some(server.base_url().as_str()),
             None,
             None,
         )
