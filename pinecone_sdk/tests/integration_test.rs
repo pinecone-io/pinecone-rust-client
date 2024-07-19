@@ -1,12 +1,13 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::data::{Kind, Metadata, SparseValues, Value, Vector};
+use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::time::Duration;
 use std::vec;
+use rand::Rng;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -30,8 +31,14 @@ fn generate_collection_name() -> String {
     format!("test-collection-{}", generate_random_string())
 }
 
-fn generate_namespace_name() -> String {
-    format!("test-namespace-{}", generate_random_string())
+fn generate_namespace_name() -> Namespace {
+    let name = format!("test-namespace-{}", generate_random_string());
+    name.into()
+}
+
+fn generate_vector(length: usize) -> Vec<f32> {
+    let mut rng = rand::thread_rng();
+    (0..length).map(|_| rng.gen()).collect()
 }
 
 // helper functions to get index names from environment variables
@@ -485,16 +492,62 @@ async fn test_upsert() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![Vector {
+    let vectors = &[Vector {
         id: "1".to_string(),
         values: vec![1.0, 2.0, 3.0, 5.5],
         sparse_values: None,
         metadata: None,
     }];
 
-    let upsert_response = index.upsert(vectors, None).await.expect("Failed to upsert");
+    let upsert_response = index
+        .upsert(vectors, &Default::default())
+        .await
+        .expect("Failed to upsert");
 
     assert_eq!(upsert_response.upserted_count, 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let mut vectors = vec![];
+
+    for i in 0..100 {
+        vectors.push(Vector {
+            id: i.to_string(),
+            values: generate_vector(4),
+            sparse_values: None,
+            metadata: None,
+        });
+    }
+
+    let mut upserted_count = 0;
+
+    for i in 0..10 {
+        let slice = &vectors[i * 10..(i + 1) * 10];
+        let upsert_response = index
+            .upsert(slice, &Default::default())
+            .await
+            .expect("Failed to upsert");
+
+        upserted_count += upsert_response.upserted_count;
+    }
+
+    assert_eq!(upserted_count, 100);
 
     Ok(())
 }
@@ -573,7 +626,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _list_response = index
-        .list("".to_string(), None, None, None)
+        .list(&Default::default(), None, None, None)
         .await
         .expect("Failed to list vectors");
 
@@ -635,7 +688,7 @@ async fn test_update_vector() -> Result<(), PineconeError> {
                 values: vec![2.0, 3.0],
             }),
             Some(Metadata { fields: metadata }),
-            "".to_string(),
+            &Default::default(),
         )
         .await
         .expect("Failed to update vector");
@@ -689,7 +742,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            "namespace".to_string(),
+            &Namespace::from("test-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -718,7 +771,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
-            "invalid-namespace".to_string(),
+            &Namespace::from("invalid-namespace"),
         )
         .await
         .expect_err("Expected to fail updating vector");
@@ -741,7 +794,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0, 2.0, 3.0, 5.5],
@@ -758,14 +811,14 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
-    let ids = vec!["1".to_string(), "2".to_string()];
+    let ids = &["1".to_string(), "2".to_string()];
 
     let _ = index
-        .delete_by_id(ids, Some(namespace.to_string()))
+        .delete_by_id(ids, namespace)
         .await
         .expect("Failed to delete vectors by ids");
 
@@ -787,7 +840,7 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0, 2.0, 3.0, 5.5],
@@ -804,12 +857,12 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
     let _ = index
-        .delete_all(Some(namespace.to_string()))
+        .delete_all(namespace)
         .await
         .expect("Failed to delete all vectors");
 
@@ -831,7 +884,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![1.0; 12],
@@ -866,7 +919,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
@@ -882,7 +935,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
     };
 
     let _ = index
-        .delete_by_filter(filter, Some(namespace.to_string()))
+        .delete_by_filter(filter, namespace)
         .await
         .expect("Failed to delete all vectors");
 
