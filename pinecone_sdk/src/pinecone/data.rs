@@ -120,9 +120,9 @@ impl Index {
     ///
     /// ### Arguments
     /// * `namespace: Namespace` - Default is "".
-    /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
+    /// * `prefix: Option<&str>` - The vector IDs to list, will list all vectors with IDs that have a matching prefix. Default is empty string.
     /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
-    /// * `pagination_token: Option<String>` - The token for paginating through results.
+    /// * `pagination_token: Option<&str>` - The token for paginating through results.
     ///
     /// ### Return
     /// * `Result<ListResponse, PineconeError>` - A response object.
@@ -146,15 +146,15 @@ impl Index {
     pub async fn list(
         &mut self,
         namespace: &Namespace,
-        prefix: Option<String>,
+        prefix: Option<&str>,
         limit: Option<u32>,
-        pagination_token: Option<String>,
+        pagination_token: Option<&str>,
     ) -> Result<ListResponse, PineconeError> {
         let request = pb::ListRequest {
             namespace: namespace.name.clone(),
-            prefix,
+            prefix: prefix.map(|s| s.to_string()),
             limit,
-            pagination_token,
+            pagination_token: pagination_token.map(|s| s.to_string()),
         };
 
         let response = self
