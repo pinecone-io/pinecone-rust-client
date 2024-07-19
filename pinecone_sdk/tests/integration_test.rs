@@ -909,7 +909,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let vectors = vec![
+    let vectors = &[
         Vector {
             id: "1".to_string(),
             values: vec![5.0, 6.0, 7.0, 8.0],
@@ -925,11 +925,9 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
     ];
 
     let namespace = &generate_namespace_name();
-    eprintln!("namespace: {}", namespace);
-    //let namespace = "test_namespace";
 
     let _ = index
-        .upsert(vectors, Some(namespace.to_string()))
+        .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
@@ -937,13 +935,13 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
 
     let fetch_response = index
         .fetch(
-            vec!["1".to_string(), "2".to_string()],
-            Some(namespace.to_string()),
+            &["1".to_string(), "2".to_string()],
+            namespace,
         )
         .await
         .expect("Failed to fetch vectors");
 
-    assert_eq!(fetch_response.namespace, namespace.to_string());
+    assert_eq!(fetch_response.namespace, namespace.name);
     let vectors = fetch_response.vectors;
     assert_eq!(
         *vectors.get("1").unwrap(),
@@ -965,7 +963,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
     );
 
     let _ = index
-        .delete_all(Some(namespace.to_string()))
+        .delete_all(namespace)
         .await
         .expect("Failed to delete all vectors");
 
@@ -988,7 +986,7 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let fetch_response = index
-        .fetch(vec!["invalid-id1".to_string(), "invalid-id2".to_string()], None)
+        .fetch(&["invalid-id1".to_string(), "invalid-id2".to_string()], &Default::default())
         .await
         .expect("Failed to fetch vectors");
 
@@ -1014,7 +1012,7 @@ async fn test_fetch_empty_id_list() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _ = index
-        .fetch(vec![], None)
+        .fetch(&[], &Default::default())
         .await
         .expect_err("Expected error to be thrown");
 

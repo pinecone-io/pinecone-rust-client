@@ -47,7 +47,7 @@ pub struct Index {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct Namespace {
     /// The name of the namespace
-    name: String,
+    pub name: String,
 }
 
 impl From<String> for Namespace {
@@ -400,8 +400,8 @@ impl Index {
     /// The fetch operation retrieves vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `ids: Vec<String>` - The ids of vectors to fetch.
-    /// * `namespace: Option<String>` - The namespace to fetch vectors from. None is default namespace.
+    /// * `ids: &[String]` - The ids of vectors to fetch.
+    /// * `namespace: &Namespace` - The namespace to fetch vectors from.
     ///
     /// ### Return
     /// * Returns a `Result<FetchResponse, PineconeError>` object.
@@ -419,20 +419,20 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let vectors = vec!["1".to_string(), "2".to_string()];
+    /// let vectors = &["1".to_string(), "2".to_string()];
     ///
-    /// let response = index.fetch(vectors, None).await.unwrap();
+    /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
     /// Ok(())
     /// }
     /// ```
     pub async fn fetch(
         &mut self,
-        ids: Vec<String>,
-        namespace: Option<String>,
+        ids: &[String],
+        namespace: &Namespace,
     ) -> Result<FetchResponse, PineconeError> {
         let request = pb::FetchRequest {
-            ids,
-            namespace: namespace.unwrap_or_default(),
+            ids: ids.to_vec(),
+            namespace: namespace.name.clone(),
         };
 
         let response = self
