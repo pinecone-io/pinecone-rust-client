@@ -658,7 +658,7 @@ async fn test_update_vector() -> Result<(), PineconeError> {
 
     let _update_response = index
         .update(
-            "valid-vector".to_string(),
+            "valid-vector",
             vec![1.0, 2.0, 3.0, 123947.5],
             Some(SparseValues {
                 indices: vec![1, 20],
@@ -690,7 +690,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
 
     let _update_response = index
         .update(
-            "invalid_id!@*!@&".to_string(),
+            "invalid_id!@*!@&",
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
@@ -719,7 +719,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
 
     let _update_response = index
         .update(
-            "some-id".to_string(),
+            "some-id",
             vec![1.0, 2.0, 3.0, 5.5],
             None,
             None,
@@ -767,7 +767,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
         .await
         .expect("Failed to upsert");
 
-    let ids = &["1".to_string(), "2".to_string()];
+    let ids = &["1", "2"];
 
     let _ = index
         .delete_by_id(ids, namespace)

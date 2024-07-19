@@ -215,7 +215,7 @@ impl Index {
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
     /// ### Arguments
-    /// * `id: String` - The vector's unique ID.
+    /// * `id: &str` - The vector's unique ID.
     /// * `values: Vec<f32>` - The vector data.
     /// * `sparse_values: Option<SparseValues>` - The sparse vector data.
     /// * `metadata: Option<MetadataFilter>` - The metadata to set for the vector.
@@ -236,20 +236,20 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+    /// let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn update(
         &mut self,
-        id: String,
+        id: &str,
         values: Vec<f32>,
         sparse_values: Option<SparseValues>,
         metadata: Option<Metadata>,
         namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
         let request = pb::UpdateRequest {
-            id,
+            id: id.to_string(),
             values,
             sparse_values,
             set_metadata: metadata,
@@ -287,18 +287,19 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = ["vector-id".to_string()];
+    /// let ids = ["vector-id"];
     /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
-        ids: &[String],
+        ids: &[&str],
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
+        let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>();
         let request = pb::DeleteRequest {
-            ids: ids.to_vec(),
+            ids,
             delete_all: false,
             namespace: namespace.name.clone(),
             filter: None,
