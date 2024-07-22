@@ -15,7 +15,7 @@ pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
 /// Generated protobuf module for data plane.
 pub mod pb {
-    include!("../../protos/_.rs");
+    include!("../protos/_.rs");
 }
 
 #[derive(Debug, Clone)]

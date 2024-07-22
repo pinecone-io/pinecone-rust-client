@@ -1307,17 +1307,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
-name = "openapi"
-version = "0.0.1"
-dependencies = [
- "reqwest",
- "serde",
- "serde_json",
- "url",
- "uuid",
-]
-
-[[package]]
 name = "openssl"
 version = "0.10.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1459,18 +1448,20 @@ version = "0.1.0"
 dependencies = [
  "httpmock",
  "once_cell",
- "openapi",
  "prost",
  "prost-types",
  "rand",
  "regex",
  "reqwest",
+ "serde",
  "serde_json",
  "snafu",
  "temp-env",
  "tokio",
  "tonic",
  "tonic-build",
+ "url",
+ "uuid",
 ]
 
 [[package]]

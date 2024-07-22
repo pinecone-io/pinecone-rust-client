@@ -1,4 +1,4 @@
-use openapi::apis::{Error as OpenApiError, ResponseContent};
+use crate::openapi::apis::{Error as OpenApiError, ResponseContent};
 
 use reqwest::{self, StatusCode};
 
@@ -198,61 +198,61 @@ impl std::fmt::Display for PineconeError {
                     "Unknown response error: status: {}, message: {}",
                     status, message
                 )
-            },
+            }
             PineconeError::ResourceAlreadyExistsError { source } => {
                 write!(f, "Resource already exists error: {}", source)
-            },
+            }
             PineconeError::UnprocessableEntityError { source } => {
                 write!(f, "Unprocessable entity error: {}", source)
-            },
+            }
             PineconeError::PendingCollectionError { source } => {
                 write!(f, "Pending collection error: {}", source)
-            },
+            }
             PineconeError::InternalServerError { source } => {
                 write!(f, "Internal server error: {}", source)
-            },
+            }
             PineconeError::ReqwestError { source } => {
                 write!(f, "Reqwest error: {}", source.to_string())
-            },
+            }
             PineconeError::SerdeError { source } => {
                 write!(f, "Serde error: {}", source.to_string())
-            },
+            }
             PineconeError::IoError { message } => {
                 write!(f, "IO error: {}", message)
-            },
+            }
             PineconeError::BadRequestError { source } => {
                 write!(f, "Bad request error: {}", source)
-            },
+            }
             PineconeError::UnauthorizedError { source } => {
                 write!(f, "Unauthorized error: status: {}", source)
-            },
+            }
             PineconeError::PodQuotaExceededError { source } => {
                 write!(f, "Pod quota exceeded error: {}", source)
-            },
+            }
             PineconeError::CollectionsQuotaExceededError { source } => {
                 write!(f, "Collections quota exceeded error: {}", source)
-            },
+            }
             PineconeError::InvalidCloudError { source } => {
                 write!(f, "Invalid cloud error: status: {}", source)
-            },
+            }
             PineconeError::InvalidRegionError { source } => {
                 write!(f, "Invalid region error: {}", source)
-            },
+            }
             PineconeError::CollectionNotFoundError { source } => {
                 write!(f, "Collection not found error: {}", source)
-            },
+            }
             PineconeError::IndexNotFoundError { source } => {
                 write!(f, "Index not found error: status: {}", source)
-            },
+            }
             PineconeError::APIKeyMissingError { message } => {
                 write!(f, "API key missing error: {}", message)
-            },
+            }
             PineconeError::InvalidHeadersError { message } => {
                 write!(f, "Invalid headers error: {}", message)
-            },
+            }
             PineconeError::TimeoutError { message } => {
                 write!(f, "Timeout error: {}", message)
-            },
+            }
             PineconeError::ConnectionError { source } => {
                 write!(f, "Connection error: {}", source)
             }

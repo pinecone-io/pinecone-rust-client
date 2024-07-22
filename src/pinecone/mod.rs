@@ -1,8 +1,8 @@
 use crate::config::Config;
+use crate::openapi::apis::configuration::ApiKey;
+use crate::openapi::apis::configuration::Configuration;
 use crate::utils::errors::PineconeError;
 use crate::utils::user_agent::get_user_agent;
-use openapi::apis::configuration::ApiKey;
-use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 

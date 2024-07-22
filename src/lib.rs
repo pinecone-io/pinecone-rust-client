@@ -14,3 +14,5 @@ pub mod pinecone;
 
 /// Utility modules.
 pub mod utils;
+
+pub mod openapi;

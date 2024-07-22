@@ -1,15 +1,16 @@
 use std::cmp::min;
 use std::time::Duration;
 
+use crate::openapi::apis::manage_indexes_api;
+use crate::openapi::models::CreateIndexRequest;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
-use openapi::apis::manage_indexes_api;
 
-pub use openapi::models::create_index_request::Metric;
-pub use openapi::models::serverless_spec::Cloud;
-pub use openapi::models::{
-    CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexRequest, IndexList,
+pub use crate::openapi::models::create_index_request::Metric;
+pub use crate::openapi::models::serverless_spec::Cloud;
+pub use crate::openapi::models::{
+    index_model::Metric as OpenApiMetric, CollectionList, CollectionModel, ConfigureIndexRequest,
+    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest, IndexList,
     IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
@@ -532,8 +533,11 @@ impl PineconeClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::openapi::{
+        self,
+        models::{self, collection_model::Status, IndexList},
+    };
     use httpmock::prelude::*;
-    use openapi::models::{self, collection_model::Status, IndexList};
     use tokio;
 
     #[tokio::test]

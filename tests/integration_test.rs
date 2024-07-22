@@ -1,5 +1,5 @@
-use openapi::models::index_model::Metric as OpenApiMetric;
-use openapi::models::serverless_spec::Cloud as OpenApiCloud;
+use pinecone_sdk::openapi::models::serverless_spec::Cloud as OpenApiCloud;
+use pinecone_sdk::pinecone::control::OpenApiMetric;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::data::{Kind, Metadata, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
