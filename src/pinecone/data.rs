@@ -9,7 +9,8 @@ use tonic::transport::Channel;
 use tonic::{Request, Status};
 
 pub use pb::{
-    DescribeIndexStatsResponse, ListResponse, SparseValues, UpdateResponse, UpsertResponse, Vector,
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues, UpdateResponse,
+    UpsertResponse, Vector,
 };
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
@@ -43,12 +44,33 @@ pub struct Index {
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
 }
 
+/// The namespace of an index
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
+pub struct Namespace {
+    /// The name of the namespace
+    pub name: String,
+}
+
+impl From<String> for Namespace {
+    fn from(name: String) -> Self {
+        Self { name }
+    }
+}
+
+impl From<&str> for Namespace {
+    fn from(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+        }
+    }
+}
+
 impl Index {
     /// The upsert operation writes vectors into a namespace.
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
     ///
     /// ### Arguments
-    /// * `vectors: Vec<pb::Vector>` - A list of vectors to upsert.
+    /// * `vectors: Vec<Vector>` - A list of vectors to upsert.
     ///
     /// ### Return
     /// * `Result<UpsertResponse, PineconeError>` - A response object.
@@ -56,7 +78,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Vector;
+    /// use pinecone_sdk::pinecone::data::{Namespace, Vector};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -65,24 +87,24 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let vectors = vec![Vector {
+    /// let vectors = [Vector {
     ///     id: "vector-id".to_string(),
     ///     values: vec![1.0, 2.0, 3.0, 4.0],
     ///     sparse_values: None,
     ///     metadata: None,
     /// }];
-    /// let response = index.upsert(vectors, None).await.unwrap();
+    /// let response = index.upsert(&vectors, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn upsert(
         &mut self,
-        vectors: Vec<pb::Vector>,
-        namespace: Option<String>,
+        vectors: &[Vector],
+        namespace: &Namespace,
     ) -> Result<UpsertResponse, PineconeError> {
         let request = pb::UpsertRequest {
-            vectors,
-            namespace: namespace.unwrap_or_default(),
+            vectors: vectors.to_vec(),
+            namespace: namespace.name.clone(),
         };
 
         let response = self
@@ -98,7 +120,7 @@ impl Index {
     /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
     ///
     /// ### Arguments
-    /// * `namespace: Option<String>` - The namespace to list vectors from.
+    /// * `namespace: Namespace` - Default is "".
     /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
     /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
     /// * `pagination_token: Option<String>` - The token for paginating through results.
@@ -109,6 +131,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -117,19 +140,19 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.list("namespace".to_string(), None, None, None).await.unwrap();
+    /// let response = index.list(&"namespace".into(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn list(
         &mut self,
-        namespace: String,
+        namespace: &Namespace,
         prefix: Option<String>,
         limit: Option<u32>,
         pagination_token: Option<String>,
     ) -> Result<ListResponse, PineconeError> {
         let request = pb::ListRequest {
-            namespace,
+            namespace: namespace.name.clone(),
             prefix,
             limit,
             pagination_token,
@@ -157,7 +180,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata};
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -189,6 +212,17 @@ impl Index {
         Ok(response)
     }
 
+    async fn query(&mut self, request: pb::QueryRequest) -> Result<QueryResponse, PineconeError> {
+        let response = self
+            .connection
+            .query(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
     /// The update operation updates a vector in a namespace. If a value is included, it will overwrite the previous value.
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
@@ -197,7 +231,7 @@ impl Index {
     /// * `values: Vec<f32>` - The vector data.
     /// * `sparse_values: Option<SparseValues>` - The sparse vector data.
     /// * `metadata: Option<MetadataFilter>` - The metadata to set for the vector.
-    /// * `namespace: String` - The namespace containing the vector to update.
+    /// * `namespace: Namespace` - The namespace containing the vector to update. Default is "".
     ///
     /// ### Return
     /// * `Result<UpsertResponse, PineconeError>` - A response object.
@@ -205,7 +239,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{SparseValues, Metadata};
+    /// use pinecone_sdk::pinecone::data::{Namespace, SparseValues, Metadata};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -214,7 +248,7 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, "namespace".to_string()).await.unwrap();
+    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -224,14 +258,14 @@ impl Index {
         values: Vec<f32>,
         sparse_values: Option<SparseValues>,
         metadata: Option<Metadata>,
-        namespace: String,
+        namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
         let request = pb::UpdateRequest {
             id,
             values,
             sparse_values,
             set_metadata: metadata,
-            namespace,
+            namespace: namespace.name.clone(),
         };
 
         let response = self
@@ -244,18 +278,23 @@ impl Index {
         Ok(response)
     }
 
-    /// The delete_by_id operation deletes vectors by ID from a namespace.
+    /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
     ///
     /// ### Arguments
-    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
-    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    /// * `id: String` - The id of the query vector.
+    /// * `top_k: u32` - The number of results to return.
+    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
+    /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
+    /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * `Result<QueryResponse, PineconeError>` - A response object.
     ///
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -264,20 +303,126 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = vec!["vector-id".to_string()];
-    /// let response = index.delete_by_id(ids, Some("namespace".to_string())).await.unwrap();
+    /// let response = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn query_by_id(
+        &mut self,
+        id: String,
+        top_k: u32,
+        namespace: &Namespace,
+        filter: Option<Metadata>,
+        include_values: Option<bool>,
+        include_metadata: Option<bool>,
+    ) -> Result<QueryResponse, PineconeError> {
+        let request = pb::QueryRequest {
+            id,
+            top_k,
+            namespace: namespace.name.clone(),
+            filter,
+            include_values: include_values.unwrap_or(false),
+            include_metadata: include_metadata.unwrap_or(false),
+            queries: vec![],
+            vector: vec![],
+            sparse_vector: None,
+        };
+
+        self.query(request).await
+    }
+
+    /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
+    ///
+    /// ### Arguments
+    /// * `vector: Vec<f32>` - The query vector.
+    /// * `sparse_vector: Option<SparseValues>` - Vector sparse data.
+    /// * `top_k: u32` - The number of results to return.
+    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
+    /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
+    /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
+    ///
+    /// ### Return
+    /// * `Result<QueryResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let vector = vec![1.0, 2.0, 3.0, 4.0];
+    ///
+    /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn query_by_value(
+        &mut self,
+        vector: Vec<f32>,
+        sparse_vector: Option<SparseValues>,
+        top_k: u32,
+        namespace: &Namespace,
+        filter: Option<Metadata>,
+        include_values: Option<bool>,
+        include_metadata: Option<bool>,
+    ) -> Result<QueryResponse, PineconeError> {
+        let request = pb::QueryRequest {
+            id: "".to_string(),
+            top_k,
+            namespace: namespace.name.clone(),
+            filter,
+            include_values: include_values.unwrap_or(false),
+            include_metadata: include_metadata.unwrap_or(false),
+            queries: vec![],
+            vector,
+            sparse_vector,
+        };
+
+        self.query(request).await
+    }
+
+    /// The delete_by_id operation deletes vectors by ID from a namespace.
+    ///
+    /// ### Arguments
+    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
+    /// * `namespace: Namespace` - The namespace to delete vectors from. Default is "".
+    ///
+    /// ### Return
+    /// * Returns a `Result<(), PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let ids = ["vector-id".to_string()];
+    /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
-        ids: Vec<String>,
-        namespace: Option<String>,
+        ids: &[String],
+        namespace: &Namespace,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
-            ids,
+            ids: ids.to_vec(),
             delete_all: false,
-            namespace: namespace.unwrap_or_default(),
+            namespace: namespace.name.clone(),
             filter: None,
         };
 
@@ -287,7 +432,7 @@ impl Index {
     /// The delete_all operation deletes all vectors from a namespace.
     ///
     /// ### Arguments
-    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    /// * `namespace: Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
     /// * Returns a `Result<(), PineconeError>` object.
@@ -295,6 +440,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -303,15 +449,15 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.delete_all(Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_all(&"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn delete_all(&mut self, namespace: Option<String>) -> Result<(), PineconeError> {
+    pub async fn delete_all(&mut self, namespace: &Namespace) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids: vec![],
             delete_all: true,
-            namespace: namespace.unwrap_or_default(),
+            namespace: namespace.name.clone(),
             filter: None,
         };
 
@@ -322,7 +468,7 @@ impl Index {
     ///
     /// ### Arguments
     /// * `filter: Metadata` - The filter to specify which vectors to delete.
-    /// * `namespace: Option<String>` - The namespace to delete vectors from.
+    /// * `namespace: Namespace` - The namespace to delete vectors from.
     ///
     /// ### Return
     /// * Returns a `Result<(), PineconeError>` object.
@@ -331,7 +477,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -343,19 +489,19 @@ impl Index {
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
-    /// let response = index.delete_by_filter(Metadata { fields }, Some("namespace".to_string())).await.unwrap();
+    /// let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_filter(
         &mut self,
         filter: Metadata,
-        namespace: Option<String>,
+        namespace: &Namespace,
     ) -> Result<(), PineconeError> {
         let request = pb::DeleteRequest {
             ids: vec![],
             delete_all: false,
-            namespace: namespace.unwrap_or_default(),
+            namespace: namespace.name.clone(),
             filter: Some(filter),
         };
 
@@ -371,6 +517,54 @@ impl Index {
             .map_err(|e| PineconeError::DataPlaneError { status: e })?;
 
         Ok(())
+    }
+
+    /// The fetch operation retrieves vectors by ID from a namespace.
+    ///
+    /// ### Arguments
+    /// * `ids: &[String]` - The ids of vectors to fetch.
+    /// * `namespace: &Namespace` - The namespace to fetch vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<FetchResponse, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let vectors = &["1".to_string(), "2".to_string()];
+    ///
+    /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
+    /// Ok(())
+    /// }
+    /// ```
+    pub async fn fetch(
+        &mut self,
+        ids: &[String],
+        namespace: &Namespace,
+    ) -> Result<FetchResponse, PineconeError> {
+        let request = pb::FetchRequest {
+            ids: ids.to_vec(),
+            namespace: namespace.name.clone(),
+        };
+
+        let response = self
+            .connection
+            .fetch(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
     }
 }
 
