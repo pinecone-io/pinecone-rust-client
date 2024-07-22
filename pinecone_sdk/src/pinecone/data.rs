@@ -86,7 +86,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = [Vector {
@@ -142,7 +142,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // List all vectors in the namespace "namespace"
@@ -193,7 +193,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Construct a metadata filter
@@ -256,7 +256,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Update the vector with id "vector-id" in the namespace "namespace"
@@ -313,7 +313,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Query the vector with id "vector-id" in the namespace "namespace"
@@ -369,7 +369,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vector = vec![1.0, 2.0, 3.0, 4.0];
@@ -423,7 +423,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let ids = ["vector-id".to_string()];
@@ -466,7 +466,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Delete all vectors from the namespace "namespace"
@@ -505,7 +505,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Construct a metadata filter
@@ -563,7 +563,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = &["1".to_string(), "2".to_string()];
@@ -637,7 +637,7 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// // Connect to the index "index-host"
+    /// // Connect to index host url "index-host"
     /// let index = pinecone.index("index-host").await.unwrap();
     /// # Ok(())
     /// # }
