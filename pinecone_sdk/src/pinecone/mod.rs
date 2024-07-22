@@ -44,15 +44,9 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// # use pinecone_sdk::utils::errors::PineconeError;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
     ///
     /// // Create a Pinecone client with the API key and controller host.
     /// let pinecone = PineconeClient::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
-    /// # Ok(())
-    /// # }
     /// ```
     pub fn new(
         api_key: Option<String>,
@@ -60,7 +54,7 @@ impl PineconeClient {
         additional_headers: Option<HashMap<String, String>>,
         source_tag: Option<String>,
     ) -> Result<Self, PineconeError> {
-        // clean api key
+        // get api key
         let api_key_str = match api_key {
             Some(key) => key,
             None => match std::env::var("PINECONE_API_KEY") {
@@ -75,13 +69,13 @@ impl PineconeClient {
             },
         };
 
-        // clean controller host
+        // get controller host
         let controller_host = control_plane_host.unwrap_or(
             std::env::var("PINECONE_CONTROLLER_HOST")
                 .unwrap_or("https://api.pinecone.io".to_string()),
         );
 
-        // clean additional headers
+        // get additional headers
         let additional_headers = match additional_headers {
             Some(headers) => headers,
             None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
