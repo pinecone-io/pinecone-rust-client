@@ -1,14 +1,14 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-outdir="protos"
+PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
 
-OUT_DIR=$SCRIPT_DIR/../$outdir
+outdir="src/protos"
 
 pushd $SCRIPT_DIR/apis
 	just build
 popd
 
 pushd $SCRIPT_DIR/proto_build
-	cargo run -- $OUT_DIR
+	cargo run -- $PROJECT_DIR/$outdir
 popd
