@@ -294,6 +294,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -302,7 +303,7 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.query_by_id("vector-id".to_string(), 10, None, None, None, None).await.unwrap();
+    /// let response = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -347,6 +348,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -355,7 +357,9 @@ impl Index {
     ///
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// //let response = index.query_by_value([], 10, None, None, None, None).await.unwrap();
+    /// let vector = vec![1.0, 2.0, 3.0, 4.0];
+    ///
+    /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```

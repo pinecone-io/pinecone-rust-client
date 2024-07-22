@@ -4,10 +4,10 @@ use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
+use rand::Rng;
 use std::collections::BTreeMap;
 use std::time::Duration;
 use std::vec;
-use rand::Rng;
 
 // helpers to generate random test/collection names
 fn generate_random_string() -> String {
@@ -649,7 +649,7 @@ async fn test_query_by_id() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _query_response = index
-        .query_by_id("1".to_string(), 10, None, None, None, None)
+        .query_by_id("1".to_string(), 10, &Namespace::default(), None, None, None)
         .await
         .expect("Failed to query");
 
@@ -714,7 +714,7 @@ async fn test_query_by_value() -> Result<(), PineconeError> {
     let vector = vec![1.0, 2.0, 3.0, 5.5];
 
     let _query_response = index
-        .query_by_value(vector, None, 10, None, None, None, None)
+        .query_by_value(vector, None, 10, &Namespace::default(), None, None, None)
         .await
         .expect("Failed to query");
 
