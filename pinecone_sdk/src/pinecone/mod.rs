@@ -33,17 +33,15 @@ impl PineconeClient {
     /// * `source_tag: Option<String>` - A tag to identify the source of the request.
     ///
     /// ### Return
-    /// * `Result<PineconeClient, PineconeError>` - A Pinecone client instance.
+    /// * `Result<PineconeClient, PineconeError>`
     ///
     /// ### Configuration with environment variables
-    ///
     /// If arguments are not provided, the SDK will attempt to read the following environment variables:
     /// - `PINECONE_API_KEY`: The API key used for authentication. If not passed as an argument, it will be read from the environment variable.
     /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
     /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
     ///
     /// ### Example
-    ///
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     ///
@@ -75,6 +73,7 @@ impl PineconeClient {
             .unwrap_or("https://api.pinecone.io".to_string());
         let controller_host = control_plane_host.unwrap_or(env_controller);
 
+        // get additional headers
         let additional_headers = match additional_headers {
             Some(headers) => headers,
             None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
@@ -91,14 +90,18 @@ impl PineconeClient {
             },
         };
 
+        // create config
         let config = Config {
             api_key: api_key.to_string(),
             controller_url: controller_host.to_string(),
             additional_headers: additional_headers.clone(),
             source_tag: source_tag.map(|s| s.to_string()),
         };
+
+        // get user agent
         let user_agent = get_user_agent(&config);
 
+        // return Pinecone client
         Ok(PineconeClient {
             api_key,
             controller_url: controller_host.to_string(),
