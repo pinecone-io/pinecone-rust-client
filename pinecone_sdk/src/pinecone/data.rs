@@ -9,7 +9,7 @@ use tonic::transport::Channel;
 use tonic::{Request, Status};
 
 pub use pb::{
-    DescribeIndexStatsResponse, ListResponse, QueryResponse, SparseValues, UpdateResponse,
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues, UpdateResponse,
     UpsertResponse, Vector,
 };
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
@@ -48,7 +48,7 @@ pub struct Index {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct Namespace {
     /// The name of the namespace
-    name: String,
+    pub name: String,
 }
 
 impl From<String> for Namespace {
@@ -517,6 +517,54 @@ impl Index {
             .map_err(|e| PineconeError::DataPlaneError { status: e })?;
 
         Ok(())
+    }
+
+    /// The fetch operation retrieves vectors by ID from a namespace.
+    ///
+    /// ### Arguments
+    /// * `ids: &[String]` - The ids of vectors to fetch.
+    /// * `namespace: &Namespace` - The namespace to fetch vectors from.
+    ///
+    /// ### Return
+    /// * Returns a `Result<FetchResponse, PineconeError>` object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use std::collections::BTreeMap;
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let vectors = &["1".to_string(), "2".to_string()];
+    ///
+    /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
+    /// Ok(())
+    /// }
+    /// ```
+    pub async fn fetch(
+        &mut self,
+        ids: &[String],
+        namespace: &Namespace,
+    ) -> Result<FetchResponse, PineconeError> {
+        let request = pb::FetchRequest {
+            ids: ids.to_vec(),
+            namespace: namespace.name.clone(),
+        };
+
+        let response = self
+            .connection
+            .fetch(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
     }
 }
 

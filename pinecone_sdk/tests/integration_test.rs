@@ -941,3 +941,128 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_fetch_vectors() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let vectors = &[
+        Vector {
+            id: "1".to_string(),
+            values: vec![5.0, 6.0, 7.0, 8.0],
+            sparse_values: None,
+            metadata: None,
+        },
+        Vector {
+            id: "2".to_string(),
+            values: vec![9.0, 10.0, 11.0, 12.0],
+            sparse_values: None,
+            metadata: None,
+        },
+    ];
+
+    let namespace = &generate_namespace_name();
+
+    let _ = index
+        .upsert(vectors, namespace)
+        .await
+        .expect("Failed to upsert");
+
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
+    let fetch_response = index
+        .fetch(
+            &["1".to_string(), "2".to_string()],
+            namespace,
+        )
+        .await
+        .expect("Failed to fetch vectors");
+
+    assert_eq!(fetch_response.namespace, namespace.name);
+    let vectors = fetch_response.vectors;
+    assert_eq!(
+        *vectors.get("1").unwrap(),
+        Vector {
+            id: "1".to_string(),
+            values: vec![5.0, 6.0, 7.0, 8.0],
+            sparse_values: None,
+            metadata: None,
+        }
+    );
+    assert_eq!(
+        *vectors.get("2").unwrap(),
+        Vector {
+            id: "2".to_string(),
+            values: vec![9.0, 10.0, 11.0, 12.0],
+            sparse_values: None,
+            metadata: None,
+        }
+    );
+
+    let _ = index
+        .delete_all(namespace)
+        .await
+        .expect("Failed to delete all vectors");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_fetch_no_match() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let fetch_response = index
+        .fetch(&["invalid-id1".to_string(), "invalid-id2".to_string()], &Default::default())
+        .await
+        .expect("Failed to fetch vectors");
+
+    assert_eq!(fetch_response.namespace, "");
+    assert_eq!(fetch_response.vectors.len(), 0);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_fetch_empty_id_list() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let host = pinecone
+        .describe_index(&get_serverless_index())
+        .await
+        .unwrap()
+        .host;
+
+    let mut index = pinecone
+        .index(host.as_str())
+        .await
+        .expect("Failed to target index");
+
+    let _ = index
+        .fetch(&[], &Default::default())
+        .await
+        .expect_err("Expected error to be thrown");
+
+    Ok(())
+}
