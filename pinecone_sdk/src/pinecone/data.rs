@@ -260,7 +260,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Update the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+    /// let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
@@ -407,7 +407,7 @@ impl Index {
     /// The delete_by_id operation deletes vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
+    /// * `ids: &[&str]` - List of IDs of vectors to be deleted.
     /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
@@ -426,7 +426,7 @@ impl Index {
     /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = ["vector-id".to_string()];
+    /// let ids = ["vector-id"];
     ///
     /// // Delete vectors from the namespace "namespace" that have the ids in the list
     /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
