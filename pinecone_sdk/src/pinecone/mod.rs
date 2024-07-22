@@ -27,10 +27,10 @@ impl PineconeClient {
     /// It is used to create, delete, and manage your indexes and collections.
     ///
     /// ### Arguments
-    /// * `api_key: Option<String>` - The API key used for authentication.
-    /// * `control_plane_host: Option<String>` - The Pinecone controller host. Default is `https://api.pinecone.io`.
+    /// * `api_key: Option<&str>` - The API key used for authentication.
+    /// * `control_plane_host: Option<&str>` - The Pinecone controller host. Default is `https://api.pinecone.io`.
     /// * `additional_headers: Option<HashMap<String, String>>` - Additional headers to be included in all requests. Expects a HashMap.
-    /// * `source_tag: Option<String>` - A tag to identify the source of the request.
+    /// * `source_tag: Option<&str>` - A tag to identify the source of the request.
     ///
     /// ### Return
     /// * `Result<PineconeClient, PineconeError>`
