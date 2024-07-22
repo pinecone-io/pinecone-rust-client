@@ -9,7 +9,8 @@ use tonic::transport::Channel;
 use tonic::{Request, Status};
 
 pub use pb::{
-    DescribeIndexStatsResponse, FetchResponse, ListResponse, SparseValues, UpdateResponse, UpsertResponse, Vector,
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues, UpdateResponse,
+    UpsertResponse, Vector,
 };
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
 
@@ -211,6 +212,17 @@ impl Index {
         Ok(response)
     }
 
+    async fn query(&mut self, request: pb::QueryRequest) -> Result<QueryResponse, PineconeError> {
+        let response = self
+            .connection
+            .query(request)
+            .await
+            .map_err(|e| PineconeError::DataPlaneError { status: e })?
+            .into_inner();
+
+        Ok(response)
+    }
+
     /// The update operation updates a vector in a namespace. If a value is included, it will overwrite the previous value.
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
@@ -264,6 +276,116 @@ impl Index {
             .into_inner();
 
         Ok(response)
+    }
+
+    /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
+    ///
+    /// ### Arguments
+    /// * `id: String` - The id of the query vector.
+    /// * `top_k: u32` - The number of results to return.
+    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
+    /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
+    /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
+    ///
+    /// ### Return
+    /// * `Result<QueryResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let response = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn query_by_id(
+        &mut self,
+        id: String,
+        top_k: u32,
+        namespace: &Namespace,
+        filter: Option<Metadata>,
+        include_values: Option<bool>,
+        include_metadata: Option<bool>,
+    ) -> Result<QueryResponse, PineconeError> {
+        let request = pb::QueryRequest {
+            id,
+            top_k,
+            namespace: namespace.name.clone(),
+            filter,
+            include_values: include_values.unwrap_or(false),
+            include_metadata: include_metadata.unwrap_or(false),
+            queries: vec![],
+            vector: vec![],
+            sparse_vector: None,
+        };
+
+        self.query(request).await
+    }
+
+    /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
+    ///
+    /// ### Arguments
+    /// * `vector: Vec<f32>` - The query vector.
+    /// * `sparse_vector: Option<SparseValues>` - Vector sparse data.
+    /// * `top_k: u32` - The number of results to return.
+    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
+    /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
+    /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
+    ///
+    /// ### Return
+    /// * `Result<QueryResponse, PineconeError>` - A response object.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// # use pinecone_sdk::utils::errors::PineconeError;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    ///
+    /// let mut index = pinecone.index("index-host").await.unwrap();
+    ///
+    /// let vector = vec![1.0, 2.0, 3.0, 4.0];
+    ///
+    /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn query_by_value(
+        &mut self,
+        vector: Vec<f32>,
+        sparse_vector: Option<SparseValues>,
+        top_k: u32,
+        namespace: &Namespace,
+        filter: Option<Metadata>,
+        include_values: Option<bool>,
+        include_metadata: Option<bool>,
+    ) -> Result<QueryResponse, PineconeError> {
+        let request = pb::QueryRequest {
+            id: "".to_string(),
+            top_k,
+            namespace: namespace.name.clone(),
+            filter,
+            include_values: include_values.unwrap_or(false),
+            include_metadata: include_metadata.unwrap_or(false),
+            queries: vec![],
+            vector,
+            sparse_vector,
+        };
+
+        self.query(request).await
     }
 
     /// The delete_by_id operation deletes vectors by ID from a namespace.
