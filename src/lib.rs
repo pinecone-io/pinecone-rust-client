@@ -15,4 +15,8 @@ pub mod pinecone;
 /// Utility modules.
 pub mod utils;
 
+/// OpenAPI client for Pinecone.
 pub mod openapi;
+
+/// Protobuf client for Pinecone.
+pub mod protos;

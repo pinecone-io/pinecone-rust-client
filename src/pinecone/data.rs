@@ -1,23 +1,18 @@
 use crate::pinecone::PineconeClient;
+use crate::protos::vector_service_client::VectorServiceClient;
 use crate::utils::errors::PineconeError;
 use once_cell::sync::Lazy;
-use pb::vector_service_client::VectorServiceClient;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
 use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use pb::{
-    DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues, UpdateResponse,
-    UpsertResponse, Vector,
+pub use crate::protos::{
+    self, DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues,
+    UpdateResponse, UpsertResponse, Vector,
 };
 pub use prost_types::{value::Kind, Struct as Metadata, Value};
-
-/// Generated protobuf module for data plane.
-pub mod pb {
-    include!("../protos/_.rs");
-}
 
 #[derive(Debug, Clone)]
 struct ApiKeyInterceptor {
@@ -102,7 +97,7 @@ impl Index {
         vectors: &[Vector],
         namespace: &Namespace,
     ) -> Result<UpsertResponse, PineconeError> {
-        let request = pb::UpsertRequest {
+        let request = protos::UpsertRequest {
             vectors: vectors.to_vec(),
             namespace: namespace.name.clone(),
         };
@@ -151,7 +146,7 @@ impl Index {
         limit: Option<u32>,
         pagination_token: Option<String>,
     ) -> Result<ListResponse, PineconeError> {
-        let request = pb::ListRequest {
+        let request = protos::ListRequest {
             namespace: namespace.name.clone(),
             prefix,
             limit,
@@ -200,7 +195,7 @@ impl Index {
         &mut self,
         filter: Option<Metadata>,
     ) -> Result<DescribeIndexStatsResponse, PineconeError> {
-        let request = pb::DescribeIndexStatsRequest { filter };
+        let request = protos::DescribeIndexStatsRequest { filter };
 
         let response = self
             .connection
@@ -212,7 +207,10 @@ impl Index {
         Ok(response)
     }
 
-    async fn query(&mut self, request: pb::QueryRequest) -> Result<QueryResponse, PineconeError> {
+    async fn query(
+        &mut self,
+        request: protos::QueryRequest,
+    ) -> Result<QueryResponse, PineconeError> {
         let response = self
             .connection
             .query(request)
@@ -260,7 +258,7 @@ impl Index {
         metadata: Option<Metadata>,
         namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
-        let request = pb::UpdateRequest {
+        let request = protos::UpdateRequest {
             id,
             values,
             sparse_values,
@@ -316,7 +314,7 @@ impl Index {
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
-        let request = pb::QueryRequest {
+        let request = protos::QueryRequest {
             id,
             top_k,
             namespace: namespace.name.clone(),
@@ -373,7 +371,7 @@ impl Index {
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
-        let request = pb::QueryRequest {
+        let request = protos::QueryRequest {
             id: "".to_string(),
             top_k,
             namespace: namespace.name.clone(),
@@ -419,7 +417,7 @@ impl Index {
         ids: &[String],
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
-        let request = pb::DeleteRequest {
+        let request = protos::DeleteRequest {
             ids: ids.to_vec(),
             delete_all: false,
             namespace: namespace.name.clone(),
@@ -454,7 +452,7 @@ impl Index {
     /// # }
     /// ```
     pub async fn delete_all(&mut self, namespace: &Namespace) -> Result<(), PineconeError> {
-        let request = pb::DeleteRequest {
+        let request = protos::DeleteRequest {
             ids: vec![],
             delete_all: true,
             namespace: namespace.name.clone(),
@@ -498,7 +496,7 @@ impl Index {
         filter: Metadata,
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
-        let request = pb::DeleteRequest {
+        let request = protos::DeleteRequest {
             ids: vec![],
             delete_all: false,
             namespace: namespace.name.clone(),
@@ -509,7 +507,7 @@ impl Index {
     }
 
     // Helper function to call delete operation
-    async fn delete(&mut self, request: pb::DeleteRequest) -> Result<(), PineconeError> {
+    async fn delete(&mut self, request: protos::DeleteRequest) -> Result<(), PineconeError> {
         let _ = self
             .connection
             .delete(request)
@@ -552,7 +550,7 @@ impl Index {
         ids: &[String],
         namespace: &Namespace,
     ) -> Result<FetchResponse, PineconeError> {
-        let request = pb::FetchRequest {
+        let request = protos::FetchRequest {
             ids: ids.to_vec(),
             namespace: namespace.name.clone(),
         };
