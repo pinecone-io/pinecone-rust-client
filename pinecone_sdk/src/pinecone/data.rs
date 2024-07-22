@@ -663,6 +663,7 @@ impl PineconeClient {
         Ok(index)
     }
 
+    // Helper function to create a new index connection
     async fn new_index_connection(
         &self,
         host: String,
