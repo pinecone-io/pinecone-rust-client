@@ -70,7 +70,8 @@ impl Index {
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
     ///
     /// ### Arguments
-    /// * `vectors: Vec<Vector>` - A list of vectors to upsert.
+    /// * `vectors: &[Vector]` - A list of vectors to upsert.
+    /// * `namespace: &Namespace` - The namespace to upsert vectors into. Default is "".
     ///
     /// ### Return
     /// * `Result<UpsertResponse, PineconeError>` - Result type containing the upsert response if Ok, the error if Err.
@@ -220,6 +221,7 @@ impl Index {
         Ok(response)
     }
 
+    // Helper function to call query operation
     async fn query(&mut self, request: pb::QueryRequest) -> Result<QueryResponse, PineconeError> {
         let response = self
             .connection
