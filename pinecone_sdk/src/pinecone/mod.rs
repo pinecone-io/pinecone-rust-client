@@ -33,22 +33,25 @@ impl PineconeClient {
     /// * `source_tag: Option<String>` - A tag to identify the source of the request.
     ///
     /// ### Return
-    /// * `Result<PineconeClient, PineconeError>` - A Pinecone client instance.
+    /// * `Result<PineconeClient, PineconeError>` - Result type containing a Pinecone client instance if Ok, the error if Err.
     ///
     /// ### Configuration with environment variables
-    ///
     /// If arguments are not provided, the SDK will attempt to read the following environment variables:
     /// - `PINECONE_API_KEY`: The API key used for authentication. If not passed as an argument, it will be read from the environment variable.
     /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
     /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
     ///
     /// ### Example
-    ///
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
     ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError>{
+    ///
     /// // Create a Pinecone client with the API key and controller host.
     /// let pinecone = PineconeClient::new(Some("INSERT_API_KEY".to_string()), Some("INSERT_CONTROLLER_HOST".to_string()), None, None);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn new(
         api_key: Option<String>,
@@ -56,13 +59,14 @@ impl PineconeClient {
         additional_headers: Option<HashMap<String, String>>,
         source_tag: Option<String>,
     ) -> Result<Self, PineconeError> {
-        // get api key
+        // clean api key
         let api_key_str = match api_key {
             Some(key) => key,
             None => match std::env::var("PINECONE_API_KEY") {
                 Ok(key) => key,
                 Err(_) => {
-                    let message = "API key is not provided as an argument nor as an environment variable";
+                    let message =
+                        "API key is not provided as an argument nor as an environment variable";
                     return Err(PineconeError::APIKeyMissingError {
                         message: message.to_string(),
                     });
@@ -70,11 +74,13 @@ impl PineconeClient {
             },
         };
 
+        // clean controller host
         let controller_host = control_plane_host.unwrap_or(
             std::env::var("PINECONE_CONTROLLER_HOST")
                 .unwrap_or("https://api.pinecone.io".to_string()),
         );
 
+        // clean additional headers
         let additional_headers = match additional_headers {
             Some(headers) => headers,
             None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
@@ -91,14 +97,18 @@ impl PineconeClient {
             },
         };
 
+        // create config
         let config = Config {
             api_key: api_key_str.clone(),
             controller_url: controller_host.clone(),
             additional_headers: additional_headers.clone(),
             source_tag: source_tag.clone(),
         };
+
+        // get user agent
         let user_agent = get_user_agent(&config);
 
+        // return Pinecone client
         Ok(PineconeClient {
             api_key: api_key_str,
             controller_url: controller_host,
