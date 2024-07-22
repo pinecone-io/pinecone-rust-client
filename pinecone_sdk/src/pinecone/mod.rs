@@ -33,7 +33,7 @@ impl PineconeClient {
     /// * `source_tag: Option<String>` - A tag to identify the source of the request.
     ///
     /// ### Return
-    /// * `Result<PineconeClient, PineconeError>` - Result type containing a Pinecone client instance if Ok, the error if Err.
+    /// * `Result<PineconeClient, PineconeError>`
     ///
     /// ### Configuration with environment variables
     /// If arguments are not provided, the SDK will attempt to read the following environment variables:

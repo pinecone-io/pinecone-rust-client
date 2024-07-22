@@ -41,7 +41,7 @@ impl PineconeClient {
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>` - Result type containing the response index model if Ok, the error if Err.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -118,7 +118,7 @@ impl PineconeClient {
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
-    /// * Result<IndexModel, PineconeError>` - Result type containing the response index model if Ok, the error if Err.
+    /// * Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -257,7 +257,7 @@ impl PineconeClient {
     /// * `name: &str` - Name of the index to describe.
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>` - Result type containing the response index model if Ok, the error if Err.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -288,7 +288,7 @@ impl PineconeClient {
     /// index name, dimension, metric, status, and spec.
     ///
     /// ### Return
-    /// * `Result<IndexList, PineconeError>`  - Result type containing the response index list if Ok, the error if Err.
+    /// * `Result<IndexList, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -325,7 +325,7 @@ impl PineconeClient {
     /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
     ///
     /// ### Return
-    /// * `Result<IndexModel, PineconeError>` - Result type containing the response index model if Ok, the error if Err.
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -372,7 +372,7 @@ impl PineconeClient {
     /// * name: &str - The name of the index to be deleted.
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -404,7 +404,7 @@ impl PineconeClient {
     /// * `source: &str` - Name of the index to be used as the source for the collection.
     ///
     /// ### Return
-    /// * `Result<CollectionModel, PineconeError>` - Result type containing the response collection model if Ok, the error if Err
+    /// * `Result<CollectionModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -447,7 +447,7 @@ impl PineconeClient {
     /// * name: &str - The name of the collection to describe.
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -476,7 +476,7 @@ impl PineconeClient {
     /// This operation returns a list of all collections in a project.
     ///
     /// ### Return
-    /// * `Result<CollectionList, PineconeError>` - Result type containing the response collection list if Ok, the error if Err.
+    /// * `Result<CollectionList, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -507,7 +507,7 @@ impl PineconeClient {
     /// * name: &str - The name of the collection to be deleted.
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run

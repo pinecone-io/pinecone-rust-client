@@ -74,7 +74,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace to upsert vectors into. Default is "".
     ///
     /// ### Return
-    /// * `Result<UpsertResponse, PineconeError>` - Result type containing the upsert response if Ok, the error if Err.
+    /// * `Result<UpsertResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -130,7 +130,7 @@ impl Index {
     /// * `pagination_token: Option<String>` - The token for paginating through results.
     ///
     /// ### Return
-    /// * `Result<ListResponse, PineconeError>` - Result type containing the list response if Ok, the error if Err.
+    /// * `Result<ListResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -180,7 +180,7 @@ impl Index {
     /// * `filter: Option<Metadata>` - An optional filter to specify which vectors to return statistics for. None means no filter will be applied. Note that the filter is only supported by pod indexes.
     ///
     /// ### Return
-    /// * `Result<DescribeIndexStatsResponse, PineconeError>` - Result type containing the describe index stats response if Ok, the error if Err.
+    /// * `Result<DescribeIndexStatsResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -244,7 +244,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace containing the vector to update. Default is "".
     ///
     /// ### Return
-    /// * `Result<UpsertResponse, PineconeError>` - Result type containing the upsert response model if Ok, the error if Err.
+    /// * `Result<UpsertResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -301,7 +301,7 @@ impl Index {
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
     /// ### Return
-    /// * `Result<QueryResponse, PineconeError>` - Result type containing the query response if Ok, the error if Err.
+    /// * `Result<QueryResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -357,7 +357,7 @@ impl Index {
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
     /// ### Return
-    /// * `Result<QueryResponse, PineconeError>` - Result type containing the query response if Ok, the error if Err.
+    /// * `Result<QueryResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -411,7 +411,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -454,7 +454,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -492,7 +492,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * `Result<(), PineconeError>` - Result type containing () if Ok, the error if Err.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -550,7 +550,7 @@ impl Index {
     /// * `namespace: &Namespace` - The namespace to fetch vectors from. Default is "".
     ///
     /// ### Return
-    /// * `Result<FetchResponse, PineconeError>` - Result type containing the fetch response if Ok, the error if Err.
+    /// * `Result<FetchResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -625,7 +625,7 @@ impl PineconeClient {
     /// * `host: &str` - The host of the index to target. If the host does not contain a scheme, it will default to `https://`. If the host does not contain a port, it will default to `443`.
     ///
     /// ### Return
-    /// * `Result<Index, PineconeError>` - Result type containing the Index struct if Ok, the error if Err.
+    /// * `Result<Index, PineconeError>`
     ///
     /// ### Example
     ///
