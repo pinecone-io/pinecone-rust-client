@@ -33,7 +33,7 @@ Proxy config?
 ### Create serverless index
 The following example creates a serverless index in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
 ```rust
-use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
+use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy}};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
  
@@ -108,6 +108,23 @@ pinecone.delete_index("index-name").await;
 
 ## Upsert vectors
 
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+use pinecone_sdk::pinecone::data::Vector;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+let mut index = pinecone.index("index-host").await.unwrap();
+
+let vectors = vec![Vector {
+    id: "vector-id".to_string(),
+    values: vec![1.0, 2.0, 3.0, 4.0],
+    sparse_values: None,
+    metadata: None,
+}];
+index.upsert(vectors, None).await.unwrap();
+```
+
 ## Query index
 
 ## Delete vectors
@@ -118,9 +135,4 @@ pinecone.delete_index("index-name").await;
 
 ## List vectors
 
-
-Sample code for using indexes
-
-## Collections
-
-Sample code for using colle
+# Collections

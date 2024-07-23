@@ -7,6 +7,9 @@ repository = "https://github.com/pinecone-io/pinecone-rust-client"
 rust-version = "1.78.0"
 readme = "../README.md"
 include = ["../protos"]
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 openapi = { version = "0", path = "../openapi" }
