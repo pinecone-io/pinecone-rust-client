@@ -132,10 +132,10 @@ impl PineconeClient {
     ///
     /// // Create a pod index.
     /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
-    ///     "index_name", // Name of the index
+    ///     "index-name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
-    ///     "us-east-1-aws", // Environment
+    ///     "us-east-1", // Environment
     ///     "p1.x1", // Pod type
     ///     1, // Number of pods
     ///     Some(1), // Number of replicas
@@ -336,7 +336,7 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
-    /// let response = pinecone.configure_index("index-name", 6, "s1").await;
+    /// let response: Result<IndexModel, PineconeError> = pinecone.configure_index("index-name", 6, "s1").await;
     /// # Ok(())
     /// # }
     /// ```

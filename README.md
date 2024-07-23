@@ -31,13 +31,11 @@ Proxy config?
 ## Create Index
 
 ### Create serverless index
-The following example creates a serverless in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
+The following example creates a serverless index in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
 ```rust
 use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
-use pinecone_sdk::utils::errors::PineconeError;
-use std::time::Duration;
 
-let pinecone = PineconeClient::new('PINECONE_API_KEY', None, None, None).unwrap();
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
  
 pinecone.create_serverless_index(
     "index-name", // Name of the index
@@ -50,12 +48,61 @@ pinecone.create_serverless_index(
 ```
 
 ### Create pod index
+The following example creates a pod index in the `us-east-1` region of AWS. This example does not create replicas, or shards, nor use metadata or a source collection.
+```rust
+use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy}};
+
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
+
+pinecone.create_pod_index(
+    "index-name",
+    10,
+    Metric::Cosine,
+    "us-east-1",
+    1,
+    None,
+    None,
+    None,
+    None,
+    WaitPolicy::NoWait
+).await;
+```
 
 ## List indexes
+```rust
+use pinecone_sdk::pinecone::{ClientClient, control::IndexList};
+
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
+
+pinecone.list_indexes().await;
+```
 
 ## Describe index
+```rust
+use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
+
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
+
+pinecone.describe_index("index-name").await;
+```
+
+## Configure index
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    
+pinecone.configure_index("index-name", 6, "s1").await;
+```
 
 ## Delete index
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    
+pinecone.delete_index("index-name").await;
+```
 
 ## Describe index statistics
 
