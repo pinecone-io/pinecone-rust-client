@@ -37,7 +37,7 @@ use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
  
-pinecone.create_serverless_index(
+let response = pinecone.create_serverless_index(
     "index-name", // Name of the index
     10, // Dimension of the vectors
     Metric::Cosine, // Distance metric
@@ -45,6 +45,11 @@ pinecone.create_serverless_index(
     "us-east-1", // Region
     WaitPolicy::NoWait // Timeout
 ).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ### Create pod index
@@ -54,7 +59,7 @@ use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
 
-pinecone.create_pod_index(
+let response = pinecone.create_pod_index(
     "index-name",
     10,
     Metric::Cosine,
@@ -66,6 +71,11 @@ pinecone.create_pod_index(
     None,
     WaitPolicy::NoWait
 ).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## List indexes
@@ -74,7 +84,12 @@ use pinecone_sdk::pinecone::{ClientClient, control::IndexList};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
 
-pinecone.list_indexes().await;
+let response = pinecone.list_indexes().await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Describe index
@@ -83,7 +98,12 @@ use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None).unwrap();
 
-pinecone.describe_index("index-name").await;
+let response = pinecone.describe_index("index-name").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Configure index
@@ -92,7 +112,12 @@ use pinecone_sdk::pinecone::PineconeClient;
 
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     
-pinecone.configure_index("index-name", 6, "s1").await;
+let response = pinecone.configure_index("index-name", 6, "s1").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Delete index
@@ -101,7 +126,12 @@ use pinecone_sdk::pinecone::PineconeClient;
 
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     
-pinecone.delete_index("index-name").await;
+let response = pinecone.delete_index("index-name").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Describe index statistics
@@ -115,7 +145,12 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-index.describe_index_stats(None).await.unwrap();
+let response = index.describe_index_stats(None).await.unwrap();
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 With filter
@@ -131,7 +166,12 @@ let mut index = pinecone.index("index-host").await.unwrap();
 let mut fields = BTreeMap::new();
 fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string()))});
 
-index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
+let response = index.describe_index_stats(Some(Metadata { fields })).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Upsert vectors
@@ -154,7 +194,13 @@ let vectors = [Vector {
     sparse_values: None,
     metadata: None,
 }];
-index.upsert(&vectors, &"namespace".into()).await.unwrap();
+
+let response = index.upsert(&vectors, &"namespace".into()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Query index
@@ -169,14 +215,19 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 let mut index = pinecone.index("index-host").await.unwrap();
 
 // Query the vector with id "vector-id" in the namespace "namespace"
-index.query_by_id(
+let response = index.query_by_id(
     "vector-id".to_string(),
     10,
     &Namespace::default(),
     None,
     None,
     None
-).await.unwrap();
+).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ### Query by value
@@ -187,7 +238,7 @@ let mut index = pinecone.index("index-host").await.unwrap();
 
 let vector = vec![1.0, 2.0, 3.0, 4.0];
 
-index.query_by_value(
+let response = index.query_by_value(
     vector,
     None,
     10,
@@ -195,7 +246,12 @@ index.query_by_value(
     None,
     None,
     None
-).await.unwrap();
+).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Delete vectors
@@ -208,7 +264,13 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 let mut index = pinecone.index("index-host").await.unwrap();
 
 let ids = ["vector-id"]
-index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
+
+let response = index.delete_by_id(&ids, &"namespace".into()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 By filter:
@@ -221,7 +283,13 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut fields = BTreeMap::new();
 fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string()))});
-index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
+
+let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 Delete all:
@@ -232,7 +300,12 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-index.delete_all(&"namespace".into()).await.unwrap();
+let response = index.delete_all(&"namespace".into()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Fetch vectors
@@ -243,7 +316,12 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-index.fetch(vectors, &Default::default()).await.unwrap();
+let response = index.fetch(vectors, &Default::default()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Update vectors
@@ -254,7 +332,12 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## List vectors
@@ -266,7 +349,12 @@ let pinecone = PineconeClient::new("index-host").await.unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-index.list(&"namespace".into(), None, None, None).await.unwrap();
+let response = index.list(&"namespace".into(), None, None, None).await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 # Collections
@@ -276,7 +364,12 @@ use pinecone_sdk::pinecone::{PineconeClient, control::CollectionModel};
 
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
-let create_collection_response = pinecone.create_collection("collection-name", "index-name").await;
+let response = pinecone.create_collection("collection-name", "index-name").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## List collections
@@ -286,6 +379,11 @@ use pinecone_sdk::pinecone::PineconeClient;
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let response = pinecone.list_collections().await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Describe collection
@@ -295,6 +393,11 @@ use pinecone_sdk::pinecone::PineconeClient;
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let response = pinecone.describe_collection("collection-name").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
 
 ## Delete collection
@@ -304,4 +407,9 @@ use pinecone_sdk::pinecone::PineconeClient;
 let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let response = pinecone.delete_collection("collection-name").await;
+
+match response {
+    Ok(_) => println!("success"),
+    Err(_) => println!("error"),
+};
 ```
