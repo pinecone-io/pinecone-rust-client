@@ -32,7 +32,7 @@ Proxy config?
 
 ### Create serverless index
 The following example creates a serverless in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
-```
+```rust
 use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
 use pinecone_sdk::utils::errors::PineconeError;
 use std::time::Duration;
