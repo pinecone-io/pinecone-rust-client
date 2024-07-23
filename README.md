@@ -26,11 +26,11 @@ Explanation about how environment variables are used
 
 Proxy config?
 
-### Indexes
+# Indexes
 
 ## Create Index
 
-# Create serverless index
+### Create serverless index
 The following example creates a serverless in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
 ```
 use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
@@ -49,7 +49,7 @@ pinecone.create_serverless_index(
 ).await;
 ```
 
-# Create pod index
+### Create pod index
 
 ## List indexes
 
