@@ -53,7 +53,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create an index.
-    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
+    /// let create_index_response = pinecone.create_serverless_index(
     ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
@@ -131,7 +131,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Create a pod index.
-    /// let create_index_response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
+    /// let create_index_response = pinecone.create_pod_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
@@ -269,7 +269,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let describe_index_response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
+    /// let describe_index_response = pinecone.describe_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -300,7 +300,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // List all indexes in the project.
-    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
+    /// let index_list_response = pinecone.list_indexes().await;
     /// # Ok(())
     /// # }
     /// ```
@@ -384,7 +384,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Delete an index in the project.
-    /// let delete_index_response: Result<(), PineconeError> = pinecone.delete_index("index-name").await;
+    /// let delete_index_response = pinecone.delete_index("index-name").await;
     /// # Ok(())
     /// # }
     /// ```
@@ -416,7 +416,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Describe an index in the project.
-    /// let create_collection_response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
+    /// let create_collection_response = pinecone.create_collection("collection-name", "index-name").await;
     /// # Ok(())
     /// # }
     /// ```
