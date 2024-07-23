@@ -198,7 +198,12 @@ impl Index {
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// fields.insert(
+    ///     "field".to_string(),
+    ///     Value {
+    ///         kind: Some(Kind::StringValue("value".to_string()))
+    ///     }
+    /// );
     ///
     /// // Describe the index statistics
     /// let response = index.describe_index_stats(Some(Metadata { fields })).await;
@@ -267,7 +272,7 @@ impl Index {
     ///     None,
     ///     &Namespace::default()
     /// ).await;
-    /// 
+    ///
     /// # Ok(())
     /// # }
     /// ```
@@ -532,7 +537,12 @@ impl Index {
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// fields.insert(
+    ///     "field".to_string(),
+    ///     Value {
+    ///         kind: Some(Kind::StringValue("value".to_string()))
+    ///     }
+    /// );
     ///
     /// // Delete vectors from the default namespace that satisfy the filter
     /// let response = index.delete_by_filter(Metadata { fields }, &Namespace::default()).await;
