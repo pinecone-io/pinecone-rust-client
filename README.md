@@ -107,7 +107,6 @@ pinecone.delete_index("index-name").await;
 ## Describe index statistics
 
 ## Upsert vectors
-
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::Vector;
@@ -116,13 +115,13 @@ let pinecone = PineconeClient::new(None, None, None, None).unwrap();
 
 let mut index = pinecone.index("index-host").await.unwrap();
 
-let vectors = vec![Vector {
+let vectors = [Vector {
     id: "vector-id".to_string(),
     values: vec![1.0, 2.0, 3.0, 4.0],
     sparse_values: None,
     metadata: None,
 }];
-index.upsert(vectors, None).await.unwrap();
+index.upsert(&vectors, &"namespace".into()).await.unwrap();
 ```
 
 ## Query index
