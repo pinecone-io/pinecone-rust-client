@@ -270,3 +270,38 @@ index.list(&"namespace".into(), None, None, None).await.unwrap();
 ```
 
 # Collections
+## Create collection
+```rust
+use pinecone_sdk::pinecone::{PineconeClient, control::CollectionModel};
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+let create_collection_response = pinecone.create_collection("collection-name", "index-name").await;
+```
+
+## List collections
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+let response = pinecone.list_collections().await;
+```
+
+## Describe collection
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+let response = pinecone.describe_collection("collection-name").await;
+```
+
+## Delete collection
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+
+let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+let response = pinecone.delete_collection("collection-name").await;
+```
