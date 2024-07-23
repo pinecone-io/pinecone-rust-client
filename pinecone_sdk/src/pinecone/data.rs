@@ -79,7 +79,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Vector;
+    /// use pinecone_sdk::pinecone::data::{Namespace, Vector};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -87,7 +87,7 @@ impl Index {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await;
+    /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = [Vector {
     ///     id: "vector-id".to_string(),
@@ -97,7 +97,7 @@ impl Index {
     /// }];
     ///
     /// // Upsert vectors into the default namespace in the index
-    /// let response = index.upsert(&vectors, &Namespace::default()).await.unwrap();
+    /// let response = index.upsert(&vectors, &Namespace::default()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -125,9 +125,9 @@ impl Index {
     ///
     /// ### Arguments
     /// * `namespace: &Namespace` - The namespace to list vectors from. Default is "".
-    /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
+    /// * `prefix: Option<&str>` - The vector IDs to list, will list all vectors with IDs that have a matching prefix. Default is empty string.
     /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
-    /// * `pagination_token: Option<String>` - The token for paginating through results.
+    /// * `pagination_token: Option<&str>` - The token for paginating through results.
     ///
     /// ### Return
     /// * `Result<ListResponse, PineconeError>`
@@ -135,6 +135,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -152,15 +153,15 @@ impl Index {
     pub async fn list(
         &mut self,
         namespace: &Namespace,
-        prefix: Option<String>,
+        prefix: Option<&str>,
         limit: Option<u32>,
-        pagination_token: Option<String>,
+        pagination_token: Option<&str>,
     ) -> Result<ListResponse, PineconeError> {
         let request = pb::ListRequest {
             namespace: namespace.name.clone(),
-            prefix,
+            prefix: prefix.map(|s| s.to_string()),
             limit,
-            pagination_token,
+            pagination_token: pagination_token.map(|s| s.to_string()),
         };
 
         let response = self
@@ -236,7 +237,7 @@ impl Index {
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
     /// ### Arguments
-    /// * `id: String` - The vector's unique ID.
+    /// * `id: &str` - The vector's unique ID.
     /// * `values: Vec<f32>` - The vector data.
     /// * `sparse_values: Option<SparseValues>` - The sparse vector data.
     /// * `metadata: Option<MetadataFilter>` - The metadata to set for the vector.
@@ -248,6 +249,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::pinecone::data::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -259,7 +261,7 @@ impl Index {
     ///
     /// // Update the vector with id "vector-id" in the default namespace
     /// let response = index.update(
-    ///     "vector-id".to_string(),
+    ///     "vector-id",
     ///     vec![1.0, 2.0, 3.0, 4.0],
     ///     None,
     ///     None,
@@ -271,14 +273,14 @@ impl Index {
     /// ```
     pub async fn update(
         &mut self,
-        id: String,
+        id: &str,
         values: Vec<f32>,
         sparse_values: Option<SparseValues>,
         metadata: Option<Metadata>,
         namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
         let request = pb::UpdateRequest {
-            id,
+            id: id.to_string(),
             values,
             sparse_values,
             set_metadata: metadata,
@@ -427,7 +429,7 @@ impl Index {
     /// The delete_by_id operation deletes vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
+    /// * `ids: &[&str]` - List of IDs of vectors to be deleted.
     /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
@@ -445,20 +447,21 @@ impl Index {
     /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = ["vector-id".to_string()];
+    /// let ids = ["vector-id"];
     ///
-    /// // Delete vectors from the default namespace that have the ids in the list
-    /// let response = index.delete_by_id(&ids, &Namespace::default()).await;
+    /// // Delete vectors from the namespace "namespace" that have the ids in the list
+    /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
-        ids: &[String],
+        ids: &[&str],
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
+        let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>();
         let request = pb::DeleteRequest {
-            ids: ids.to_vec(),
+            ids,
             delete_all: false,
             namespace: namespace.name.clone(),
             filter: None,
