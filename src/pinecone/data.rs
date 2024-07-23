@@ -65,10 +65,11 @@ impl Index {
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
     ///
     /// ### Arguments
-    /// * `vectors: Vec<Vector>` - A list of vectors to upsert.
+    /// * `vectors: &[Vector]` - A list of vectors to upsert.
+    /// * `namespace: &Namespace` - The namespace to upsert vectors into. Default is "".
     ///
     /// ### Return
-    /// * `Result<UpsertResponse, PineconeError>` - A response object.
+    /// * `Result<UpsertResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -80,6 +81,7 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = [Vector {
@@ -88,6 +90,8 @@ impl Index {
     ///     sparse_values: None,
     ///     metadata: None,
     /// }];
+    ///
+    /// // Upsert vectors into the namespace "namespace" in the index
     /// let response = index.upsert(&vectors, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
@@ -115,13 +119,13 @@ impl Index {
     /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
     ///
     /// ### Arguments
-    /// * `namespace: Namespace` - Default is "".
-    /// * `prefix: Option<String>` - The maximum number of vectors to return. If unspecified, the server will use a default value.
+    /// * `namespace: &Namespace` - The namespace to list vectors from. Default is "".
+    /// * `prefix: Option<&str>` - The vector IDs to list, will list all vectors with IDs that have a matching prefix. Default is empty string.
     /// * `limit: Option<u32>` - The maximum number of vector ids to return. If unspecified, the default limit is 100.
-    /// * `pagination_token: Option<String>` - The token for paginating through results.
+    /// * `pagination_token: Option<&str>` - The token for paginating through results.
     ///
     /// ### Return
-    /// * `Result<ListResponse, PineconeError>` - A response object.
+    /// * `Result<ListResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -133,8 +137,10 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
+    /// // List all vectors in the namespace "namespace"
     /// let response = index.list(&"namespace".into(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
@@ -142,15 +148,15 @@ impl Index {
     pub async fn list(
         &mut self,
         namespace: &Namespace,
-        prefix: Option<String>,
+        prefix: Option<&str>,
         limit: Option<u32>,
-        pagination_token: Option<String>,
+        pagination_token: Option<&str>,
     ) -> Result<ListResponse, PineconeError> {
         let request = protos::ListRequest {
             namespace: namespace.name.clone(),
-            prefix,
+            prefix: prefix.map(|s| s.to_string()),
             limit,
-            pagination_token,
+            pagination_token: pagination_token.map(|s| s.to_string()),
         };
 
         let response = self
@@ -166,10 +172,10 @@ impl Index {
     /// The describe_index_stats operation returns statistics about the index.
     ///
     /// ### Arguments
-    /// * `filter: Option<Metadata>` - An optional filter to specify which vectors to return statistics for. Note that the filter is only supported by pod indexes.
+    /// * `filter: Option<Metadata>` - An optional filter to specify which vectors to return statistics for. None means no filter will be applied. Note that the filter is only supported by pod indexes.
     ///
     /// ### Return
-    /// * Returns a `Result<DescribeIndexStatsResponse, PineconeError>` object.
+    /// * `Result<DescribeIndexStatsResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -182,11 +188,14 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
+    /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
+    /// // Describe the index statistics
     /// let response = index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
     /// # Ok(())
     /// # }
@@ -207,6 +216,7 @@ impl Index {
         Ok(response)
     }
 
+    // Helper function to call query operation
     async fn query(
         &mut self,
         request: protos::QueryRequest,
@@ -225,14 +235,14 @@ impl Index {
     /// If a `metadata` filter is included, the values of the fields specified in it will be added or overwrite the previous values.
     ///
     /// ### Arguments
-    /// * `id: String` - The vector's unique ID.
+    /// * `id: &str` - The vector's unique ID.
     /// * `values: Vec<f32>` - The vector data.
     /// * `sparse_values: Option<SparseValues>` - The sparse vector data.
     /// * `metadata: Option<MetadataFilter>` - The metadata to set for the vector.
-    /// * `namespace: Namespace` - The namespace containing the vector to update. Default is "".
+    /// * `namespace: &Namespace` - The namespace containing the vector to update. Default is "".
     ///
     /// ### Return
-    /// * `Result<UpsertResponse, PineconeError>` - A response object.
+    /// * `Result<UpsertResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -244,22 +254,24 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let response = index.update("vector-id".to_string(), vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+    /// // Update the vector with id "vector-id" in the namespace "namespace"
+    /// let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn update(
         &mut self,
-        id: String,
+        id: &str,
         values: Vec<f32>,
         sparse_values: Option<SparseValues>,
         metadata: Option<Metadata>,
         namespace: &Namespace,
     ) -> Result<UpdateResponse, PineconeError> {
         let request = protos::UpdateRequest {
-            id,
+            id: id.to_string(),
             values,
             sparse_values,
             set_metadata: metadata,
@@ -281,13 +293,13 @@ impl Index {
     /// ### Arguments
     /// * `id: String` - The id of the query vector.
     /// * `top_k: u32` - The number of results to return.
-    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `namespace: &Namespace` - The namespace to query. Default is "".
     /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
     /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
     /// ### Return
-    /// * `Result<QueryResponse, PineconeError>` - A response object.
+    /// * `Result<QueryResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -299,8 +311,10 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
+    /// // Query the vector with id "vector-id" in the namespace "namespace"
     /// let response = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
@@ -335,13 +349,13 @@ impl Index {
     /// * `vector: Vec<f32>` - The query vector.
     /// * `sparse_vector: Option<SparseValues>` - Vector sparse data.
     /// * `top_k: u32` - The number of results to return.
-    /// * `namespace: Option<String>` - The namespace to query. If not specified, the default namespace is used.
+    /// * `namespace: &Namespace` - The namespace to query. Default is "".
     /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
     /// * `include_values: Option<bool>` - Indicates whether to include the values of the vectors in the response. Default is false.
     /// * `include_metadata: Option<bool>` - Indicates whether to include the metadata of the vectors in the response. Default is false.
     ///
     /// ### Return
-    /// * `Result<QueryResponse, PineconeError>` - A response object.
+    /// * `Result<QueryResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -353,10 +367,12 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vector = vec![1.0, 2.0, 3.0, 4.0];
     ///
+    /// // Query the vector in the default namespace
     /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
@@ -389,11 +405,11 @@ impl Index {
     /// The delete_by_id operation deletes vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `ids: Vec<String>` - List of IDs of vectors to be deleted.
-    /// * `namespace: Namespace` - The namespace to delete vectors from. Default is "".
+    /// * `ids: &[&str]` - List of IDs of vectors to be deleted.
+    /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -405,20 +421,24 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let ids = ["vector-id".to_string()];
+    /// let ids = ["vector-id"];
+    ///
+    /// // Delete vectors from the namespace "namespace" that have the ids in the list
     /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn delete_by_id(
         &mut self,
-        ids: &[String],
+        ids: &[&str],
         namespace: &Namespace,
     ) -> Result<(), PineconeError> {
+        let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>();
         let request = protos::DeleteRequest {
-            ids: ids.to_vec(),
+            ids,
             delete_all: false,
             namespace: namespace.name.clone(),
             filter: None,
@@ -430,10 +450,10 @@ impl Index {
     /// The delete_all operation deletes all vectors from a namespace.
     ///
     /// ### Arguments
-    /// * `namespace: Namespace` - The namespace to delete vectors from. Default is "".
+    /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -445,8 +465,10 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
+    /// // Delete all vectors from the namespace "namespace"
     /// let response = index.delete_all(&"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
@@ -466,10 +488,10 @@ impl Index {
     ///
     /// ### Arguments
     /// * `filter: Metadata` - The filter to specify which vectors to delete.
-    /// * `namespace: Namespace` - The namespace to delete vectors from.
+    /// * `namespace: &Namespace` - The namespace to delete vectors from. Default is "".
     ///
     /// ### Return
-    /// * Returns a `Result<(), PineconeError>` object.
+    /// * `Result<(), PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -482,11 +504,14 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
+    /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
+    /// // Delete vectors from the namespace "namespace" that satisfy the filter
     /// let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
     /// # Ok(())
     /// # }
@@ -521,10 +546,10 @@ impl Index {
     ///
     /// ### Arguments
     /// * `ids: &[String]` - The ids of vectors to fetch.
-    /// * `namespace: &Namespace` - The namespace to fetch vectors from.
+    /// * `namespace: &Namespace` - The namespace to fetch vectors from. Default is "".
     ///
     /// ### Return
-    /// * Returns a `Result<FetchResponse, PineconeError>` object.
+    /// * `Result<FetchResponse, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -537,10 +562,12 @@ impl Index {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// let vectors = &["1".to_string(), "2".to_string()];
     ///
+    /// // Fetch vectors from the default namespace that have the ids in the list
     /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
     /// Ok(())
     /// }
@@ -597,7 +624,7 @@ impl PineconeClient {
     /// * `host: &str` - The host of the index to target. If the host does not contain a scheme, it will default to `https://`. If the host does not contain a port, it will default to `443`.
     ///
     /// ### Return
-    /// * `Result<Index, PineconeError>` - A Pinecone index object.
+    /// * `Result<Index, PineconeError>`
     ///
     /// ### Example
     ///
@@ -609,6 +636,7 @@ impl PineconeClient {
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
+    /// // Connect to index host url "index-host"
     /// let index = pinecone.index("index-host").await.unwrap();
     /// # Ok(())
     /// # }
@@ -636,6 +664,7 @@ impl PineconeClient {
         Ok(index)
     }
 
+    // Helper function to create a new index connection
     async fn new_index_connection(
         &self,
         host: String,
