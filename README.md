@@ -20,9 +20,9 @@ How to install - instruction for getting the package from crates.io
 
 ## Usage
 
-Explanation about how environment variables are used
-
-Proxy config?
+The `PineconeClient` class is the main point of entry into the Rust SDK. To instantiate it, call `Pinecone::new(...)`, which takes in an API key, control plane host, additional headers, and a source tag. All are optional arguments, however not all are truly optional:
+- The API key must be passed in either as an argument or as an environment variable called `PINECONE_API_KEY`. If not passed in as an argument, the client will attempt to read in an environment variable value.
+- The control plane host, if not passed in as an argument, will attempt to read in an environment variable called `PINECONE_CONTROLLER_HOST`. If it is not an environment variable, it will default to `https://api.pinecone.io`.
 
 # Indexes
 
