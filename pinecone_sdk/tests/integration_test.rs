@@ -1,6 +1,6 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
+use pinecone_sdk::pinecone::control::{Cloud, DeletionProtection, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
@@ -95,6 +95,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             Metric::Cosine,
             Cloud::Aws,
             "us-west-2",
+            DeletionProtection::Disabled,
             WaitPolicy::NoWait,
         )
         .await
@@ -107,6 +108,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             Metric::Dotproduct,
             Cloud::Aws,
             "us-west-2",
+            DeletionProtection::Disabled,
             WaitPolicy::NoWait,
         )
         .await
@@ -169,6 +171,7 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
             Metric::Euclidean,
             Cloud::Aws,
             "us-west-2",
+            DeletionProtection::Disabled,
             WaitPolicy::NoWait,
         )
         .await
@@ -205,8 +208,9 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             "us-west1-gcp",
             "p1.x1",
             1,
-            Some(1),
-            Some(1),
+            1,
+            1,
+            DeletionProtection::Enabled,
             None,
             None,
             WaitPolicy::NoWait,
@@ -220,8 +224,8 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-west1-gcp");
-    assert_eq!(spec.replicas, Some(1));
-    assert_eq!(spec.shards, Some(1));
+    assert_eq!(spec.replicas, 1);
+    assert_eq!(spec.shards, 1);
     assert_eq!(spec.pod_type, "p1.x1");
     assert_eq!(spec.pods, 1);
     assert_eq!(spec.source_collection, None);
@@ -249,8 +253,8 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             "us-east-1-aws",
             "p1.x1",
             1,
-            Some(1),
-            Some(1),
+            1, 1,
+            DeletionProtection::Disabled,
             None,
             Some("valid-collection"),
             WaitPolicy::NoWait,
@@ -264,8 +268,8 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-east-1-aws");
-    assert_eq!(spec.replicas, Some(1));
-    assert_eq!(spec.shards, Some(1));
+    assert_eq!(spec.replicas, 1);
+    assert_eq!(spec.shards, 1);
     assert_eq!(spec.pod_type, "p1.x1");
     assert_eq!(spec.pods, 1);
     assert_eq!(spec.source_collection, Some("valid-collection".to_string()));
@@ -297,7 +301,7 @@ async fn test_configure_index() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index(&get_pod_index(), 1, "s1.x1")
+        .configure_index(&get_pod_index(), 1, "s1.x1", DeletionProtection::Enabled)
         .await
         .expect("Failed to configure index");
 
@@ -310,7 +314,7 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index(&get_serverless_index(), 1, "p1.x1")
+        .configure_index(&get_serverless_index(), 1, "p1.x1", DeletionProtection::Disabled)
         .await
         .expect_err("Expected to fail configuring serverless index");
 
@@ -323,7 +327,7 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index("invalid-index", 2, "p1.x1")
+        .configure_index("invalid-index", 2, "p1.x1", DeletionProtection::Disabled)
         .await
         .expect_err("Expected to fail configuring invalid index");
 
@@ -982,10 +986,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
     std::thread::sleep(std::time::Duration::from_secs(5));
 
     let fetch_response = index
-        .fetch(
-            &["1".to_string(), "2".to_string()],
-            namespace,
-        )
+        .fetch(&["1".to_string(), "2".to_string()], namespace)
         .await
         .expect("Failed to fetch vectors");
 
@@ -1034,7 +1035,10 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let fetch_response = index
-        .fetch(&["invalid-id1".to_string(), "invalid-id2".to_string()], &Default::default())
+        .fetch(
+            &["invalid-id1".to_string(), "invalid-id2".to_string()],
+            &Default::default(),
+        )
         .await
         .expect("Failed to fetch vectors");
 
