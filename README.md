@@ -31,7 +31,8 @@ Proxy config?
 ### Create serverless index
 The following example creates a serverless index in the `us-east-1` region of AWS. For more information on serverless and regional availability, see [Understanding indexes](https://docs.pinecone.io/guides/indexes/understanding-indexes#serverless-indexes)
 ```rust
-use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
+use pinecone_sdk::pinecone::PineconeClient;
+use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
  
@@ -48,7 +49,8 @@ let index_description: IndexModel = pinecone.create_serverless_index(
 ### Create pod index
 The following example creates a pod index in the `us-east-1` region of AWS.
 ```rust
-use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
+use pinecone_sdk::pinecone::PineconeClient;
+use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
@@ -67,7 +69,33 @@ let index_description: IndexModel = pinecone.create_pod_index(
 ).await?;
 ```
 
+Pod indexes support several optional configuration fields. The following example constructs a pod index with some specification for these fields.
+```rust
+use pinecone_sdk::pinecone::PineconeClient;
+use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
+
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
+
+let index_description: IndexModel = pinecone.create_pod_index(
+    "index-name",       // Index name
+    10,                 // Dimension
+    Metric::Cosine,     // Distance metric
+    "us-east-1",        // Region
+    "p1.x1",            // Pod type
+    1,                  // Number of pods
+    Some(1),            // Number of replicas
+    Some(1),            // Number of shards
+    Some(               // Metadata fields to index
+        &vec!["genre",
+            "title",
+            "imdb_rating"]),
+    Some("collection"), // Source collection
+    WaitPolicy::NoWait  // Wait policy
+).await?;
+```
+
 ## List indexes
+The following example lists all indexes in your project.
 ```rust
 use pinecone_sdk::pinecone::{ClientClient, control::IndexList};
 
@@ -77,6 +105,7 @@ let index_list: IndexList = pinecone.list_indexes().await?;
 ```
 
 ## Describe index
+The following example returns information about the index `index-name`.
 ```rust
 use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
 
@@ -86,31 +115,34 @@ let index_description: IndexModel = pinecone.describe_index("index-name").await?
 ```
 
 ## Configure index
+The following example changes the index `index-name` to have 6 replicas and pod type `s1`.
 ```rust
 use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
     
 let index_description: IndexModel = pinecone.configure_index("index-name", 6, "s1").await?;
 ```
 
 ## Delete index
+The following example deletes the index `index-name`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
     
 pinecone.delete_index("index-name").await?;
 ```
 
 ## Describe index statistics
+The following example returns statistics about the index with host `index-host`.
 Without filter
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::DescribeIndexStatsResponse;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -123,7 +155,7 @@ use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, DescribeIndexStatsResponse};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -134,11 +166,12 @@ let response: DescribeIndexStatsResponse = index.describe_index_stats(Some(Metad
 ```
 
 ## Upsert vectors
+The following example upserts two vectors into the index with host `index-host`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Vector, UpsertResponse};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -157,13 +190,14 @@ let vectors = [Vector {
 let response: UpsertResponse = index.upsert(&vectors, &"namespace".into()).await?;
 ```
 
-## Query index
+## Query vectors
 ### Query by index
+The following example queries the index with host `index-host` for the vector with ID `vector-id`, and returns the top 10 matches.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 // Connect to index at host "index-host"
 let mut index = pinecone.index("index-host").await?;
@@ -180,11 +214,12 @@ let response: QueryResponse = index.query_by_id(
 ```
 
 ### Query by value
+The following example queries the index with host `index-host` for the vector with values `[1.0, 2.0, 3.0, 4.0]`, and returns the top 10 matches.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -202,11 +237,11 @@ let response: QueryResponse = index.query_by_value(
 ```
 
 ## Delete vectors
-By ID:
+### Delete by ID:
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -215,13 +250,13 @@ let ids = ["vector-id"]
 index.delete_by_id(&ids, &"namespace".into()).await?;
 ```
 
-By filter:
+### Delete by filter:
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, Namespace};
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut fields = BTreeMap::new();
 fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string()))});
@@ -229,11 +264,11 @@ fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".
 index.delete_by_filter(Metadata { fields }, &"namespace".into()).await?;
 ```
 
-Delete all:
+### Delete all:
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -245,7 +280,7 @@ index.delete_all(&"namespace".into()).await?;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::FetchResponse;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -257,7 +292,7 @@ let response: FetchResponse = index.fetch(vectors, &Default::default()).await?;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::UpdateResponse;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -269,7 +304,7 @@ let response: UpdateResponse = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Namespace, ListResponse};
 
-let pinecone = PineconeClient::new("index-host").await?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
@@ -282,7 +317,7 @@ let response: ListResponse = index.list(&"namespace".into(), None, None, None).a
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionModel;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let collection: CollectionModel = pinecone.create_collection("collection-name", "index-name").await?;
 ```
@@ -292,7 +327,7 @@ let collection: CollectionModel = pinecone.create_collection("collection-name", 
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionList;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let collection_list: CollectionList = pinecone.list_collections().await?;
 ```
@@ -302,7 +337,7 @@ let collection_list: CollectionList = pinecone.list_collections().await?;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionModel;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let collection: CollectionModel = pinecone.describe_collection("collection-name").await?;
 ```
@@ -311,7 +346,7 @@ let collection: CollectionModel = pinecone.describe_collection("collection-name"
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
-let pinecone = PineconeClient::new(None, None, None, None)?;
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 pinecone.delete_collection("collection-name").await?;
 ```
