@@ -264,7 +264,8 @@ use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, Namespace};
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut fields = BTreeMap::new();
-fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string()))});
+let kind = Some(Kind::StringValue("value".to_string()));
+fields.insert("field".to_string(), Value { kind });
 
 index.delete_by_filter(Metadata { fields }, &"namespace".into()).await?;
 ```
