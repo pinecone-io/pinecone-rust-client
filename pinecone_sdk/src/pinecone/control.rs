@@ -53,7 +53,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Create an index.
-    /// let response: IndexModel = pinecone.create_serverless_index(
+    /// let index_description: IndexModel = pinecone.create_serverless_index(
     ///     "index-name", // Name of the index
     ///     10, // Dimension of the vectors
     ///     Metric::Cosine, // Distance metric
@@ -131,7 +131,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Create a pod index.
-    /// let create_index_response: IndexModel = pinecone.create_pod_index(
+    /// let index_description: IndexModel = pinecone.create_pod_index(
     ///     "index-name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
@@ -269,7 +269,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe an index in the project.
-    /// let describe_index_response: IndexModel = pinecone.describe_index("index-name").await?;
+    /// let index_description: IndexModel = pinecone.describe_index("index-name").await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -300,7 +300,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // List all indexes in the project.
-    /// let index_list_response: IndexList = pinecone.list_indexes().await?;
+    /// let index_list: IndexList = pinecone.list_indexes().await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -338,7 +338,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Configure an index in the project.
-    /// let response: IndexModel = pinecone.configure_index("index-name", 6, "s1").await?;
+    /// let updated_index: IndexModel = pinecone.configure_index("index-name", 6, "s1").await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -417,7 +417,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe an index in the project.
-    /// let create_collection_response: CollectionModel = pinecone.create_collection("collection-name", "index-name").await?;
+    /// let collection: CollectionModel = pinecone.create_collection("collection-name", "index-name").await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -460,7 +460,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe a collection in the project.
-    /// let response: CollectionModel = pinecone.describe_collection("collection-name").await?;
+    /// let collection: CollectionModel = pinecone.describe_collection("collection-name").await?;
     /// # Ok(())
     /// # }
     /// ```
