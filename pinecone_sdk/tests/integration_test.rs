@@ -239,6 +239,44 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
+async fn test_create_deletion_protected_index() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let name = &generate_index_name();
+    let _ = pinecone
+        .create_serverless_index(
+            name,
+            2,
+            Metric::Euclidean,
+            Cloud::Aws,
+            "us-west-2",
+            DeletionProtection::Enabled,
+            WaitPolicy::NoWait,
+        )
+        .await
+        .expect("Failed to create index");
+
+    println!("first request sent");
+
+    let response = pinecone
+        .create_serverless_index(
+            name,
+            2,
+            Metric::Euclidean,
+            Cloud::Aws,
+            "us-west-2",
+            DeletionProtection::Disabled,
+            WaitPolicy::NoWait,
+        )
+        .await
+        .expect("Failed to create index");
+
+    assert_eq!(response.deletion_protection, Some(DeletionProtection::Enabled));
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
