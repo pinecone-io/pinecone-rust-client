@@ -627,7 +627,7 @@ impl PineconeClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
-    /// "index-host"
+    ///
     /// let index = pinecone.index("index-host").await?;
     /// # Ok(())
     /// # }
