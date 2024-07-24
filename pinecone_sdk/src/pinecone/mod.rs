@@ -6,7 +6,9 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
-const PINECONE_API_VERSION_KEY: &str = "x-pinecone-api-version";
+/// The `PINECONE_API_VERSION_KEY` is the key for the Pinecone API version header.
+pub const PINECONE_API_VERSION_KEY: &str = "x-pinecone-api-version";
+
 /// Control plane module.
 pub mod control;
 
