@@ -160,7 +160,8 @@ let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 let mut index = pinecone.index("index-host").await?;
 
 let mut fields = BTreeMap::new();
-fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string()))});
+let kind = Some(Kind::StringValue("value".to_string()));
+fields.insert("field".to_string(), Value { kind });
 
 let response: DescribeIndexStatsResponse = index.describe_index_stats(Some(Metadata { fields })).await?;
 ```

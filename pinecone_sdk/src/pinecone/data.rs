@@ -195,7 +195,8 @@ impl Index {
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let kind = Some(Kind::StringValue("value".to_string()));
+    /// fields.insert("field".to_string(), Value { kind });
     ///
     /// // Describe the index statistics
     /// let response: DescribeIndexStatsResponse = index.describe_index_stats(Some(Metadata { fields })).await?;
@@ -246,7 +247,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Namespace, SparseValues, Metadata, UpdateResponse};
+    /// use pinecone_sdk::pinecone::data::UpdateResponse;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -256,7 +257,13 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Update the vector with id "vector-id" in the namespace "namespace"
-    /// let response: UpdateResponse = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await?;
+    /// let response: UpdateResponse = index.update(
+    ///     "vector-id",
+    ///     vec![1.0, 2.0, 3.0, 4.0],
+    ///     None,
+    ///     None,
+    ///     &"namespace".into()
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -312,7 +319,14 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Query the vector with id "vector-id" in the default namespace
-    /// let response: QueryResponse = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await?;
+    /// let response: QueryResponse = index.query_by_id(
+    ///     "vector-id".to_string(),
+    ///     10,
+    ///     &Namespace::default(),
+    ///     None,
+    ///     None,
+    ///     None
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -369,7 +383,15 @@ impl Index {
     /// let vector = vec![1.0, 2.0, 3.0, 4.0];
     ///
     /// // Query the vector in the default namespace
-    /// let response: QueryResponse = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await?;
+    /// let response: QueryResponse = index.query_by_value(
+    ///     vector,
+    ///     None,
+    ///     10,
+    ///     &Namespace::default(),
+    ///     None,
+    ///     None,
+    ///     None
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -502,7 +524,8 @@ impl Index {
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let kind = Some(Kind::StringValue("value".to_string()));
+    /// fields.insert("field".to_string(), Value { kind });
     ///
     /// // Delete vectors from the namespace "namespace" that satisfy the filter
     /// index.delete_by_filter(Metadata { fields }, &"namespace".into()).await?;
@@ -548,7 +571,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, FetchResponse};
+    /// use pinecone_sdk::pinecone::data::FetchResponse;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
