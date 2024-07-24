@@ -323,6 +323,7 @@ let response: ListResponse = index.list(&"namespace".into(), None, None, None).a
 
 # Collections
 ## Create collection
+The following example creates a collection `collection-name` in the index `index-name`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionModel;
@@ -333,6 +334,7 @@ let collection: CollectionModel = pinecone.create_collection("collection-name", 
 ```
 
 ## List collections
+The following example lists all collections in a project.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionList;
@@ -343,6 +345,7 @@ let collection_list: CollectionList = pinecone.list_collections().await?;
 ```
 
 ## Describe collection
+The following example describes the collection `collection-name`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::control::CollectionModel;
@@ -353,6 +356,7 @@ let collection: CollectionModel = pinecone.describe_collection("collection-name"
 ```
 
 ## Delete collection
+The following example deletes the collection `collection-name`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
