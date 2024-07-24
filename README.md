@@ -191,6 +191,7 @@ let response: UpsertResponse = index.upsert(&vectors, &"namespace".into()).await
 ```
 
 ## Query vectors
+There are two supported ways of querying an index.
 ### Query by index
 The following example queries the index with host `index-host` for the vector with ID `vector-id`, and returns the top 10 matches.
 ```rust
@@ -237,7 +238,9 @@ let response: QueryResponse = index.query_by_value(
 ```
 
 ## Delete vectors
-### Delete by ID:
+There are three supported ways of deleting vectors.
+### Delete by ID
+The following example deletes the vector with ID `vector-id` in the namespace `namespace`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
@@ -251,6 +254,7 @@ index.delete_by_id(&ids, &"namespace".into()).await?;
 ```
 
 ### Delete by filter:
+The following example deletes vectors that satisfy the filter in the namespace `namespace`.
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClient;
@@ -265,6 +269,7 @@ index.delete_by_filter(Metadata { fields }, &"namespace".into()).await?;
 ```
 
 ### Delete all:
+The following example deletes all vectors in the namespace `namespace`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 
@@ -276,6 +281,7 @@ index.delete_all(&"namespace".into()).await?;
 ```
 
 ## Fetch vectors
+The following example fetches the vectors with IDs `1` and `2` from the default namespace.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::FetchResponse;
@@ -284,10 +290,13 @@ let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 let mut index = pinecone.index("index-host").await?;
 
+let vectors = &["1".to_string(), "2".to_string()];
+
 let response: FetchResponse = index.fetch(vectors, &Default::default()).await?;
 ```
 
 ## Update vectors
+The following example updates the vector with ID `vector-id` in the namespace `namespace` to have values `[1.0, 2.0, 3.0, 4.0]`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::UpdateResponse;
@@ -300,6 +309,7 @@ let response: UpdateResponse = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0
 ```
 
 ## List vectors
+The following example lists vectors in the namespace `namespace`.
 ```rust
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::pinecone::data::{Namespace, ListResponse};
