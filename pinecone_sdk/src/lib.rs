@@ -14,3 +14,6 @@ pub mod pinecone;
 
 /// Utility modules.
 pub mod utils;
+
+/// Version information.
+pub mod version;

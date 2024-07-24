@@ -6,6 +6,7 @@ use openapi::apis::configuration::Configuration;
 use serde_json;
 use std::collections::HashMap;
 
+const PINECONE_API_VERSION_KEY: &str = "x-pinecone-api-version";
 /// Control plane module.
 pub mod control;
 
@@ -74,9 +75,8 @@ impl PineconeClient {
         let controller_host = control_plane_host.unwrap_or(env_controller);
 
         // get additional headers
-        let additional_headers = match additional_headers {
-            Some(headers) => headers,
-            None => match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
+        let additional_headers =
+            additional_headers.unwrap_or(match std::env::var("PINECONE_ADDITIONAL_HEADERS") {
                 Ok(headers) => match serde_json::from_str(&headers) {
                     Ok(headers) => headers,
                     Err(_) => {
@@ -87,8 +87,7 @@ impl PineconeClient {
                     }
                 },
                 Err(_) => HashMap::new(),
-            },
-        };
+            });
 
         // create config
         let config = Config {
@@ -113,6 +112,29 @@ impl PineconeClient {
 
     /// Returns the OpenAPI configuration object.
     pub fn openapi_config(&self) -> Configuration {
+        // create reqwest headers
+        // init an empty one if self.additional_headers is empty, otherwise make it
+        let mut headers = reqwest::header::HeaderMap::new();
+        for (k, v) in self.additional_headers.iter() {
+            let key = reqwest::header::HeaderName::from_bytes(k.as_bytes()).unwrap();
+            let value = reqwest::header::HeaderValue::from_str(v).unwrap();
+            headers.insert(key, value);
+        }
+
+        // add X-Pinecone-Api-Version header if not present
+        if !headers.contains_key(PINECONE_API_VERSION_KEY) {
+            headers.insert(
+                reqwest::header::HeaderName::from_static(PINECONE_API_VERSION_KEY),
+                reqwest::header::HeaderValue::from_static(crate::version::API_VERSION),
+            );
+        }
+
+        // create reqwest client
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap_or(reqwest::Client::new());
+
         Configuration {
             base_path: self.controller_url.clone(),
             user_agent: self.user_agent.clone(),
@@ -120,6 +142,7 @@ impl PineconeClient {
                 prefix: None,
                 key: self.api_key.clone(),
             }),
+            client,
             ..Default::default()
         }
     }
@@ -161,13 +184,9 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host";
 
         temp_env::with_var("PINECONE_API_KEY", Some(mock_api_key), || {
-            let pinecone = PineconeClient::new(
-                None,
-                Some(mock_controller_host),
-                Some(HashMap::new()),
-                None,
-            )
-            .expect("Expected to successfully create Pinecone instance");
+            let pinecone =
+                PineconeClient::new(None, Some(mock_controller_host), Some(HashMap::new()), None)
+                    .expect("Expected to successfully create Pinecone instance");
 
             assert_eq!(pinecone.api_key, mock_api_key);
             assert_eq!(pinecone.controller_url, mock_controller_host);
@@ -187,13 +206,11 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host";
 
         temp_env::with_var_unset("PINECONE_API_KEY", || {
-            let pinecone = PineconeClient::new(
-                None,
-                Some(mock_controller_host),
-                Some(HashMap::new()),
-                None,
-            )
-            .expect_err("Expected to fail creating Pinecone instance due to missing API key");
+            let pinecone =
+                PineconeClient::new(None, Some(mock_controller_host), Some(HashMap::new()), None)
+                    .expect_err(
+                        "Expected to fail creating Pinecone instance due to missing API key",
+                    );
 
             assert!(matches!(pinecone, PineconeError::APIKeyMissingError { .. }));
         });
@@ -227,13 +244,9 @@ mod tests {
             "PINECONE_CONTROLLER_HOST",
             Some(mock_controller_host),
             || {
-                let pinecone = PineconeClient::new(
-                    Some(mock_api_key),
-                    None,
-                    Some(HashMap::new()),
-                    None,
-                )
-                .expect("Expected to successfully create Pinecone instance with env host");
+                let pinecone =
+                    PineconeClient::new(Some(mock_api_key), None, Some(HashMap::new()), None)
+                        .expect("Expected to successfully create Pinecone instance with env host");
 
                 assert_eq!(pinecone.controller_url, mock_controller_host);
             },
@@ -301,13 +314,11 @@ mod tests {
             "PINECONE_ADDITIONAL_HEADERS",
             Some(serde_json::to_string(&mock_headers).unwrap().as_str()),
             || {
-                let pinecone = PineconeClient::new(
-                    Some(mock_api_key),
-                    Some(mock_controller_host),
-                    None,
-                    None,
-                )
-                .expect("Expected to successfully create Pinecone instance with env headers");
+                let pinecone =
+                    PineconeClient::new(Some(mock_api_key), Some(mock_controller_host), None, None)
+                        .expect(
+                            "Expected to successfully create Pinecone instance with env headers",
+                        );
 
                 assert_eq!(pinecone.additional_headers, mock_headers);
             },
@@ -322,13 +333,11 @@ mod tests {
         let mock_controller_host = "mock-arg-controller-host";
 
         temp_env::with_var("PINECONE_ADDITIONAL_HEADERS", Some("invalid-json"), || {
-            let pinecone = PineconeClient::new(
-                Some(mock_api_key),
-                Some(mock_controller_host),
-                None,
-                None,
-            )
-            .expect_err("Expected to fail creating Pinecone instance due to invalid headers");
+            let pinecone =
+                PineconeClient::new(Some(mock_api_key), Some(mock_controller_host), None, None)
+                    .expect_err(
+                        "Expected to fail creating Pinecone instance due to invalid headers",
+                    );
 
             assert!(matches!(
                 pinecone,
@@ -377,10 +386,7 @@ mod tests {
         temp_env::with_vars(
             [
                 ("PINECONE_API_KEY", Some(mock_env_api_key)),
-                (
-                    "PINECONE_CONTROLLER_HOST",
-                    Some(mock_env_controller_host),
-                ),
+                ("PINECONE_CONTROLLER_HOST", Some(mock_env_controller_host)),
                 (
                     "PINECONE_ADDITIONAL_HEADERS",
                     Some(serde_json::to_string(&mock_env_headers).unwrap().as_str()),
