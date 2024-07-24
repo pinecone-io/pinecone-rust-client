@@ -253,7 +253,8 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             "us-east-1-aws",
             "p1.x1",
             1,
-            1, 1,
+            1,
+            1,
             DeletionProtection::Disabled,
             None,
             Some("valid-collection"),
@@ -314,7 +315,12 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index(&get_serverless_index(), 1, "p1.x1", DeletionProtection::Disabled)
+        .configure_index(
+            &get_serverless_index(),
+            1,
+            "p1.x1",
+            DeletionProtection::Disabled,
+        )
         .await
         .expect_err("Expected to fail configuring serverless index");
 
