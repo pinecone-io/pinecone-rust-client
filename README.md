@@ -366,3 +366,6 @@ let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
 
 pinecone.delete_collection("collection-name").await?;
 ```
+
+# Contributing
+If you'd like to make a contribution, or get setup locally to develop the Pinecone Rust client, please see our [contributing guide](https://github.com/pinecone-io/pinecone-rust-client/blob/emily/update-readme/CONTRIBUTING.md)
