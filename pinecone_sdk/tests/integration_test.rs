@@ -982,10 +982,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
     std::thread::sleep(std::time::Duration::from_secs(5));
 
     let fetch_response = index
-        .fetch(
-            &["1".to_string(), "2".to_string()],
-            namespace,
-        )
+        .fetch(&["1".to_string(), "2".to_string()], namespace)
         .await
         .expect("Failed to fetch vectors");
 
@@ -1034,7 +1031,10 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let fetch_response = index
-        .fetch(&["invalid-id1".to_string(), "invalid-id2".to_string()], &Default::default())
+        .fetch(
+            &["invalid-id1".to_string(), "invalid-id2".to_string()],
+            &Default::default(),
+        )
         .await
         .expect("Failed to fetch vectors");
 
