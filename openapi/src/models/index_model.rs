@@ -26,6 +26,8 @@ pub struct IndexModel {
     /// The URL address where the index is hosted.
     #[serde(rename = "host")]
     pub host: String,
+    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    pub deletion_protection: Option<models::DeletionProtection>,
     #[serde(rename = "spec")]
     pub spec: Box<models::IndexModelSpec>,
     #[serde(rename = "status")]
@@ -40,6 +42,7 @@ impl IndexModel {
             dimension,
             metric,
             host,
+            deletion_protection: None,
             spec: Box::new(spec),
             status: Box::new(status),
         }

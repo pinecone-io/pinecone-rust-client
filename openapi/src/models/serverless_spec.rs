@@ -14,10 +14,10 @@ use serde::{Deserialize, Serialize};
 /// ServerlessSpec : Configuration needed to deploy a serverless index.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ServerlessSpec {
-    /// The public cloud where you would like your index hosted. Serverless indexes can be hosted only in AWS at this time.
+    /// The public cloud where you would like your index hosted.
     #[serde(rename = "cloud")]
     pub cloud: Cloud,
-    /// The region where you would like your index to be created.  Serverless indexes can be created only in the us-east-1,us-west-2, and eu-west-1 regions of AWS at this time.
+    /// The region where you would like your index to be created. 
     #[serde(rename = "region")]
     pub region: String,
 }
@@ -31,7 +31,7 @@ impl ServerlessSpec {
         }
     }
 }
-/// The public cloud where you would like your index hosted. Serverless indexes can be hosted only in AWS at this time.
+/// The public cloud where you would like your index hosted.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Cloud {
     #[serde(rename = "gcp")]

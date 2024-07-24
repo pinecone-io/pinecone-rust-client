@@ -19,9 +19,9 @@ use super::{Error, configuration};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EmbedError {
-    Status400(models::ListIndexes401Response),
-    Status401(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status400(models::ErrorResponse),
+    Status401(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 

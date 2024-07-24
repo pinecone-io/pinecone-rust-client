@@ -1,11 +1,11 @@
-# ConfigureIndexRequest
+# ErrorResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**spec** | Option<[**models::ConfigureIndexRequestSpec**](ConfigureIndexRequest_spec.md)> |  | [optional]
-**deletion_protection** | Option<[**models::DeletionProtection**](DeletionProtection.md)> |  | [optional]
+**status** | **i32** | The HTTP status code of the error. | 
+**error** | [**models::ErrorResponseError**](ErrorResponse_error.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -23,6 +23,8 @@ pub struct CreateIndexRequest {
     /// The distance metric to be used for similarity search. You can use 'euclidean', 'cosine', or 'dotproduct'.
     #[serde(rename = "metric", skip_serializing_if = "Option::is_none")]
     pub metric: Option<Metric>,
+    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    pub deletion_protection: Option<models::DeletionProtection>,
     #[serde(rename = "spec", deserialize_with = "Option::deserialize")]
     pub spec: Option<Box<models::IndexSpec>>,
 }
@@ -34,6 +36,7 @@ impl CreateIndexRequest {
             name,
             dimension,
             metric: None,
+            deletion_protection: None,
             spec: if let Some(x) = spec {Some(Box::new(x))} else {None},
         }
     }
