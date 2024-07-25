@@ -293,7 +293,7 @@ impl Index {
     /// The query operation searches a namespace using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
     ///
     /// ### Arguments
-    /// * `id: String` - The id of the query vector.
+    /// * `id: &str` - The id of the query vector.
     /// * `top_k: u32` - The number of results to return.
     /// * `namespace: &Namespace` - The namespace to query. Default is "".
     /// * `filter: Option<Metadata>` - The filter to apply to limit your search by vector metadata.
@@ -317,13 +317,13 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Query the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.query_by_id("vector-id".to_string(), 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// let response = index.query_by_id("vector-id", 10, &Namespace::default(), None, None, None).await.unwrap();
     /// # Ok(())
     /// # }
     /// ```
     pub async fn query_by_id(
         &mut self,
-        id: String,
+        id: &str,
         top_k: u32,
         namespace: &Namespace,
         filter: Option<Metadata>,
@@ -331,7 +331,7 @@ impl Index {
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
         let request = pb::QueryRequest {
-            id,
+            id: id.to_string(),
             top_k,
             namespace: namespace.name.clone(),
             filter,

@@ -649,7 +649,7 @@ async fn test_query_by_id() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _query_response = index
-        .query_by_id("1".to_string(), 10, &Namespace::default(), None, None, None)
+        .query_by_id("1", 10, &Namespace::default(), None, None, None)
         .await
         .expect("Failed to query");
 
