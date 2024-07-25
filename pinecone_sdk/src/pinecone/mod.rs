@@ -97,32 +97,12 @@ impl PineconeClient {
         let user_agent = get_user_agent(source_tag);
 
         // create reqwest headers
-        let headers: Result<HeaderMap, PineconeError> = additional_headers
-            .iter()
-            .map(|(name, val)| {
-                (
-                    reqwest::header::HeaderName::from_str(name).map_err(|e| {
-                        PineconeError::InvalidHeadersError {
-                            message: e.to_string(),
-                        }
-                    }),
-                    reqwest::header::HeaderValue::from_str(val.as_ref()).map_err(|e| {
-                        PineconeError::InvalidHeadersError {
-                            message: e.to_string(),
-                        }
-                    }),
-                )
-            })
-            .map(
-                |(name_result, val_result)| match (name_result, val_result) {
-                    (Ok(name), Ok(val)) => Ok((name, val)),
-                    (Err(e), _) => Err(e),
-                    (_, Err(e)) => Err(e),
-                },
-            )
-            .collect();
-
-        let mut headers = headers?;
+        let mut headers: reqwest::header::HeaderMap =
+            (&additional_headers)
+                .try_into()
+                .map_err(|_| PineconeError::InvalidHeadersError {
+                    message: "Provided headers are not valid".to_string(),
+                })?;
 
         // add X-Pinecone-Api-Version header if not present
         if !headers.contains_key(PINECONE_API_VERSION_KEY) {
