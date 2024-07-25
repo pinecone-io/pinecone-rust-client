@@ -1,5 +1,6 @@
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
+use openapi::models::EmbedRequestParameters;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::PineconeClient;
@@ -1081,6 +1082,42 @@ async fn test_fetch_empty_id_list() -> Result<(), PineconeError> {
         .fetch(&[], &Default::default())
         .await
         .expect_err("Expected error to be thrown");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_embed() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let parameters = EmbedRequestParameters {
+        input_type: Some("query".to_string()),
+        truncate: Some("END".to_string()),
+    };
+
+    let response = pinecone
+        .embed(
+            "multilingual-e5-large",
+            Some(parameters),
+            &vec!["Hello, world!"],
+        )
+        .await
+        .expect("Failed to embed");
+
+    assert_eq!(response.model.unwrap(), "multilingual-e5-large");
+    assert_eq!(response.data.unwrap().len(), 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_embed_invalid_model() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let _ = pinecone
+        .embed("invalid-model", None, &vec!["Hello, world!"])
+        .await
+        .expect_err("Expected to fail embedding with invalid model");
 
     Ok(())
 }
