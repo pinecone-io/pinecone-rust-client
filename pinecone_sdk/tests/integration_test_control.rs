@@ -1,13 +1,15 @@
+use common::{
+    generate_collection_name, generate_index_name, get_collection, get_pod_index,
+    get_serverless_index,
+};
 use openapi::models::index_model::Metric as OpenApiMetric;
 use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
-use pinecone_sdk::utils::test::{
-    generate_collection_name, generate_index_name, get_collection, get_pod_index,
-    get_serverless_index,
-};
 use std::time::Duration;
+
+mod common;
 
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
