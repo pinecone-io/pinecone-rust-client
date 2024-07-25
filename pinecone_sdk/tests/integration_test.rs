@@ -5,7 +5,7 @@ use pinecone_sdk::pinecone::data::{Kind, Metadata, Namespace, SparseValues, Valu
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use rand::Rng;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Duration;
 use std::vec;
 
@@ -510,7 +510,7 @@ async fn test_list_collections() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_delete_collection_err() -> Result<(), PineconeError> {
+async fn test_delete_collection_invalid_collection() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
@@ -518,6 +518,27 @@ async fn test_delete_collection_err() -> Result<(), PineconeError> {
         .delete_collection("invalid-collection")
         .await
         .expect_err("Expected to fail deleting collection");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_list_collections_invalid_api_version() -> Result<(), PineconeError> {
+    let headers: HashMap<String, String> = [(
+        pinecone_sdk::pinecone::PINECONE_API_VERSION_KEY.to_string(),
+        "invalid".to_string(),
+    )]
+    .iter()
+    .cloned()
+    .collect();
+
+    let pinecone = PineconeClient::new(None, None, Some(headers), None)
+        .expect("Failed to create Pinecone instance");
+
+    let _ = pinecone
+        .list_collections()
+        .await
+        .expect_err("Expected to fail listing collections due to invalid api version");
 
     Ok(())
 }
@@ -724,7 +745,7 @@ async fn test_query_by_id() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _query_response = index
-        .query_by_id("1".to_string(), 10, &Namespace::default(), None, None, None)
+        .query_by_id("1", 10, &Namespace::default(), None, None, None)
         .await
         .expect("Failed to query");
 
@@ -1057,7 +1078,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
     std::thread::sleep(std::time::Duration::from_secs(5));
 
     let fetch_response = index
-        .fetch(&["1".to_string(), "2".to_string()], namespace)
+        .fetch(&["1", "2"], namespace)
         .await
         .expect("Failed to fetch vectors");
 
@@ -1106,10 +1127,7 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let fetch_response = index
-        .fetch(
-            &["invalid-id1".to_string(), "invalid-id2".to_string()],
-            &Default::default(),
-        )
+        .fetch(&["invalid-id1", "invalid-id2"], &Default::default())
         .await
         .expect("Failed to fetch vectors");
 

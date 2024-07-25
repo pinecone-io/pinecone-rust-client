@@ -95,7 +95,7 @@ impl PineconeClient {
         };
 
         // make openAPI call
-        let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
+        let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -199,7 +199,7 @@ impl PineconeClient {
         };
 
         // make openAPI call
-        let res = manage_indexes_api::create_index(&self.openapi_config(), create_index_request)
+        let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -252,7 +252,7 @@ impl PineconeClient {
 
     // Gets ready status of an index
     async fn is_ready(&self, name: &str) -> bool {
-        let res = manage_indexes_api::describe_index(&self.openapi_config(), name).await;
+        let res = manage_indexes_api::describe_index(&self.openapi_config, name).await;
         match res {
             Ok(index) => index.status.ready,
             Err(_) => false,
@@ -283,7 +283,7 @@ impl PineconeClient {
     /// ```
     pub async fn describe_index(&self, name: &str) -> Result<IndexModel, PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::describe_index(&self.openapi_config(), name)
+        let res = manage_indexes_api::describe_index(&self.openapi_config, name)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -314,7 +314,7 @@ impl PineconeClient {
     /// ```
     pub async fn list_indexes(&self) -> Result<IndexList, PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::list_indexes(&self.openapi_config())
+        let res = manage_indexes_api::list_indexes(&self.openapi_config)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -374,7 +374,7 @@ impl PineconeClient {
 
         // make openAPI call
         let res = manage_indexes_api::configure_index(
-            &self.openapi_config(),
+            &self.openapi_config,
             name,
             configure_index_request,
         )
@@ -408,7 +408,7 @@ impl PineconeClient {
     /// ```
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::delete_index(&self.openapi_config(), name)
+        let res = manage_indexes_api::delete_index(&self.openapi_config, name)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -449,12 +449,10 @@ impl PineconeClient {
         };
 
         // make openAPI call
-        let res = manage_indexes_api::create_collection(
-            &self.openapi_config(),
-            create_collection_request,
-        )
-        .await
-        .map_err(|e| PineconeError::from(e))?;
+        let res =
+            manage_indexes_api::create_collection(&self.openapi_config, create_collection_request)
+                .await
+                .map_err(|e| PineconeError::from(e))?;
 
         Ok(res)
     }
@@ -482,7 +480,7 @@ impl PineconeClient {
     /// # }
     /// ```
     pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
-        let res = manage_indexes_api::describe_collection(&self.openapi_config(), name)
+        let res = manage_indexes_api::describe_collection(&self.openapi_config, name)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -512,7 +510,7 @@ impl PineconeClient {
     /// ```
     pub async fn list_collections(&self) -> Result<CollectionList, PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::list_collections(&self.openapi_config())
+        let res = manage_indexes_api::list_collections(&self.openapi_config)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
@@ -543,7 +541,7 @@ impl PineconeClient {
     /// ```
     pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::delete_collection(&self.openapi_config(), name)
+        let res = manage_indexes_api::delete_collection(&self.openapi_config, name)
             .await
             .map_err(|e| PineconeError::from(e))?;
 
