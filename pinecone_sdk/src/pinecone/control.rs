@@ -323,15 +323,14 @@ impl PineconeClient {
 
     /// Configures an index.
     ///
-    /// This operation specifies the pod type and number of replicas for an index.
-    /// It applies to pod-based indexes only.
-    /// Serverless indexes scale automatically based on usage.
+    /// This operation changes the deletion protection specification, the pod type, and the number of replicas for an index.
+    /// Deletion protection can be changed for both pod and serverless indexes, while pod types and number of replicas can only be changed for pod indexes.
     ///
     /// ### Arguments
     /// * name: &str - The name of the index to be configured.
-    /// * replicas: i32 - The desired number of replicas, lowest value is 0.
-    /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
     /// * deletion_protection: DeletionProtection - Deletion protection for the index.
+    /// * replicas: Some(i32) - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
+    /// * pod_type: Some(&str) - The new pod_type for the index. This parameter should be `None` if the index is serverless.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
