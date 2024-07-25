@@ -547,7 +547,7 @@ impl Index {
     /// The fetch operation retrieves vectors by ID from a namespace.
     ///
     /// ### Arguments
-    /// * `ids: &[String]` - The ids of vectors to fetch.
+    /// * `ids: &[&str]` - The ids of vectors to fetch.
     /// * `namespace: &Namespace` - The namespace to fetch vectors from. Default is "".
     ///
     /// ### Return
@@ -567,7 +567,7 @@ impl Index {
     /// // Connect to index host url
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
-    /// let vectors = &["1".to_string(), "2".to_string()];
+    /// let vectors = &["1", "2"];
     ///
     /// // Fetch vectors from the default namespace that have the ids in the list
     /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
@@ -576,11 +576,12 @@ impl Index {
     /// ```
     pub async fn fetch(
         &mut self,
-        ids: &[String],
+        ids: &[&str],
         namespace: &Namespace,
     ) -> Result<FetchResponse, PineconeError> {
+        let ids = ids.iter().map(|id| id.to_string()).collect::<Vec<String>>();
         let request = pb::FetchRequest {
-            ids: ids.to_vec(),
+            ids,
             namespace: namespace.name.clone(),
         };
 
