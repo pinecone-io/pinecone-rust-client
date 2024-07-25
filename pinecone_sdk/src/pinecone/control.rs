@@ -347,24 +347,29 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // Configure an index in the project.
-    /// let response = pinecone.configure_index("index-name", 6, "s1.x1", DeletionProtection::Enabled).await;
+    /// let response = pinecone.configure_index("index-name", DeletionProtection::Enabled, Some(6), Some("s1.x1")).await;
     /// # Ok(())
     /// # }
     /// ```
     pub async fn configure_index(
         &self,
         name: &str,
-        replicas: i32,
-        pod_type: &str,
         deletion_protection: DeletionProtection,
+        replicas: Option<i32>,
+        pod_type: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
-        let configure_index_request = ConfigureIndexRequest {
-            spec: Some(Box::new(ConfigureIndexRequestSpec {
+        let spec = match (replicas, pod_type) {
+            (Some(replicas), Some(pod_type)) => Some(Box::new(ConfigureIndexRequestSpec {
                 pod: Box::new(ConfigureIndexRequestSpecPod {
                     replicas: Some(replicas),
                     pod_type: Some(pod_type.to_string()),
                 }),
             })),
+            _ => None,
+        };
+
+        let configure_index_request = ConfigureIndexRequest {
+            spec,
             deletion_protection: Some(deletion_protection),
         };
 
@@ -1600,7 +1605,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1", DeletionProtection::Disabled)
+            .configure_index(
+                "index-name",
+                DeletionProtection::Disabled,
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect("Failed to configure index");
 
@@ -1645,7 +1655,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1", DeletionProtection::Enabled)
+            .configure_index(
+                "index-name",
+                DeletionProtection::Enabled,
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1687,7 +1702,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1", DeletionProtection::Disabled)
+            .configure_index(
+                "index-name",
+                DeletionProtection::Disabled,
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1729,7 +1749,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1", DeletionProtection::Enabled)
+            .configure_index(
+                "index-name",
+                DeletionProtection::Enabled,
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1761,7 +1786,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1", DeletionProtection::Enabled)
+            .configure_index(
+                "index-name",
+                DeletionProtection::Enabled,
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 

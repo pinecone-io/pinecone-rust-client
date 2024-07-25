@@ -136,6 +136,7 @@ pub async fn configure_index(configuration: &configuration::Configuration, index
         local_var_req_builder = local_var_req_builder.header("Api-Key", local_var_value);
     };
     local_var_req_builder = local_var_req_builder.json(&configure_index_request);
+    local_var_req_builder = local_var_req_builder.header("X-Pinecone-API-Version", "2024-07"); // DELETE THIS LINE
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;
@@ -210,6 +211,7 @@ pub async fn create_index(configuration: &configuration::Configuration, create_i
         local_var_req_builder = local_var_req_builder.header("Api-Key", local_var_value);
     };
     local_var_req_builder = local_var_req_builder.json(&create_index_request);
+    local_var_req_builder = local_var_req_builder.header("X-Pinecone-API-Version", "2024-07"); // DELETE THIS LINE
 
     let local_var_req = local_var_req_builder.build()?;
     let local_var_resp = local_var_client.execute(local_var_req).await?;

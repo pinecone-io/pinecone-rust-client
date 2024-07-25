@@ -210,7 +210,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             1,
             1,
             1,
-            DeletionProtection::Enabled,
+            DeletionProtection::Disabled,
             None,
             None,
             WaitPolicy::NoWait,
@@ -234,44 +234,6 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
         .delete_index(name)
         .await
         .expect("Failed to delete index");
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_create_deletion_protected_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
-
-    let name = &generate_index_name();
-    let _ = pinecone
-        .create_serverless_index(
-            name,
-            2,
-            Metric::Euclidean,
-            Cloud::Aws,
-            "us-west-2",
-            DeletionProtection::Enabled,
-            WaitPolicy::NoWait,
-        )
-        .await
-        .expect("Failed to create index");
-
-    println!("first request sent");
-
-    let response = pinecone
-        .create_serverless_index(
-            name,
-            2,
-            Metric::Euclidean,
-            Cloud::Aws,
-            "us-west-2",
-            DeletionProtection::Disabled,
-            WaitPolicy::NoWait,
-        )
-        .await
-        .expect("Failed to create index");
-
-    assert_eq!(response.deletion_protection, Some(DeletionProtection::Enabled));
 
     Ok(())
 }
@@ -340,7 +302,30 @@ async fn test_configure_index() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index(&get_pod_index(), 1, "s1.x1", DeletionProtection::Enabled)
+        .configure_index(
+            &get_pod_index(),
+            DeletionProtection::Enabled,
+            Some(1),
+            Some("s1.x1"),
+        )
+        .await
+        .expect("Failed to configure index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_serverless_index() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let _ = pinecone
+        .configure_index(
+            &get_serverless_index(),
+            DeletionProtection::Enabled,
+            None,
+            None,
+        )
         .await
         .expect("Failed to configure index");
 
@@ -355,9 +340,9 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
     let _ = pinecone
         .configure_index(
             &get_serverless_index(),
-            1,
-            "p1.x1",
             DeletionProtection::Disabled,
+            Some(1),
+            Some("p1.x1"),
         )
         .await
         .expect_err("Expected to fail configuring serverless index");
@@ -371,9 +356,51 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .configure_index("invalid-index", 2, "p1.x1", DeletionProtection::Disabled)
+        .configure_index(
+            "invalid-index",
+            DeletionProtection::Disabled,
+            Some(2),
+            Some("p1.x1"),
+        )
         .await
         .expect_err("Expected to fail configuring invalid index");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let index_name = &generate_index_name();
+    let _ = pinecone
+        .create_serverless_index(
+            index_name,
+            2,
+            Metric::Cosine,
+            Cloud::Aws,
+            "us-east-1",
+            DeletionProtection::Enabled,
+            WaitPolicy::NoWait,
+        )
+        .await
+        .expect("Failed to create index");
+
+    let _ = pinecone
+        .delete_index(index_name)
+        .await
+        .expect_err("Expected to fail to delete index");
+
+    let _ = pinecone
+        .configure_index(index_name, DeletionProtection::Disabled, None, None)
+        .await
+        .expect("Failed to configure index");
+
+    let _ = pinecone
+        .delete_index(&index_name)
+        .await
+        .expect("Failed to delete index");
 
     Ok(())
 }
