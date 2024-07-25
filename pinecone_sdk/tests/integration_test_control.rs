@@ -7,6 +7,7 @@ use openapi::models::serverless_spec::Cloud as OpenApiCloud;
 use pinecone_sdk::pinecone::control::{Cloud, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
+use std::collections::HashMap;
 use std::time::Duration;
 
 mod common;
@@ -392,7 +393,28 @@ async fn test_list_collections() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
-async fn test_delete_collection_err() -> Result<(), PineconeError> {
+async fn test_list_collections_invalid_api_version() -> Result<(), PineconeError> {
+    let headers: HashMap<String, String> = [(
+        pinecone_sdk::pinecone::PINECONE_API_VERSION_KEY.to_string(),
+        "invalid".to_string(),
+    )]
+    .iter()
+    .cloned()
+    .collect();
+
+    let pinecone = PineconeClient::new(None, None, Some(headers), None)
+        .expect("Failed to create Pinecone instance");
+
+    let _ = pinecone
+        .list_collections()
+        .await
+        .expect_err("Expected to fail listing collections due to invalid api version");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_delete_collection_invalid_collection() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
 
