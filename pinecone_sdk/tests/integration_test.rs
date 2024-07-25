@@ -649,7 +649,7 @@ async fn test_query_by_id() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let _query_response = index
-        .query_by_id("1".to_string(), 10, &Namespace::default(), None, None, None)
+        .query_by_id("1", 10, &Namespace::default(), None, None, None)
         .await
         .expect("Failed to query");
 
@@ -983,7 +983,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
 
     let fetch_response = index
         .fetch(
-            &["1".to_string(), "2".to_string()],
+            &["1", "2"],
             namespace,
         )
         .await
@@ -1034,7 +1034,7 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
         .expect("Failed to target index");
 
     let fetch_response = index
-        .fetch(&["invalid-id1".to_string(), "invalid-id2".to_string()], &Default::default())
+        .fetch(&["invalid-id1", "invalid-id2"], &Default::default())
         .await
         .expect("Failed to fetch vectors");
 
