@@ -23,6 +23,7 @@ pub struct PineconeClient {
     additional_headers: HashMap<String, String>,
     source_tag: Option<String>,
     user_agent: Option<String>,
+    openapi_config: Configuration,
 }
 
 impl PineconeClient {
@@ -91,33 +92,12 @@ impl PineconeClient {
                 Err(_) => HashMap::new(),
             });
 
-        // create config
-        let config = Config {
-            api_key: api_key.to_string(),
-            controller_url: controller_host.to_string(),
-            additional_headers: additional_headers.clone(),
-            source_tag: source_tag.map(|s| s.to_string()),
-        };
-
         // get user agent
-        let user_agent = get_user_agent(&config);
+        let user_agent = get_user_agent(source_tag);
 
-        // return Pinecone client
-        Ok(PineconeClient {
-            api_key,
-            controller_url: controller_host.to_string(),
-            additional_headers,
-            source_tag: source_tag.map(|s| s.to_string()),
-            user_agent: Some(user_agent),
-        })
-    }
-
-    /// Returns the OpenAPI configuration object.
-    pub fn openapi_config(&self) -> Configuration {
         // create reqwest headers
-        // init an empty one if self.additional_headers is empty, otherwise make it
         let mut headers = reqwest::header::HeaderMap::new();
-        for (k, v) in self.additional_headers.iter() {
+        for (k, v) in additional_headers.iter() {
             let key = reqwest::header::HeaderName::from_bytes(k.as_bytes()).unwrap();
             let value = reqwest::header::HeaderValue::from_str(v).unwrap();
             headers.insert(key, value);
@@ -131,22 +111,32 @@ impl PineconeClient {
             );
         }
 
-        // create reqwest client
+        // create reqwest client with headers
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
             .unwrap_or(reqwest::Client::new());
 
-        Configuration {
-            base_path: self.controller_url.clone(),
-            user_agent: self.user_agent.clone(),
+        let openapi_config = Configuration {
+            base_path: controller_host.to_string(),
+            user_agent: Some(user_agent.to_string()),
             api_key: Some(ApiKey {
                 prefix: None,
-                key: self.api_key.clone(),
+                key: api_key.clone(),
             }),
             client,
             ..Default::default()
-        }
+        };
+
+        // return Pinecone client
+        Ok(PineconeClient {
+            api_key,
+            controller_url: controller_host.to_string(),
+            additional_headers,
+            source_tag: source_tag.map(|s| s.to_string()),
+            user_agent: Some(user_agent),
+            openapi_config,
+        })
     }
 }
 
