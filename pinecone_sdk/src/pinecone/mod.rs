@@ -1,10 +1,11 @@
-use crate::config::Config;
 use crate::utils::errors::PineconeError;
 use crate::utils::user_agent::get_user_agent;
 use openapi::apis::configuration::ApiKey;
 use openapi::apis::configuration::Configuration;
+use reqwest::header::HeaderMap;
 use serde_json;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// The `PINECONE_API_VERSION_KEY` is the key for the Pinecone API version header.
 pub const PINECONE_API_VERSION_KEY: &str = "x-pinecone-api-version";
@@ -96,12 +97,32 @@ impl PineconeClient {
         let user_agent = get_user_agent(source_tag);
 
         // create reqwest headers
-        let mut headers = reqwest::header::HeaderMap::new();
-        for (k, v) in additional_headers.iter() {
-            let key = reqwest::header::HeaderName::from_bytes(k.as_bytes()).unwrap();
-            let value = reqwest::header::HeaderValue::from_str(v).unwrap();
-            headers.insert(key, value);
-        }
+        let headers: Result<HeaderMap, PineconeError> = additional_headers
+            .iter()
+            .map(|(name, val)| {
+                (
+                    reqwest::header::HeaderName::from_str(name).map_err(|e| {
+                        PineconeError::InvalidHeadersError {
+                            message: e.to_string(),
+                        }
+                    }),
+                    reqwest::header::HeaderValue::from_str(val.as_ref()).map_err(|e| {
+                        PineconeError::InvalidHeadersError {
+                            message: e.to_string(),
+                        }
+                    }),
+                )
+            })
+            .map(
+                |(name_result, val_result)| match (name_result, val_result) {
+                    (Ok(name), Ok(val)) => Ok((name, val)),
+                    (Err(e), _) => Err(e),
+                    (_, Err(e)) => Err(e),
+                },
+            )
+            .collect();
+
+        let mut headers = headers?;
 
         // add X-Pinecone-Api-Version header if not present
         if !headers.contains_key(PINECONE_API_VERSION_KEY) {
@@ -115,7 +136,7 @@ impl PineconeClient {
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
-            .unwrap_or(reqwest::Client::new());
+            .map_err(|e| PineconeError::ReqwestError { source: e })?;
 
         let openapi_config = Configuration {
             base_path: controller_host.to_string(),

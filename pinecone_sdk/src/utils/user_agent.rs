@@ -1,4 +1,3 @@
-use crate::config::Config;
 use regex::Regex;
 
 /// Normalizes the source tag.
