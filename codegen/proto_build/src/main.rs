@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("OUT_DIR: {:?}", out_dir);
         println!("version: {:?}", version);
     } else {
-        return Err("Required 2 arguments: out_dir version".into());
+        return Err("Required 2 arguments: out_dir, version".into());
     }
 
     let proto_path = format!("../apis/_build/{version}/data_{version}.proto");
