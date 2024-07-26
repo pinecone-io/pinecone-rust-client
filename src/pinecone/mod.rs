@@ -15,6 +15,9 @@ pub mod control;
 /// Data plane module.
 pub mod data;
 
+/// Inference module.
+pub mod inference;
+
 /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct PineconeClient {

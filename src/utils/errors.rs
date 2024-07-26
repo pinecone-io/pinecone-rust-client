@@ -131,6 +131,12 @@ pub enum PineconeError {
         /// Error status
         status: tonic::Status,
     },
+
+    /// InferenceError: Failed to perform an inference operation.
+    InferenceError {
+        /// Error status
+        status: tonic::Status,
+    },
 }
 
 // Implement the conversion from OpenApiError to PineconeError for CreateIndexError.
@@ -259,6 +265,9 @@ impl std::fmt::Display for PineconeError {
             PineconeError::DataPlaneError { status } => {
                 write!(f, "Data plane error: {}", status)
             }
+            PineconeError::InferenceError { status } => {
+                write!(f, "Inference error: {}", status)
+            }
         }
     }
 }
@@ -290,6 +299,7 @@ impl std::error::Error for PineconeError {
             PineconeError::TimeoutError { message: _ } => None,
             PineconeError::ConnectionError { source } => Some(source.as_ref()),
             PineconeError::DataPlaneError { status } => Some(status),
+            PineconeError::InferenceError { status } => Some(status),
         }
     }
 }
