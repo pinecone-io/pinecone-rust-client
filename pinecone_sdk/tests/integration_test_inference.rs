@@ -37,3 +37,24 @@ async fn test_embed_invalid_model() -> Result<(), PineconeError> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_embed_invalid_parameters() -> Result<(), PineconeError> {
+    let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+
+    let parameters = EmbedRequestParameters {
+        input_type: Some("bad-parameter".to_string()),
+        truncate: Some("bad-parameter".to_string()),
+    };
+
+    let _ = pinecone
+        .embed(
+            "multilingual-e5-large",
+            Some(parameters),
+            &vec!["Hello, world!"],
+        )
+        .await
+        .expect_err("Expected to fail embedding with invalid model parameters");
+
+    Ok(())
+}

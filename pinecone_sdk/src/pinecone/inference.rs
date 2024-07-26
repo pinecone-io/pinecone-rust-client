@@ -79,4 +79,45 @@ mod tests {
 
         Ok(())
     }
+
+    async fn test_embed_invalid_arguments() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(POST).path("/embed");
+            then.status(400)
+                .header("content-type", "application/json")
+                .body(
+                    r#"
+                    {
+                        "error": {
+                          "code": "INVALID_ARGUMENT",
+                          "message": "Invalid parameter value input_type='bad-parameter' for model 'multilingual-e5-large', must be one of [query, passage]"
+                        },
+                        "status": 400
+                      }
+                    "#,
+                );
+        });
+
+        let client = PineconeClient::new(None, None, None, None).unwrap();
+
+        let parameters = EmbedRequestParameters {
+            input_type: Some("bad-parameter".to_string()),
+            truncate: Some("bad-parameter".to_string()),
+        };
+
+        let _ = client
+            .embed(
+                "multilingual-e5-large",
+                Some(parameters),
+                &vec!["Hello, world!"],
+            )
+            .await
+            .expect_err("Expected to fail embedding with invalid arguments");
+
+        mock.assert();
+
+        Ok(())
+    }
 }
