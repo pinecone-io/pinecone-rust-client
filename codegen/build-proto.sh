@@ -5,12 +5,17 @@ PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
 
 outdir="src/protos"
 
-pushd $SCRIPT_DIR/apis
-	just build
-popd
+OUT_DIR=$SCRIPT_DIR/../$outdir
+
+version=$1
+
+if [ -z "$version" ]; then
+	echo "Version is required"
+	exit 1
+fi
 
 pushd $SCRIPT_DIR/proto_build
-	cargo run -- $PROJECT_DIR/$outdir
+	cargo run -- $PROJECT_DIR/$outdir $version
 popd
 
 mod_header=$'\n#![allow(missing_docs)]\n'

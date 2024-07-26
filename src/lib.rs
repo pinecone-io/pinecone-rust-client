@@ -6,9 +6,6 @@
 
 #![warn(missing_docs)]
 
-/// Defines configurations for the Pinecone SDK.
-pub mod config;
-
 /// Defines the main entrypoint of the Pinecone SDK.
 pub mod pinecone;
 
@@ -20,3 +17,6 @@ pub mod openapi;
 
 /// Protobuf client for Pinecone.
 pub mod protos;
+
+/// Version information.
+pub mod version;

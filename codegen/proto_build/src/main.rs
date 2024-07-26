@@ -5,14 +5,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
 
     let out_dir: &str;
-    if args.len() > 1 {
+    let version: &str;
+    if args.len() == 3 {
         out_dir = &args[1];
+        version = &args[2];
         println!("OUT_DIR: {:?}", out_dir);
+        println!("version: {:?}", version);
     } else {
-        return Err("missing out_dir argument".into());
+        return Err("Required 2 arguments: out_dir, version".into());
     }
 
-    let proto_path: &Path = "../apis/_build/2024-07/data_2024-07.proto".as_ref();
+    let proto_path = format!("../apis/_build/{version}/data_{version}.proto");
+    let proto_path: &Path = proto_path.as_ref();
 
     // directory the main .proto file resides in
     let proto_dir = proto_path

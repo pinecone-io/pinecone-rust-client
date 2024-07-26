@@ -6,12 +6,15 @@ PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
 tempdir=".openapi-crate"
 outdir="src/openapi"
 
-pushd $PROJECT_DIR/codegen/apis
-	just build
-popd
+version=$1
+
+if [ -z "$version" ]; then
+	echo "Version is required"
+	exit 1
+fi
 
 docker run --rm -v $(pwd):/workspace openapitools/openapi-generator-cli:v7.6.0 generate \
-	--input-spec /workspace/codegen/apis/_build/2024-07/control_2024-07.oas.yaml \
+	--input-spec /workspace/codegen/apis/_build/$version/control_$version.oas.yaml \
 	--generator-name rust \
 	--output /workspace/$tempdir \
 	--additional-properties "packageVersion=0.0.1"
