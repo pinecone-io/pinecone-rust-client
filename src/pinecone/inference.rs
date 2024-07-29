@@ -96,6 +96,7 @@ mod tests {
         Ok(())
     }
 
+    #[tokio::test]
     async fn test_embed_invalid_arguments() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
@@ -108,7 +109,7 @@ mod tests {
                     {
                         "error": {
                           "code": "INVALID_ARGUMENT",
-                          "message": "Invalid parameter value input_type='bad-parameter' for model 'multilingual-e5-large', must be one of [query, passage]"
+                          "message": "Invalid parameter value input_type='bad-parameter' for model 'multilingual-e5-large', must be one of [queaaaaary, passage]"
                         },
                         "status": 400
                       }
@@ -116,7 +117,8 @@ mod tests {
                 );
         });
 
-        let client = PineconeClient::new(None, None, None, None).unwrap();
+        let client =
+            PineconeClient::new(None, Some(server.base_url().as_str()), None, None).unwrap();
 
         let parameters = EmbedRequestParameters {
             input_type: Some("bad-parameter".to_string()),
