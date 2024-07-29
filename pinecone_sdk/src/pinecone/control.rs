@@ -329,8 +329,8 @@ impl PineconeClient {
     /// ### Arguments
     /// * name: &str - The name of the index to be configured.
     /// * deletion_protection: DeletionProtection - Deletion protection for the index.
-    /// * replicas: Some(i32) - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
-    /// * pod_type: Some(&str) - The new pod_type for the index. This parameter should be `None` if the index is serverless.
+    /// * replicas: Option<i32> - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
+    /// * pod_type: Option<&str> - The new pod_type for the index. This parameter should be `None` if the index is serverless.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
