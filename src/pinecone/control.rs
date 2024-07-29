@@ -359,6 +359,12 @@ impl PineconeClient {
         replicas: Option<i32>,
         pod_type: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
+        if replicas == None && pod_type == None && deletion_protection == None {
+            return Err(PineconeError::InvalidConfigurationError {
+                message: "At least one of deletion_protection, number of replicas, or pod type must be provided".to_string(),
+            });
+        }
+
         let spec = match (replicas, pod_type) {
             (Some(replicas), Some(pod_type)) => Some(Box::new(ConfigureIndexRequestSpec {
                 pod: Box::new(ConfigureIndexRequestSpecPod {
@@ -366,7 +372,19 @@ impl PineconeClient {
                     pod_type: Some(pod_type.to_string()),
                 }),
             })),
-            _ => None,
+            (Some(replicas), None) => Some(Box::new(ConfigureIndexRequestSpec {
+                pod: Box::new(ConfigureIndexRequestSpecPod {
+                    replicas: Some(replicas),
+                    pod_type: None,
+                }),
+            })),
+            (None, Some(pod_type)) => Some(Box::new(ConfigureIndexRequestSpec {
+                pod: Box::new(ConfigureIndexRequestSpecPod {
+                    replicas: None,
+                    pod_type: Some(pod_type.to_string()),
+                }),
+            })),
+            (None, None) => None,
         };
 
         let configure_index_request = ConfigureIndexRequest {

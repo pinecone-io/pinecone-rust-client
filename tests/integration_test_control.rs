@@ -343,7 +343,10 @@ async fn test_configure_optional_deletion_prot() -> Result<(), PineconeError> {
         .await
         .expect_err("Expected to fail to delete index");
 
-    assert!(matches!(response, PineconeError::ActionForbiddenError { source: _ }));
+    assert!(matches!(
+        response,
+        PineconeError::ActionForbiddenError { source: _ }
+    ));
 
     let _ = pinecone
         .configure_index(index_name, Some(DeletionProtection::default()), None, None)

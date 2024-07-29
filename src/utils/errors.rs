@@ -96,6 +96,12 @@ pub enum PineconeError {
         source: WrappedResponseContent,
     },
 
+    /// InvalidConfigurationError: Provided configuration is not valid.
+    InvalidConfigurationError {
+        /// Error message.
+        message: String,
+    },
+
     /// CollectionNotFoundError: Collection of given name does not exist
     CollectionNotFoundError {
         /// Source error
@@ -279,6 +285,9 @@ impl std::fmt::Display for PineconeError {
             PineconeError::ActionForbiddenError { source } => {
                 write!(f, "Action forbidden error: {}", source)
             }
+            PineconeError::InvalidConfigurationError { message } => {
+                write!(f, "Invalid configuration error: {}", message)
+            }
         }
     }
 }
@@ -312,6 +321,7 @@ impl std::error::Error for PineconeError {
             PineconeError::DataPlaneError { status } => Some(status),
             PineconeError::InferenceError { status } => Some(status),
             PineconeError::ActionForbiddenError { source } => Some(source),
+            PineconeError::InvalidConfigurationError { message: _ } => None,
         }
     }
 }
