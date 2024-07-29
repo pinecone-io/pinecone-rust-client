@@ -1709,6 +1709,23 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_configure_index_no_params() -> Result<(), PineconeError> {
+        let pinecone = PineconeClient::new(Some("api_key"), None, None, None)
+            .expect("Failed to create Pinecone instance");
+
+        let configure_index_response = pinecone
+            .configure_index("index-name", None, None, None)
+            .await;
+
+        assert!(matches!(
+            configure_index_response,
+            Err(PineconeError::InvalidConfigurationError { .. })
+        ));
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
