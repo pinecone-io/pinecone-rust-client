@@ -9,6 +9,8 @@ outer-protos/thirdparty/**
 **/.env
 **/.swp
 
+.openapi-crate/
+
 
 # IDE, editor, and OS-specific files
 .idea/
