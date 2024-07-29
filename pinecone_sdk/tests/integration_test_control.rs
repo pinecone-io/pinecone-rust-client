@@ -262,7 +262,7 @@ async fn test_configure_index() -> Result<(), PineconeError> {
     let _ = pinecone
         .configure_index(
             &get_pod_index(),
-            DeletionProtection::Enabled,
+            Some(DeletionProtection::Enabled),
             Some(1),
             Some("s1.x1"),
         )
@@ -297,7 +297,7 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
         .expect_err("Expected to fail to delete index");
 
     let _ = pinecone
-        .configure_index(index_name, DeletionProtection::Disabled, None, None)
+        .configure_index(index_name, Some(DeletionProtection::Disabled), None, None)
         .await
         .expect("Failed to configure index");
 
@@ -317,7 +317,7 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
     let _ = pinecone
         .configure_index(
             &get_serverless_index(),
-            DeletionProtection::Enabled,
+            Some(DeletionProtection::Enabled),
             Some(1),
             Some("p1.x1"),
         )
@@ -335,7 +335,7 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
     let _ = pinecone
         .configure_index(
             "invalid-index",
-            DeletionProtection::Enabled,
+            Some(DeletionProtection::Enabled),
             Some(2),
             Some("p1.x1"),
         )
