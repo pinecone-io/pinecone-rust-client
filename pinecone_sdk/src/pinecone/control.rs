@@ -893,6 +893,7 @@ mod tests {
                             "region": "us-east-1"
                             }
                         },
+                        "deletion_protection": "disabled",
                         "status": {
                             "ready": true,
                             "state": "Ready"
@@ -925,7 +926,7 @@ mod tests {
                 state: openapi::models::index_model_status::State::Ready,
             }),
             host: "mock-host".to_string(),
-            deletion_protection: None,
+            deletion_protection: Some(DeletionProtection::Disabled),
             spec: Box::new(models::IndexModelSpec {
                 serverless: Some(Box::new(models::ServerlessSpec {
                     cloud: openapi::models::serverless_spec::Cloud::Aws,
