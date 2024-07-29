@@ -114,9 +114,9 @@ impl PineconeClient {
     /// * `metric: Metric` - The metric to use for the index
     /// * `environment: &str` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
     /// * `pod_type: &str` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
-    /// * `pods: i32` - The number of pods to deploy. Default: 1
-    /// * `replicas: i32` - The number of replicas to deploy for the pod index. Default: 1
-    /// * `shards: i32` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
+    /// * `pods: i32` - The number of pods to deploy.
+    /// * `replicas: i32` - The number of replicas to deploy for the pod index.
+    /// * `shards: i32` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod.
     /// * `deletion_protection: DeletionProtection` - Deletion protection for the index.
     /// * `metadata_indexed: Option<&[&str]>` - The metadata fields to index.
     /// * `source_collection: Option<&str>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
