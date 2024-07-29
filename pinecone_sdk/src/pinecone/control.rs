@@ -1623,6 +1623,68 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.path("/indexes/index-name");
+            then.status(202)
+                .header("content-type", "application/json")
+                .body(
+                    r#"{
+                        "name": "index-name",
+                        "dimension": 1536,
+                        "metric": "cosine",
+                        "host": "mock-host",
+                        "deletion_protection": "disabled",
+                        "spec": {
+                            "pod": {
+                                "environment": "us-east-1-aws",
+                                "metadata_config": {
+                                    "indexed": [
+                                        "genre",
+                                        "title",
+                                        "imdb_rating"
+                                    ]
+                                },
+                                "pod_type": "p1.x1",
+                                "pods": 1,
+                                "replicas": 1,
+                                "shards": 1
+                            }
+                        },
+                        "status": {
+                            "ready": true,
+                            "state": "ScalingUpPodSize"
+                        }
+                    }"#,
+                );
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api-key"),
+            Some(server.base_url().as_str()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let configure_index_response = pinecone
+            .configure_index("index-name", DeletionProtection::Disabled, None, None)
+            .await
+            .expect("Failed to configure index");
+
+        assert_eq!(
+            configure_index_response.deletion_protection,
+            Some(DeletionProtection::Disabled)
+        );
+
+        mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_configure_index_quota_exceeded() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
