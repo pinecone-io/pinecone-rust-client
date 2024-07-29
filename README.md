@@ -115,13 +115,24 @@ let index_description: IndexModel = pinecone.describe_index("index-name").await?
 ```
 
 ## Configure index
-The following example changes the index `index-name` to have 6 replicas and pod type `s1`.
+Configuring an index takes in three optional parameters -- a DeletionProtection enum, the number of replicas, and the pod type. The deletion protection can be updated for any index type, while the number of replicas and the pod type can only be updated for pod indexes.
+
+The following example disables deletion protection for the index `index-name`.
+```rust
+use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
+
+let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
+
+let index_description: IndexModel = pinecone.configure_index("index-name", Some(DeletionProtection::Disabled), None, None).await?;
+```
+
+The following example changes the index `index-name` to have 6 replicas and pod type `s1`. The deletion protection type will not be changed in this case.
 ```rust
 use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
 
 let pinecone = PineconeClient::new('<<PINECONE_API_KEY>>', None, None, None)?;
     
-let index_description: IndexModel = pinecone.configure_index("index-name", 6, "s1").await?;
+let index_description: IndexModel = pinecone.configure_index("index-name", None, Some(6), Some("s1")).await?;
 ```
 
 ## Delete index
