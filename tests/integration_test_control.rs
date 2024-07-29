@@ -310,6 +310,55 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
 }
 
 #[tokio::test]
+async fn test_configure_optional_deletion_prot() -> Result<(), PineconeError> {
+    let pinecone =
+        PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
+
+    let index_name = &generate_index_name();
+    let _ = pinecone
+        .create_pod_index(
+            index_name,
+            2,
+            Metric::Cosine,
+            "us-east-1-aws",
+            "p1.x1",
+            1,
+            1,
+            1,
+            DeletionProtection::Enabled,
+            None,
+            None,
+            WaitPolicy::NoWait,
+        )
+        .await
+        .expect("Failed to create index");
+
+    let _ = pinecone
+        .configure_index(index_name, None, Some(2), None)
+        .await
+        .expect("Failed to configure index");
+
+    let response = pinecone
+        .delete_index(index_name)
+        .await
+        .expect_err("Expected to fail to delete index");
+
+    assert!(matches!(response, PineconeError::ActionForbiddenError { source: _ }));
+
+    let _ = pinecone
+        .configure_index(index_name, Some(DeletionProtection::default()), None, None)
+        .await
+        .expect("Failed to configure index");
+
+    let _ = pinecone
+        .delete_index(index_name)
+        .await
+        .expect("Failed to delete collection");
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
     let pinecone =
         PineconeClient::new(None, None, None, None).expect("Failed to create Pinecone instance");
