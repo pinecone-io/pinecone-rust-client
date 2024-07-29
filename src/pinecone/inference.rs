@@ -79,7 +79,6 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
     async fn test_embed_invalid_arguments() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
