@@ -1,21 +1,27 @@
 #!/bin/bash
 
-version=$1
-
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-outdir="protos"
+PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
+
+outdir="src/protos"
+
+OUT_DIR=$SCRIPT_DIR/../$outdir
+
+version=$1
 
 if [ -z "$version" ]; then
 	echo "Version is required"
 	exit 1
 fi
 
-OUT_DIR=$SCRIPT_DIR/../$outdir
-
-pushd $SCRIPT_DIR/apis
-	just build
+pushd $SCRIPT_DIR/proto_build
+	cargo run -- $PROJECT_DIR/$outdir $version
 popd
 
-pushd $SCRIPT_DIR/proto_build
-	cargo run -- $OUT_DIR $version
+mod_header=$'\n#![allow(missing_docs)]\n'
+pushd $PROJECT_DIR/$outdir
+	# rename _.rs to mod.rs
+	mv _.rs mod.rs
+	# add line at the top to disable warnings for undocumented code
+	sed -i "" "1 i\\$mod_header" mod.rs
 popd
