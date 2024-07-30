@@ -1,4 +1,4 @@
-use crate::models::{DeletionProtection, IndexModelSpec, IndexModelStatus, Metric};
+use super::{DeletionProtection, IndexModelSpec, IndexModelStatus, Metric};
 use crate::openapi::models::index_model::IndexModel as OpenApiIndexModel;
 
 /// IndexModel : The IndexModel describes the configuration and status of a Pinecone index.

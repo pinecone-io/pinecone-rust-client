@@ -1,4 +1,6 @@
 use super::EmbeddingsListUsage;
+use crate::openapi::models::EmbeddingsList as OpenApiEmbeddingsList;
+use crate::openapi::models::Embedding as OpenApiEmbedding;
 
 /// EmbeddingsList : Embeddings generated for the input
 #[derive(Clone, Default, Debug, PartialEq)]
@@ -11,8 +13,8 @@ pub struct EmbeddingsList {
     pub usage: EmbeddingsListUsage,
 }
 
-impl From<crate::openapi::models::EmbeddingsList> for EmbeddingsList {
-    fn from(openapi_model: crate::openapi::models::EmbeddingsList) -> Self {
+impl From<OpenApiEmbeddingsList> for EmbeddingsList {
+    fn from(openapi_model: OpenApiEmbeddingsList) -> Self {
         EmbeddingsList {
             model: openapi_model.model.unwrap_or_default(),
             data: openapi_model
@@ -26,8 +28,8 @@ impl From<crate::openapi::models::EmbeddingsList> for EmbeddingsList {
     }
 }
 
-impl From<crate::openapi::models::Embedding> for Vec<f32> {
-    fn from(openapi_model: crate::openapi::models::Embedding) -> Self {
+impl From<OpenApiEmbedding> for Vec<f32> {
+    fn from(openapi_model: OpenApiEmbedding) -> Self {
         openapi_model
             .values
             .unwrap_or_default()
