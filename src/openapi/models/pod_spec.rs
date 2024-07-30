@@ -18,11 +18,11 @@ pub struct PodSpec {
     #[serde(rename = "environment")]
     pub environment: String,
     /// The number of replicas. Replicas duplicate your index. They provide higher availability and throughput. Replicas can be scaled up or down as your needs change.
-    #[serde(rename = "replicas", skip_serializing_if = "Option::is_none")]
-    pub replicas: Option<i32>,
+    #[serde(rename = "replicas")]
+    pub replicas: i32,
     /// The number of shards. Shards split your data across multiple pods so you can fit more data into an index.
-    #[serde(rename = "shards", skip_serializing_if = "Option::is_none")]
-    pub shards: Option<i32>,
+    #[serde(rename = "shards")]
+    pub shards: i32,
     /// The type of pod to use. One of `s1`, `p1`, or `p2` appended with `.` and one of `x1`, `x2`, `x4`, or `x8`.
     #[serde(rename = "pod_type")]
     pub pod_type: String,
@@ -38,11 +38,11 @@ pub struct PodSpec {
 
 impl PodSpec {
     /// Configuration needed to deploy a pod-based index.
-    pub fn new(environment: String, pod_type: String, pods: i32) -> PodSpec {
+    pub fn new(environment: String, replicas: i32, shards: i32, pod_type: String, pods: i32) -> PodSpec {
         PodSpec {
             environment,
-            replicas: None,
-            shards: None,
+            replicas,
+            shards,
             pod_type,
             pods,
             metadata_config: None,
