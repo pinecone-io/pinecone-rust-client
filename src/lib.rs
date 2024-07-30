@@ -18,5 +18,8 @@ pub mod openapi;
 /// Protobuf client for Pinecone.
 pub mod protos;
 
+/// Models for the Pinecone SDK.
+pub mod models;
+
 /// Version information.
 pub mod version;
