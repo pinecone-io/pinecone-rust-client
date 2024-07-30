@@ -6,13 +6,12 @@ use crate::openapi::models::CreateIndexRequest;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
-use crate::models::{Metric, IndexModel, IndexList};
+use crate::models::{IndexList, IndexModel, Metric};
 pub use crate::openapi::models::serverless_spec::Cloud;
 pub use crate::openapi::models::{
-    CollectionList, CollectionModel, ConfigureIndexRequest,
-    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
-    DeletionProtection, IndexSpec, PodSpec, PodSpecMetadataConfig,
-    ServerlessSpec,
+    CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexSpec, PodSpec,
+    PodSpecMetadataConfig, ServerlessSpec,
 };
 
 /// Defines the wait policy for index creation.
@@ -636,10 +635,7 @@ mod tests {
 
         assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
-        assert_eq!(
-            create_index_response.metric,
-            Metric::Euclidean
-        );
+        assert_eq!(create_index_response.metric, Metric::Euclidean);
 
         let spec = create_index_response.spec.serverless.unwrap();
         assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Aws);
@@ -699,10 +695,7 @@ mod tests {
 
         assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 10);
-        assert_eq!(
-            create_index_response.metric,
-            Metric::Cosine
-        );
+        assert_eq!(create_index_response.metric, Metric::Cosine);
 
         let spec = create_index_response.spec.serverless.unwrap();
         assert_eq!(spec.cloud, openapi::models::serverless_spec::Cloud::Gcp);
@@ -1097,7 +1090,7 @@ mod tests {
                     name: "index1".to_string(),
                     dimension: 1536,
                     metric: Metric::Cosine,
-                    host:"host1".to_string(),
+                    host: "host1".to_string(),
                     deletion_protection: None,
                     spec: models::IndexModelSpec::default(),
                     status: models::IndexModelStatus::default(),
@@ -1218,10 +1211,7 @@ mod tests {
 
         assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 1536);
-        assert_eq!(
-            create_index_response.metric,
-            Metric::Euclidean
-        );
+        assert_eq!(create_index_response.metric, Metric::Euclidean);
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
         assert_eq!(pod_spec.environment, "us-east-1-aws");
@@ -1305,10 +1295,7 @@ mod tests {
 
         assert_eq!(create_index_response.name, "index-name");
         assert_eq!(create_index_response.dimension, 1536);
-        assert_eq!(
-            create_index_response.metric,
-            Metric::Cosine
-        );
+        assert_eq!(create_index_response.metric, Metric::Cosine);
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
         assert_eq!(pod_spec.environment, "us-east-1-aws");
