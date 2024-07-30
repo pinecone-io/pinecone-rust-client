@@ -410,7 +410,7 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let index_name = &get_pod_index();
     loop {
         if match pinecone.describe_index(index_name).await {
-            Ok(index) => index.status.ready,
+            Ok(index) => index.status.state == pinecone_sdk::openapi::models::index_model_status::State::Ready,
             Err(_) => false,
         } {
             break;
