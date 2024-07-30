@@ -409,10 +409,12 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
 
     let index_name = &get_pod_index();
     loop {
-        if match pinecone.describe_index(index_name).await {
+        let ready = match pinecone.describe_index(index_name).await {
             Ok(index) => index.status.state == pinecone_sdk::openapi::models::index_model_status::State::Ready,
             Err(_) => false,
-        } {
+        };
+        println!("Index is ready: {}", ready);
+        if ready {
             break;
         }
         tokio::time::sleep(Duration::from_millis(1000)).await;
