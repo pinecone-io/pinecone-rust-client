@@ -6,7 +6,7 @@ use crate::openapi::models::CreateIndexRequest;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
-pub use crate::openapi::models::create_index_request::Metric;
+pub use crate::models::Metric;
 pub use crate::openapi::models::serverless_spec::Cloud;
 pub use crate::openapi::models::{
     index_model::Metric as OpenApiMetric, CollectionList, CollectionModel, ConfigureIndexRequest,
@@ -48,7 +48,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel, DeletionProtection}};
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, IndexModel, DeletionProtection}};
+    /// use pinecone_sdk::models::Metric;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -92,7 +93,7 @@ impl PineconeClient {
             name: name.to_string(),
             dimension,
             deletion_protection: Some(deletion_protection),
-            metric: Some(metric),
+            metric: Some(metric.into()),
             spec: Some(Box::new(create_index_request_spec)),
         };
 
@@ -129,7 +130,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel, DeletionProtection}};
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, IndexModel, DeletionProtection}};
+    /// use pinecone_sdk::models::Metric;
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
@@ -196,7 +198,7 @@ impl PineconeClient {
             name: name.to_string(),
             dimension,
             deletion_protection: Some(deletion_protection),
-            metric: Some(metric),
+            metric: Some(metric.into()),
             spec: Some(Box::new(spec)),
         };
 
