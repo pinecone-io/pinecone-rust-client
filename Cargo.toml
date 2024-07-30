@@ -28,6 +28,7 @@ serde = { version = "^1.0", features = ["derive"] }
 url = "^2.5"
 uuid = { version = "^1.8", features = ["serde", "v4"] }
 reqwest = { version = "^0.12", features = ["json", "multipart"] }
+serial_test = "3.1.1"
 
 [dev-dependencies]
 temp-env = "0.3.6"
