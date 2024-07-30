@@ -2,8 +2,7 @@ use common::{
     generate_collection_name, generate_index_name, get_collection, get_pod_index,
     get_serverless_index,
 };
-use pinecone_sdk::models::{Cloud, DeletionProtection, Metric};
-use pinecone_sdk::pinecone::control::WaitPolicy;
+use pinecone_sdk::models::{Cloud, DeletionProtection, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::HashMap;

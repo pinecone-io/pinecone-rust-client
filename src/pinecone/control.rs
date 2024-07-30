@@ -6,29 +6,11 @@ use crate::openapi::models::CreateIndexRequest;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
-use crate::models::{IndexList, IndexModel, Metric};
-pub use crate::openapi::models::serverless_spec::Cloud;
-pub use crate::openapi::models::{
-    CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexSpec, PodSpec,
-    PodSpecMetadataConfig, ServerlessSpec,
+use crate::models::{
+    Cloud, CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
+    IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, WaitPolicy,
 };
-
-/// Defines the wait policy for index creation.
-#[derive(Debug)]
-pub enum WaitPolicy {
-    /// Wait for the index to become ready, up to the specified duration.
-    WaitFor(Duration),
-
-    /// Do not wait for the index to become ready -- return immediately.
-    NoWait,
-}
-
-impl Default for WaitPolicy {
-    fn default() -> Self {
-        WaitPolicy::WaitFor(Duration::from_secs(300))
-    }
-}
 
 impl PineconeClient {
     /// Creates a serverless index.
@@ -47,8 +29,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, DeletionProtection}};
-    /// use pinecone_sdk::models::{IndexModel, Metric};
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -129,8 +111,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, DeletionProtection}};
-    /// use pinecone_sdk::models::{IndexModel, Metric};
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
@@ -342,7 +324,7 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::control::DeletionProtection;
+    /// use pinecone_sdk::models::DeletionProtection;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -448,7 +430,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::CollectionModel};
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::models::CollectionModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
