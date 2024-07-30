@@ -19,12 +19,12 @@ use super::{Error, configuration};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConfigureIndexError {
-    Status400(models::ListIndexes401Response),
-    Status401(models::ListIndexes401Response),
-    Status403(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status422(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status400(models::ErrorResponse),
+    Status401(models::ErrorResponse),
+    Status403(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status422(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -32,12 +32,12 @@ pub enum ConfigureIndexError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CreateCollectionError {
-    Status400(models::ListIndexes401Response),
-    Status401(models::ListIndexes401Response),
-    Status403(models::ListIndexes401Response),
-    Status409(models::ListIndexes401Response),
-    Status422(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status400(models::ErrorResponse),
+    Status401(models::ErrorResponse),
+    Status403(models::ErrorResponse),
+    Status409(models::ErrorResponse),
+    Status422(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -45,13 +45,13 @@ pub enum CreateCollectionError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CreateIndexError {
-    Status400(models::ListIndexes401Response),
-    Status401(models::ListIndexes401Response),
-    Status403(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status422(models::ListIndexes401Response),
-    Status409(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status400(models::ErrorResponse),
+    Status401(models::ErrorResponse),
+    Status403(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status422(models::ErrorResponse),
+    Status409(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -59,9 +59,9 @@ pub enum CreateIndexError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DeleteCollectionError {
-    Status401(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -69,10 +69,10 @@ pub enum DeleteCollectionError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DeleteIndexError {
-    Status401(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status412(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status412(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -80,9 +80,9 @@ pub enum DeleteIndexError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DescribeCollectionError {
-    Status401(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -90,9 +90,9 @@ pub enum DescribeCollectionError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DescribeIndexError {
-    Status401(models::ListIndexes401Response),
-    Status404(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status404(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -100,8 +100,8 @@ pub enum DescribeIndexError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ListCollectionsError {
-    Status401(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
@@ -109,13 +109,13 @@ pub enum ListCollectionsError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ListIndexesError {
-    Status401(models::ListIndexes401Response),
-    Status500(models::ListIndexes401Response),
+    Status401(models::ErrorResponse),
+    Status500(models::ErrorResponse),
     UnknownValue(serde_json::Value),
 }
 
 
-/// This operation specifies the pod type and number of replicas for an index. It applies to pod-based indexes only. Serverless indexes scale automatically based on usage.
+/// This operation configures an existing index.   For serverless indexes, you can configure only index deletion protection. For pod-based indexes, you can configure the pod size, number of replicas, and index deletion protection.   It is not possible to change the pod type of a pod-based index. However, you can create a collection from a pod-based index and then [create a new pod-based index with a different pod type](http://docs.pinecone.io/guides/indexes/create-an-index#create-an-index-from-a-collection) from the collection. For guidance and examples, see [Configure an index](http://docs.pinecone.io/guides/indexes/configure-an-index).
 pub async fn configure_index(configuration: &configuration::Configuration, index_name: &str, configure_index_request: models::ConfigureIndexRequest) -> Result<models::IndexModel, Error<ConfigureIndexError>> {
     let local_var_configuration = configuration;
 
