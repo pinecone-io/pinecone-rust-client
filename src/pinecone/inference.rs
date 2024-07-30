@@ -8,10 +8,27 @@ pub use crate::openapi::models::{EmbedRequestParameters, EmbeddingsList};
 impl PineconeClient {
     /// Generate embeddings for input data.
     ///
-    /// # Arguments
+    /// ### Arguments
     /// * `model: &str` - The model to use for embedding.
     /// * `parameters: Option<EmbedRequestParameters>` - Model-specific parameters.
     /// * `inputs: &Vec<&str>` - The input data to embed.
+    ///
+    /// ### Return
+    /// * `Result<EmbeddingsList, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), pinecone_sdk::utils::errors::PineconeError> {
+    ///
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let response = pinecone.embed("multilingual-e5-large", None, &vec!["Hello, world!"]).await.expect("Failed to embed");
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn embed(
         &self,
         model: &str,
@@ -79,6 +96,7 @@ mod tests {
         Ok(())
     }
 
+    #[tokio::test]
     async fn test_embed_invalid_arguments() -> Result<(), PineconeError> {
         let server = MockServer::start();
 
@@ -99,7 +117,8 @@ mod tests {
                 );
         });
 
-        let client = PineconeClient::new(None, None, None, None).unwrap();
+        let client =
+            PineconeClient::new(None, Some(server.base_url().as_str()), None, None).unwrap();
 
         let parameters = EmbedRequestParameters {
             input_type: Some("bad-parameter".to_string()),
