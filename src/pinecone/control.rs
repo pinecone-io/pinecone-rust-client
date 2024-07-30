@@ -10,8 +10,9 @@ pub use crate::openapi::models::create_index_request::Metric;
 pub use crate::openapi::models::serverless_spec::Cloud;
 pub use crate::openapi::models::{
     index_model::Metric as OpenApiMetric, CollectionList, CollectionModel, ConfigureIndexRequest,
-    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest, IndexList,
-    IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
+    DeletionProtection, IndexList, IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig,
+    ServerlessSpec,
 };
 
 /// Defines the wait policy for index creation.
@@ -39,6 +40,7 @@ impl PineconeClient {
     /// * `metric: Metric` - The distance metric to be used for similarity search.
     /// * `cloud: Cloud` - The public cloud where you would like your index hosted.
     /// * `region: &str` - The region where you would like your index to be created.
+    /// * `deletion_protection: DeletionProtection` - Deletion protection for the index.
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
@@ -46,7 +48,7 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel, DeletionProtection}};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -60,6 +62,7 @@ impl PineconeClient {
     ///     Metric::Cosine, // Distance metric
     ///     Cloud::Aws, // Cloud provider
     ///     "us-east-1", // Region
+    ///     DeletionProtection::Enabled, // Deletion protection
     ///     WaitPolicy::NoWait // Timeout
     /// ).await?;
     ///
@@ -73,6 +76,7 @@ impl PineconeClient {
         metric: Metric,
         cloud: Cloud,
         region: &str,
+        deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
@@ -87,6 +91,7 @@ impl PineconeClient {
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
             dimension,
+            deletion_protection: Some(deletion_protection),
             metric: Some(metric),
             spec: Some(Box::new(create_index_request_spec)),
         };
@@ -111,9 +116,10 @@ impl PineconeClient {
     /// * `metric: Metric` - The metric to use for the index
     /// * `environment: &str` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
     /// * `pod_type: &str` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
-    /// * `pods: i32` - The number of pods to deploy. Default: 1
-    /// * `replicas: Option<i32>` - The number of replicas to deploy for the pod index. Default: 1
-    /// * `shards: Option<i32>` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod. Default: 1
+    /// * `pods: i32` - The number of pods to deploy.
+    /// * `replicas: i32` - The number of replicas to deploy for the pod index.
+    /// * `shards: i32` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod.
+    /// * `deletion_protection: DeletionProtection` - Deletion protection for the index.
     /// * `metadata_indexed: Option<&[&str]>` - The metadata fields to index.
     /// * `source_collection: Option<&str>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
@@ -123,7 +129,7 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel}};
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Metric, Cloud, WaitPolicy, IndexModel, DeletionProtection}};
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
@@ -139,8 +145,9 @@ impl PineconeClient {
     ///     "us-east-1", // Environment
     ///     "p1.x1", // Pod type
     ///     1, // Number of pods
-    ///     Some(1), // Number of replicas
-    ///     Some(1), // Number of shards
+    ///     1, // Number of replicas
+    ///     1, // Number of shards
+    ///     DeletionProtection::Enabled, // Deletion protection
     ///     Some( // Metadata fields to index
     ///         &vec!["genre",
     ///         "title",
@@ -160,8 +167,9 @@ impl PineconeClient {
         environment: &str,
         pod_type: &str,
         pods: i32,
-        replicas: Option<i32>,
-        shards: Option<i32>,
+        replicas: i32,
+        shards: i32,
+        deletion_protection: DeletionProtection,
         metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
         timeout: WaitPolicy,
@@ -187,6 +195,7 @@ impl PineconeClient {
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
             dimension,
+            deletion_protection: Some(deletion_protection),
             metric: Some(metric),
             spec: Some(Box::new(spec)),
         };
@@ -316,14 +325,14 @@ impl PineconeClient {
 
     /// Configures an index.
     ///
-    /// This operation specifies the pod type and number of replicas for an index.
-    /// It applies to pod-based indexes only.
-    /// Serverless indexes scale automatically based on usage.
+    /// This operation changes the deletion protection specification, the pod type, and the number of replicas for an index.
+    /// Deletion protection can be changed for both pod and serverless indexes, while pod types and number of replicas can only be changed for pod indexes.
     ///
     /// ### Arguments
     /// * name: &str - The name of the index to be configured.
-    /// * replicas: i32 - The desired number of replicas, lowest value is 0.
-    /// * pod_type: &str - the new pod_type for the index. To learn more about the available pod types, please see [Understanding Indexes](https://docs.pinecone.io/docs/indexes)
+    /// * deletion_protection: Option<DeletionProtection> - Deletion protection for the index.
+    /// * replicas: Option<i32> - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
+    /// * pod_type: Option<&str> - The new pod_type for the index. This parameter should be `None` if the index is serverless.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -331,7 +340,7 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::control::IndexModel;
+    /// use pinecone_sdk::pinecone::control::DeletionProtection;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -339,22 +348,49 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Configure an index in the project.
-    /// let updated_index: IndexModel = pinecone.configure_index("index-name", 6, "s1").await?;
+    /// let response = pinecone.configure_index("index-name", Some(DeletionProtection::Enabled), Some(6), Some("s1.x1")).await;
     /// # Ok(())
     /// # }
     /// ```
     pub async fn configure_index(
         &self,
         name: &str,
-        replicas: i32,
-        pod_type: &str,
+        deletion_protection: Option<DeletionProtection>,
+        replicas: Option<i32>,
+        pod_type: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
-        let configure_index_request = ConfigureIndexRequest::new(ConfigureIndexRequestSpec::new(
-            ConfigureIndexRequestSpecPod {
-                replicas: Some(replicas),
-                pod_type: Some(pod_type.to_string()),
-            },
-        ));
+        if replicas == None && pod_type == None && deletion_protection == None {
+            return Err(PineconeError::InvalidConfigurationError {
+                message: "At least one of deletion_protection, number of replicas, or pod type must be provided".to_string(),
+            });
+        }
+
+        let spec = match (replicas, pod_type) {
+            (Some(replicas), Some(pod_type)) => Some(Box::new(ConfigureIndexRequestSpec {
+                pod: Box::new(ConfigureIndexRequestSpecPod {
+                    replicas: Some(replicas),
+                    pod_type: Some(pod_type.to_string()),
+                }),
+            })),
+            (Some(replicas), None) => Some(Box::new(ConfigureIndexRequestSpec {
+                pod: Box::new(ConfigureIndexRequestSpecPod {
+                    replicas: Some(replicas),
+                    pod_type: None,
+                }),
+            })),
+            (None, Some(pod_type)) => Some(Box::new(ConfigureIndexRequestSpec {
+                pod: Box::new(ConfigureIndexRequestSpecPod {
+                    replicas: None,
+                    pod_type: Some(pod_type.to_string()),
+                }),
+            })),
+            (None, None) => None,
+        };
+
+        let configure_index_request = ConfigureIndexRequest {
+            spec,
+            deletion_protection,
+        };
 
         // make openAPI call
         let res = manage_indexes_api::configure_index(
@@ -587,6 +623,7 @@ mod tests {
                 Metric::Cosine,
                 Cloud::Aws,
                 "us-east-1",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -651,6 +688,7 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 "us-east-1",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -706,6 +744,7 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 "abc",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -754,6 +793,7 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 "us-west-1",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -802,6 +842,7 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 "us-west-1",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -840,6 +881,7 @@ mod tests {
                 Metric::Cosine,
                 Cloud::Aws,
                 "us-east-1",
+                DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
             )
             .await
@@ -874,6 +916,7 @@ mod tests {
                             "region": "us-east-1"
                             }
                         },
+                        "deletion_protection": "disabled",
                         "status": {
                             "ready": true,
                             "state": "Ready"
@@ -906,6 +949,7 @@ mod tests {
                 state: openapi::models::index_model_status::State::Ready,
             }),
             host: "mock-host".to_string(),
+            deletion_protection: Some(DeletionProtection::Disabled),
             spec: Box::new(models::IndexModelSpec {
                 serverless: Some(Box::new(models::ServerlessSpec {
                     cloud: openapi::models::serverless_spec::Cloud::Aws,
@@ -1157,8 +1201,9 @@ mod tests {
                 "us-east-1-aws",
                 "p1.x1",
                 1,
-                Some(1),
-                Some(1),
+                1,
+                1,
+                DeletionProtection::Enabled,
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
@@ -1185,8 +1230,8 @@ mod tests {
             ])
         );
         assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, Some(1));
-        assert_eq!(pod_spec.shards, Some(1));
+        assert_eq!(pod_spec.replicas, 1);
+        assert_eq!(pod_spec.shards, 1);
 
         mock.assert();
 
@@ -1243,8 +1288,9 @@ mod tests {
                 "us-east-1-aws",
                 "p1.x1",
                 1,
-                None,
-                None,
+                1,
+                1,
+                DeletionProtection::Enabled,
                 None,
                 None,
                 WaitPolicy::NoWait,
@@ -1264,8 +1310,8 @@ mod tests {
         assert_eq!(pod_spec.pod_type, "p1.x1");
         assert_eq!(pod_spec.metadata_config.as_ref().unwrap().indexed, None);
         assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, Some(1));
-        assert_eq!(pod_spec.shards, Some(1));
+        assert_eq!(pod_spec.replicas, 1);
+        assert_eq!(pod_spec.shards, 1);
 
         mock.assert();
 
@@ -1309,8 +1355,9 @@ mod tests {
                 "test-environment",
                 "p1.x1",
                 1,
-                Some(1),
-                Some(1),
+                1,
+                1,
+                DeletionProtection::Enabled,
                 None,
                 Some("example-collection"),
                 WaitPolicy::NoWait,
@@ -1361,8 +1408,9 @@ mod tests {
                 "invalid-environment",
                 "p1.x1",
                 1,
-                Some(1),
-                Some(1),
+                1,
+                1,
+                DeletionProtection::Enabled,
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
@@ -1413,8 +1461,9 @@ mod tests {
                 "us-east-1-aws",
                 "invalid-pod-type",
                 1,
-                Some(1),
-                Some(1),
+                1,
+                1,
+                DeletionProtection::Enabled,
                 Some(&vec!["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
@@ -1577,17 +1626,101 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1")
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Disabled),
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect("Failed to configure index");
 
         assert_eq!(configure_index_response.name, "index-name");
 
         let spec = configure_index_response.spec.pod.unwrap();
-        assert_eq!(spec.replicas.unwrap(), 6);
+        assert_eq!(spec.replicas, 6);
         assert_eq!(spec.pod_type.as_str(), "p1.x1");
 
         mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.path("/indexes/index-name");
+            then.status(202)
+                .header("content-type", "application/json")
+                .body(
+                    r#"{
+                        "name": "index-name",
+                        "dimension": 1536,
+                        "metric": "cosine",
+                        "host": "mock-host",
+                        "deletion_protection": "disabled",
+                        "spec": {
+                            "pod": {
+                                "environment": "us-east-1-aws",
+                                "metadata_config": {
+                                    "indexed": [
+                                        "genre",
+                                        "title",
+                                        "imdb_rating"
+                                    ]
+                                },
+                                "pod_type": "p1.x1",
+                                "pods": 1,
+                                "replicas": 1,
+                                "shards": 1
+                            }
+                        },
+                        "status": {
+                            "ready": true,
+                            "state": "ScalingUpPodSize"
+                        }
+                    }"#,
+                );
+        });
+
+        let pinecone = PineconeClient::new(
+            Some("api-key"),
+            Some(server.base_url().as_str()),
+            None,
+            None,
+        )
+        .expect("Failed to create Pinecone instance");
+
+        let configure_index_response = pinecone
+            .configure_index("index-name", Some(DeletionProtection::Disabled), None, None)
+            .await
+            .expect("Failed to configure index");
+
+        assert_eq!(
+            configure_index_response.deletion_protection,
+            Some(DeletionProtection::Disabled)
+        );
+
+        mock.assert();
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_configure_index_no_params() -> Result<(), PineconeError> {
+        let pinecone = PineconeClient::new(Some("api_key"), None, None, None)
+            .expect("Failed to create Pinecone instance");
+
+        let configure_index_response = pinecone
+            .configure_index("index-name", None, None, None)
+            .await;
+
+        assert!(matches!(
+            configure_index_response,
+            Err(PineconeError::InvalidConfigurationError { .. })
+        ));
 
         Ok(())
     }
@@ -1622,7 +1755,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1")
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Enabled),
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1664,7 +1802,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1")
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Disabled),
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1706,7 +1849,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1")
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Enabled),
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 
@@ -1738,7 +1886,12 @@ mod tests {
         .expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", 6, "p1.x1")
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Enabled),
+                Some(6),
+                Some("p1.x1"),
+            )
             .await
             .expect_err("Expected to fail to configure index");
 

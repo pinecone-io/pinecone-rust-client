@@ -14,15 +14,18 @@ use serde::{Deserialize, Serialize};
 /// ConfigureIndexRequest : Configuration used to scale an index.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ConfigureIndexRequest {
-    #[serde(rename = "spec")]
-    pub spec: Box<models::ConfigureIndexRequestSpec>,
+    #[serde(rename = "spec", skip_serializing_if = "Option::is_none")]
+    pub spec: Option<Box<models::ConfigureIndexRequestSpec>>,
+    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    pub deletion_protection: Option<models::DeletionProtection>,
 }
 
 impl ConfigureIndexRequest {
     /// Configuration used to scale an index.
-    pub fn new(spec: models::ConfigureIndexRequestSpec) -> ConfigureIndexRequest {
+    pub fn new() -> ConfigureIndexRequest {
         ConfigureIndexRequest {
-            spec: Box::new(spec),
+            spec: None,
+            deletion_protection: None,
         }
     }
 }

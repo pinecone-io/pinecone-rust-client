@@ -12,6 +12,12 @@ pub enum PineconeError {
         /// message
         message: String,
     },
+
+    /// ActionForbiddenError: Action is forbidden.
+    ActionForbiddenError {
+        source: WrappedResponseContent,
+    },
+
     /// APIKeyMissingError: API key is not provided as an argument nor in the environment variable `PINECONE_API_KEY`.
     APIKeyMissingError {
         /// Error message.
@@ -90,6 +96,12 @@ pub enum PineconeError {
         source: WrappedResponseContent,
     },
 
+    /// InvalidConfigurationError: Provided configuration is not valid.
+    InvalidConfigurationError {
+        /// Error message.
+        message: String,
+    },
+
     /// CollectionNotFoundError: Collection of given name does not exist
     CollectionNotFoundError {
         /// Source error
@@ -161,7 +173,7 @@ fn handle_response_error(source: WrappedResponseContent) -> PineconeError {
     match status {
         StatusCode::BAD_REQUEST => PineconeError::BadRequestError { source },
         StatusCode::UNAUTHORIZED => PineconeError::UnauthorizedError { source },
-        StatusCode::FORBIDDEN => parse_quota_exceeded_error(source, message),
+        StatusCode::FORBIDDEN => parse_forbidden_error(source, message),
         StatusCode::NOT_FOUND => parse_not_found_error(source, message),
         StatusCode::CONFLICT => PineconeError::ResourceAlreadyExistsError { source },
         StatusCode::PRECONDITION_FAILED => PineconeError::PendingCollectionError { source },
@@ -185,8 +197,10 @@ fn parse_not_found_error(source: WrappedResponseContent, message: String) -> Pin
     }
 }
 
-fn parse_quota_exceeded_error(source: WrappedResponseContent, message: String) -> PineconeError {
-    if message.contains("index") {
+fn parse_forbidden_error(source: WrappedResponseContent, message: String) -> PineconeError {
+    if message.contains("Deletion protection") {
+        PineconeError::ActionForbiddenError { source }
+    } else if message.contains("index") {
         PineconeError::PodQuotaExceededError { source }
     } else if message.contains("Collection") {
         PineconeError::CollectionsQuotaExceededError { source }
@@ -268,6 +282,12 @@ impl std::fmt::Display for PineconeError {
             PineconeError::InferenceError { status } => {
                 write!(f, "Inference error: {}", status)
             }
+            PineconeError::ActionForbiddenError { source } => {
+                write!(f, "Action forbidden error: {}", source)
+            }
+            PineconeError::InvalidConfigurationError { message } => {
+                write!(f, "Invalid configuration error: {}", message)
+            }
         }
     }
 }
@@ -300,6 +320,8 @@ impl std::error::Error for PineconeError {
             PineconeError::ConnectionError { source } => Some(source.as_ref()),
             PineconeError::DataPlaneError { status } => Some(status),
             PineconeError::InferenceError { status } => Some(status),
+            PineconeError::ActionForbiddenError { source } => Some(source),
+            PineconeError::InvalidConfigurationError { message: _ } => None,
         }
     }
 }
