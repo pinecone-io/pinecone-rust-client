@@ -413,7 +413,6 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
             Ok(index) => index.status.state == pinecone_sdk::openapi::models::index_model_status::State::Ready,
             Err(_) => false,
         };
-        println!("Index is ready: {}", ready);
         if ready {
             break;
         }
