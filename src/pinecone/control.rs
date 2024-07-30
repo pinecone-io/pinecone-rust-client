@@ -947,19 +947,19 @@ mod tests {
             name: "serverless-index".to_string(),
             metric: Metric::Cosine,
             dimension: 1536,
-            status: Box::new(openapi::models::IndexModelStatus {
+            status: openapi::models::IndexModelStatus {
                 ready: true,
                 state: openapi::models::index_model_status::State::Ready,
-            }),
+            },
             host: "mock-host".to_string(),
             deletion_protection: Some(DeletionProtection::Disabled),
-            spec: Box::new(models::IndexModelSpec {
+            spec: models::IndexModelSpec {
                 serverless: Some(Box::new(models::ServerlessSpec {
                     cloud: openapi::models::serverless_spec::Cloud::Aws,
                     region: "us-east-1".to_string(),
                 })),
                 pod: None,
-            }),
+            },
         };
 
         assert_eq!(index, expected);
@@ -1093,22 +1093,24 @@ mod tests {
         let expected = IndexList {
             // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
             indexes: Some(vec![
-                IndexModel::new(
-                    "index1".to_string(),
-                    1536,
-                    Metric::Cosine,
-                    "host1".to_string(),
-                    models::IndexModelSpec::default(),
-                    models::IndexModelStatus::default(),
-                ),
-                IndexModel::new(
-                    "index2".to_string(),
-                    1536,
-                    Metric::Cosine,
-                    "host2".to_string(),
-                    models::IndexModelSpec::default(),
-                    models::IndexModelStatus::default(),
-                ),
+                IndexModel {
+                    name: "index1".to_string(),
+                    dimension: 1536,
+                    metric: Metric::Cosine,
+                    host:"host1".to_string(),
+                    deletion_protection: None,
+                    spec: models::IndexModelSpec::default(),
+                    status: models::IndexModelStatus::default(),
+                },
+                IndexModel {
+                    name: "index2".to_string(),
+                    dimension: 1536,
+                    metric: Metric::Cosine,
+                    host: "host2".to_string(),
+                    deletion_protection: None,
+                    spec: models::IndexModelSpec::default(),
+                    status: models::IndexModelStatus::default(),
+                },
             ]),
         };
         assert_eq!(index_list, expected);
