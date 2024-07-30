@@ -4,6 +4,7 @@ use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::vec;
+use serial_test::serial;
 
 mod common;
 
@@ -112,6 +113,7 @@ async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
     Ok(())
 }
 
+#[serial]
 #[tokio::test]
 async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();
@@ -429,6 +431,7 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
     Ok(())
 }
 
+#[serial]
 #[tokio::test]
 async fn test_delete_by_filter() -> Result<(), PineconeError> {
     let pinecone = PineconeClient::new(None, None, None, None).unwrap();

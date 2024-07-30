@@ -9,6 +9,7 @@ use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::HashMap;
 use std::time::Duration;
+use serial_test::serial;
 
 mod common;
 
@@ -254,6 +255,7 @@ async fn test_delete_index_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
+#[serial]
 #[tokio::test]
 async fn test_configure_index() -> Result<(), PineconeError> {
     let pinecone =
@@ -397,6 +399,7 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
+#[serial]
 #[tokio::test]
 async fn test_create_delete_collection() -> Result<(), PineconeError> {
     let pinecone =
