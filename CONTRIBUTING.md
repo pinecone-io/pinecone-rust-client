@@ -33,16 +33,24 @@ You will require access to the `apis` repository.
 OpenAPI
 
 - You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) in order to generate code using openapi. Look at `codegen/build-oas.sh` to see how this is used.
+    - Make sure Docker is running.
 - `just build-openapi`
     - References the spec files from the `codegen/apis` submodule
-    - Outputs the generated code to `openapi`
+    - Outputs the generated code to `src/openapi`
 
 Protobuf
 - `brew install protobuf`
 - `cargo install protobuf-codegen` and add it to path: `PATH="$HOME/.cargo/bin:$PATH"`
 - `just build-proto`
     - References the spec files from the `codegen/apis` submodule
-    - Outputs the generated code to `protos`
+    - Outputs the generated code to `src/protos`
+
+Alternatively, you can run `just build-client` to regenerate both OpenAPI and Protobuf code.
+
+What the build process looks like in all cases:
+- Build the `apis` submodule to produce consolidated .yaml files in `codegen/apis/_build`
+- Create a `version.rs` file containing API version info based on the defined value in the justfile
+- Run build scripts for OpenAPI and/or Protobuf, propagating the API version
 
 ### Build and run
 
