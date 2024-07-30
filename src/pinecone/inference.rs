@@ -109,7 +109,7 @@ mod tests {
                     {
                         "error": {
                           "code": "INVALID_ARGUMENT",
-                          "message": "Invalid parameter value input_type='bad-parameter' for model 'multilingual-e5-large', must be one of [queaaaaary, passage]"
+                          "message": "Invalid parameter value input_type='bad-parameter' for model 'multilingual-e5-large', must be one of [query, passage]"
                         },
                         "status": 400
                       }
