@@ -6,12 +6,12 @@ use crate::openapi::models::CreateIndexRequest;
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
-pub use crate::models::Metric;
+use crate::models::{Metric, IndexModel, IndexList};
 pub use crate::openapi::models::serverless_spec::Cloud;
 pub use crate::openapi::models::{
-    index_model::Metric as OpenApiMetric, CollectionList, CollectionModel, ConfigureIndexRequest,
+    CollectionList, CollectionModel, ConfigureIndexRequest,
     ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
-    DeletionProtection, IndexList, IndexModel, IndexSpec, PodSpec, PodSpecMetadataConfig,
+    DeletionProtection, IndexSpec, PodSpec, PodSpecMetadataConfig,
     ServerlessSpec,
 };
 
@@ -48,8 +48,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, IndexModel, DeletionProtection}};
-    /// use pinecone_sdk::models::Metric;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, DeletionProtection}};
+    /// use pinecone_sdk::models::{IndexModel, Metric};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -104,7 +104,7 @@ impl PineconeClient {
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
-            Ok(_) => Ok(res),
+            Ok(_) => Ok(res.into()),
             Err(e) => Err(e),
         }
     }
@@ -130,8 +130,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, IndexModel, DeletionProtection}};
-    /// use pinecone_sdk::models::Metric;
+    /// use pinecone_sdk::pinecone::{PineconeClient, control::{Cloud, WaitPolicy, DeletionProtection}};
+    /// use pinecone_sdk::models::{IndexModel, Metric};
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
@@ -209,7 +209,7 @@ impl PineconeClient {
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
-            Ok(_) => Ok(res),
+            Ok(_) => Ok(res.into()),
             Err(e) => Err(e),
         }
     }
@@ -273,7 +273,8 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::IndexModel};
+    /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::models::IndexModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -291,7 +292,7 @@ impl PineconeClient {
             .await
             .map_err(|e| PineconeError::from(e))?;
 
-        Ok(res)
+        Ok(res.into())
     }
 
     /// Lists all indexes.
@@ -304,7 +305,7 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::{PineconeClient, control::IndexList};
+    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -312,7 +313,7 @@ impl PineconeClient {
     /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
     ///
     /// // List all indexes in the project.
-    /// let index_list_response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
+    /// let index_list_response = pinecone.list_indexes().await;
     /// # Ok(())
     /// # }
     /// ```
@@ -322,7 +323,7 @@ impl PineconeClient {
             .await
             .map_err(|e| PineconeError::from(e))?;
 
-        Ok(res)
+        Ok(res.into())
     }
 
     /// Configures an index.
@@ -403,7 +404,7 @@ impl PineconeClient {
         .await
         .map_err(|e| PineconeError::from(e))?;
 
-        Ok(res)
+        Ok(res.into())
     }
 
     /// Deletes an index.
@@ -576,7 +577,7 @@ mod tests {
     use super::*;
     use crate::openapi::{
         self,
-        models::{self, collection_model::Status, IndexList},
+        models::{self, collection_model::Status},
     };
     use httpmock::prelude::*;
     use tokio;
@@ -637,7 +638,7 @@ mod tests {
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
-            openapi::models::index_model::Metric::Euclidean
+            Metric::Euclidean
         );
 
         let spec = create_index_response.spec.serverless.unwrap();
@@ -700,7 +701,7 @@ mod tests {
         assert_eq!(create_index_response.dimension, 10);
         assert_eq!(
             create_index_response.metric,
-            openapi::models::index_model::Metric::Cosine
+            Metric::Cosine
         );
 
         let spec = create_index_response.spec.serverless.unwrap();
@@ -944,7 +945,7 @@ mod tests {
 
         let expected = IndexModel {
             name: "serverless-index".to_string(),
-            metric: openapi::models::index_model::Metric::Cosine,
+            metric: Metric::Cosine,
             dimension: 1536,
             status: Box::new(openapi::models::IndexModelStatus {
                 ready: true,
@@ -1095,7 +1096,7 @@ mod tests {
                 IndexModel::new(
                     "index1".to_string(),
                     1536,
-                    openapi::models::index_model::Metric::Cosine,
+                    Metric::Cosine,
                     "host1".to_string(),
                     models::IndexModelSpec::default(),
                     models::IndexModelStatus::default(),
@@ -1103,7 +1104,7 @@ mod tests {
                 IndexModel::new(
                     "index2".to_string(),
                     1536,
-                    openapi::models::index_model::Metric::Cosine,
+                    Metric::Cosine,
                     "host2".to_string(),
                     models::IndexModelSpec::default(),
                     models::IndexModelStatus::default(),
@@ -1217,7 +1218,7 @@ mod tests {
         assert_eq!(create_index_response.dimension, 1536);
         assert_eq!(
             create_index_response.metric,
-            openapi::models::index_model::Metric::Euclidean
+            Metric::Euclidean
         );
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
@@ -1304,7 +1305,7 @@ mod tests {
         assert_eq!(create_index_response.dimension, 1536);
         assert_eq!(
             create_index_response.metric,
-            openapi::models::index_model::Metric::Cosine
+            Metric::Cosine
         );
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();

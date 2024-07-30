@@ -1,6 +1,7 @@
 use crate::openapi::models::create_index_request::Metric as RequestMetric;
 use crate::openapi::models::index_model::Metric as ResponseMetric;
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum Metric {
     Cosine,
     Euclidean,
