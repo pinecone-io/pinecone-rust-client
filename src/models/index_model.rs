@@ -1,14 +1,22 @@
 use crate::models::{DeletionProtection, IndexModelSpec, IndexModelStatus, Metric};
 use crate::openapi::models::index_model::IndexModel as OpenApiIndexModel;
 
+/// IndexModel : The IndexModel describes the configuration and status of a Pinecone index.
 #[derive(Clone, Debug, PartialEq)]
 pub struct IndexModel {
+    /// Index name
     pub name: String,
+    /// Index dimension
     pub dimension: i32,
+    /// Index metric
     pub metric: Metric,
+    /// Index host
     pub host: String,
+    /// Index deletion protection configuration
     pub deletion_protection: Option<DeletionProtection>,
+    /// Index specs
     pub spec: Box<IndexModelSpec>,
+    /// Index model specs
     pub status: Box<IndexModelStatus>,
 }
 
@@ -27,6 +35,7 @@ impl From<OpenApiIndexModel> for IndexModel {
 }
 
 impl IndexModel {
+    /// Function to construct a new IndexModel struct
     pub fn new(
         name: String,
         dimension: i32,

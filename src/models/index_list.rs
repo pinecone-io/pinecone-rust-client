@@ -1,7 +1,10 @@
 use crate::models::IndexModel;
 use crate::openapi::models::IndexList as OpenApiIndexList;
+
+/// IndexList : The list of indexes that exist in the project.
 #[derive(Clone, Default, Debug, PartialEq)]
 pub struct IndexList {
+    /// The list of indexes
     pub indexes: Option<Vec<IndexModel>>,
 }
 
