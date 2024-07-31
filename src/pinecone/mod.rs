@@ -37,12 +37,6 @@ fn add_api_version_header(headers: &mut HashMap<String, String>) {
     );
 }
 
-fn empty_headers_with_api_version() -> HashMap<String, String> {
-    let mut headers = HashMap::new();
-    add_api_version_header(&mut headers);
-    headers
-}
-
 impl PineconeClient {
     /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
     /// It is used to create, delete, and manage your indexes and collections.
@@ -162,6 +156,12 @@ impl PineconeClient {
 mod tests {
     use super::*;
     use tokio;
+
+    fn empty_headers_with_api_version() -> HashMap<String, String> {
+        let mut headers = HashMap::new();
+        add_api_version_header(&mut headers);
+        headers
+    }
 
     #[tokio::test]
     async fn test_arg_api_key() -> Result<(), PineconeError> {
