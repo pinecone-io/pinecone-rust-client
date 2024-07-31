@@ -18,10 +18,12 @@ pushd $SCRIPT_DIR/proto_build
 	cargo run -- $PROJECT_DIR/$outdir $version
 popd
 
-mod_header=$'\n#![allow(missing_docs)]\n'
+missing_docs_header=$'#![allow(missing_docs)]'
+dead_code_header=$'#![allow(dead_code)]'
+mod_header=$"$missing_docs_header\n$dead_code_header\n"
 pushd $PROJECT_DIR/$outdir
 	# rename _.rs to mod.rs
 	mv _.rs mod.rs
-	# add line at the top to disable warnings for undocumented code
-	sed -i "" "1 i\\$mod_header" mod.rs
+	# add line at the top to disable warnings for undocumented and unused code
+	echo -e $mod_header | cat - mod.rs > temp && mv temp mod.rs
 popd

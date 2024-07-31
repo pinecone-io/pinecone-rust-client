@@ -13,7 +13,7 @@ pub mod pinecone;
 pub mod utils;
 
 /// OpenAPI client for Pinecone.
-pub mod openapi;
+mod openapi;
 
 /// Protobuf client for Pinecone.
 pub mod protos;

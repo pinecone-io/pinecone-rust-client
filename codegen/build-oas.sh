@@ -21,7 +21,9 @@ docker run --rm -v $(pwd):/workspace openapitools/openapi-generator-cli:v7.6.0 g
 
 # copy source files from the crate to the module (outdir)
 echo "Copying source files from $tempdir to $outdir"
-mod_header=$'\n#![allow(missing_docs)]\n'
+missing_docs_header=$'#![allow(missing_docs)]'
+dead_code_header=$'#![allow(dead_code)]'
+mod_header=$"$missing_docs_header\n$dead_code_header\n"
 pushd $PROJECT_DIR
 	# copy the readme to the outdir
 	cp $tempdir/README.md $outdir/README.md
@@ -32,8 +34,8 @@ pushd $PROJECT_DIR
 	# rename the lib.rs file to mod.rs
 	mv $outdir/lib.rs $outdir/mod.rs
 
-	# add line at the top to disable warnings for undocumented code
-	sed -i "" "1 i\\$mod_header" $outdir/mod.rs
+	# add line at the top to disable warnings for undocumented and unused code
+	echo -e $mod_header | cat - $outdir/mod.rs > temp && mv temp $outdir/mod.rs
 
 	# in each source file, replace "crate::" with "crate::openapi::"
 	for f in $(find $outdir -type f); do
