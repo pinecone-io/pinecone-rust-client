@@ -16,5 +16,8 @@ pub use self::index_list::IndexList;
 mod wait_policy;
 pub use self::wait_policy::WaitPolicy;
 
+mod embedding;
+pub use self::embedding::Embedding;
+
 mod openapi;
 pub use self::openapi::*;
