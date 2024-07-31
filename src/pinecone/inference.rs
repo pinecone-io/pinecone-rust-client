@@ -3,7 +3,7 @@ use crate::openapi::models::{EmbedRequest, EmbedRequestInputsInner};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
-pub use crate::openapi::models::{EmbedRequestParameters, EmbeddingsList};
+use crate::models::{EmbedRequestParameters, EmbeddingsList};
 
 impl PineconeClient {
     /// Generate embeddings for input data.
@@ -50,7 +50,7 @@ impl PineconeClient {
             .await
             .map_err(|e| PineconeError::from(e))?;
 
-        Ok(res)
+        Ok(res.into())
     }
 }
 
@@ -89,9 +89,9 @@ mod tests {
 
         mock.assert();
 
-        assert_eq!(response.model.unwrap(), "multilingual-e5-large");
-        assert_eq!(response.data.unwrap().len(), 1);
-        assert_eq!(response.usage.unwrap().total_tokens, Some(1632));
+        assert_eq!(response.model, "multilingual-e5-large");
+        assert_eq!(response.data.len(), 1);
+        assert_eq!(response.usage.total_tokens, 1632);
 
         Ok(())
     }
