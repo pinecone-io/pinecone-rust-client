@@ -15,6 +15,7 @@ pub enum PineconeError {
 
     /// ActionForbiddenError: Action is forbidden.
     ActionForbiddenError {
+        /// Source error
         source: WrappedResponseContent,
     },
 

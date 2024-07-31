@@ -1,4 +1,4 @@
-use pinecone_sdk::pinecone::inference::EmbedRequestParameters;
+use pinecone_sdk::models::EmbedRequestParameters;
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 
@@ -20,8 +20,8 @@ async fn test_embed() -> Result<(), PineconeError> {
         .await
         .expect("Failed to embed");
 
-    assert_eq!(response.model.unwrap(), "multilingual-e5-large");
-    assert_eq!(response.data.unwrap().len(), 1);
+    assert_eq!(response.model, "multilingual-e5-large");
+    assert_eq!(response.data.len(), 1);
 
     Ok(())
 }

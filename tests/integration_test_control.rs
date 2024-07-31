@@ -2,9 +2,7 @@ use common::{
     generate_collection_name, generate_index_name, get_collection, get_pod_index,
     get_serverless_index,
 };
-use pinecone_sdk::openapi::models::index_model::Metric as OpenApiMetric;
-use pinecone_sdk::openapi::models::serverless_spec::Cloud as OpenApiCloud;
-use pinecone_sdk::pinecone::control::{Cloud, DeletionProtection, Metric, WaitPolicy};
+use pinecone_sdk::models::{Cloud, DeletionProtection, Metric, WaitPolicy};
 use pinecone_sdk::pinecone::PineconeClient;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::HashMap;
@@ -51,7 +49,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .create_serverless_index(
             index1_name,
             2,
-            Metric::Cosine,
+            Default::default(),
             Cloud::Aws,
             "us-west-2",
             DeletionProtection::Disabled,
@@ -86,9 +84,9 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
 
     assert_eq!(index1.name, index1_name.to_string());
     assert_eq!(index1.dimension, 2);
-    assert_eq!(index1.metric, OpenApiMetric::Cosine);
+    assert_eq!(index1.metric, Metric::Cosine);
     let spec1 = index1.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec1.cloud, OpenApiCloud::Aws);
+    assert_eq!(spec1.cloud, Cloud::Aws);
     assert_eq!(spec1.region, "us-west-2");
 
     let index2 = indexes
@@ -98,9 +96,9 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
 
     assert_eq!(index2.name, index2_name.to_string());
     assert_eq!(index2.dimension, 2);
-    assert_eq!(index2.metric, OpenApiMetric::Dotproduct);
+    assert_eq!(index2.metric, Metric::Dotproduct);
     let spec2 = index2.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec2.cloud, OpenApiCloud::Aws);
+    assert_eq!(spec2.cloud, Cloud::Aws);
     assert_eq!(spec2.region, "us-west-2");
 
     let _ = pinecone
@@ -138,10 +136,10 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(response.metric, OpenApiMetric::Euclidean);
+    assert_eq!(response.metric, Metric::Euclidean);
 
     let spec = response.spec.serverless.unwrap();
-    assert_eq!(spec.cloud, OpenApiCloud::Aws);
+    assert_eq!(spec.cloud, Cloud::Aws);
     assert_eq!(spec.region, "us-west-2");
 
     let _ = pinecone
@@ -179,7 +177,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 2);
-    assert_eq!(response.metric, OpenApiMetric::Euclidean);
+    assert_eq!(response.metric, Metric::Euclidean);
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-west1-gcp");
@@ -224,7 +222,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
 
     assert_eq!(response.name, name.to_string());
     assert_eq!(response.dimension, 12);
-    assert_eq!(response.metric, OpenApiMetric::Euclidean);
+    assert_eq!(response.metric, Metric::Euclidean);
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-east-1-aws");
@@ -284,7 +282,7 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
         .create_serverless_index(
             index_name,
             2,
-            Metric::Cosine,
+            Default::default(),
             Cloud::Aws,
             "us-east-1",
             DeletionProtection::Enabled,
