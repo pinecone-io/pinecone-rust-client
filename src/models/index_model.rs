@@ -2,7 +2,7 @@ use super::{DeletionProtection, IndexModelSpec, IndexModelStatus, Metric};
 use crate::openapi::models::index_model::IndexModel as OpenApiIndexModel;
 
 /// IndexModel : The IndexModel describes the configuration and status of a Pinecone index.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Default, Debug, PartialEq)]
 pub struct IndexModel {
     /// Index name
     pub name: String,

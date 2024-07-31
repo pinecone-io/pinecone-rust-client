@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 /// Defines the wait policy for index creation.
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum WaitPolicy {
     /// Wait for the index to become ready, up to the specified duration.
     WaitFor(Duration),
