@@ -19,5 +19,9 @@ pub use self::wait_policy::WaitPolicy;
 mod embedding;
 pub use self::embedding::Embedding;
 
-mod openapi;
-pub use self::openapi::*;
+pub use crate::openapi::models::{
+    serverless_spec::Cloud, CollectionList, CollectionModel, ConfigureIndexRequest,
+    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
+    DeletionProtection, EmbedRequestParameters, IndexModelSpec, IndexModelStatus, IndexSpec,
+    PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+};
