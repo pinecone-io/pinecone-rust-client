@@ -13,7 +13,7 @@ impl From<OpenApiIndexList> for IndexList {
         IndexList {
             indexes: index_list
                 .indexes
-                .map(|e| e.into_iter().map(|e| e.into()).collect()),
+                .map(|index| index.into_iter().map(|index| index.into()).collect()),
         }
     }
 }

@@ -48,7 +48,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
         .create_serverless_index(
             index1_name,
             2,
-            Metric::Cosine,
+            Default::default(),
             Cloud::Aws,
             "us-west-2",
             DeletionProtection::Disabled,
@@ -280,7 +280,7 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
         .create_serverless_index(
             index_name,
             2,
-            Metric::Cosine,
+            Default::default(),
             Cloud::Aws,
             "us-east-1",
             DeletionProtection::Enabled,

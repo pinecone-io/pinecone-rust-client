@@ -2,9 +2,10 @@ use crate::openapi::models::create_index_request::Metric as RequestMetric;
 use crate::openapi::models::index_model::Metric as ResponseMetric;
 
 /// The distance metric to be used for similarity search. You can use 'euclidean', 'cosine', or 'dotproduct'.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Default, Debug, PartialEq)]
 pub enum Metric {
     /// Cosine similarity
+    #[default]
     Cosine,
     /// Euclidean distance similarity
     Euclidean,
@@ -49,11 +50,5 @@ impl From<Metric> for ResponseMetric {
             Metric::Euclidean => ResponseMetric::Euclidean,
             Metric::Dotproduct => ResponseMetric::Dotproduct,
         }
-    }
-}
-
-impl Default for Metric {
-    fn default() -> Metric {
-        Self::Cosine
     }
 }
