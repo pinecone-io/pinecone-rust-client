@@ -8,11 +8,11 @@ use tonic::service::Interceptor;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 
-pub use crate::protos::{
-    self, DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues,
-    UpdateResponse, UpsertResponse, Vector,
+use crate::models::{
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, Metadata, Namespace, QueryResponse,
+    SparseValues, UpdateResponse, UpsertResponse, Vector,
 };
-pub use prost_types::{value::Kind, Struct as Metadata, Value};
+use crate::protos;
 
 #[derive(Debug, Clone)]
 struct ApiKeyInterceptor {
@@ -39,27 +39,6 @@ pub struct Index {
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
 }
 
-/// The namespace of an index
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
-pub struct Namespace {
-    /// The name of the namespace
-    pub name: String,
-}
-
-impl From<String> for Namespace {
-    fn from(name: String) -> Self {
-        Self { name }
-    }
-}
-
-impl From<&str> for Namespace {
-    fn from(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-        }
-    }
-}
-
 impl Index {
     /// The upsert operation writes vectors into a namespace.
     /// If a new value is upserted for an existing vector id, it will overwrite the previous value.
@@ -74,7 +53,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Namespace, Vector};
+    /// use pinecone_sdk::models::{Namespace, UpsertResponse, Vector};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -92,7 +71,7 @@ impl Index {
     /// }];
     ///
     /// // Upsert vectors into the namespace "namespace" in the index
-    /// let response = index.upsert(&vectors, &"namespace".into()).await.unwrap();
+    /// let response: Result<UpsertResponse, PineconeError> = index.upsert(&vectors, &"namespace".into()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -130,7 +109,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::models::{Namespace, ListResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -141,7 +120,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // List all vectors in the namespace "namespace"
-    /// let response = index.list(&"namespace".into(), None, None, None).await.unwrap();
+    /// let response: Result<ListResponse, PineconeError> = index.list(&"namespace".into(), None, None, None).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -181,7 +160,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, Namespace};
+    /// use pinecone_sdk::models::{DescribeIndexStatsResponse, Value, Kind, Metadata, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -196,7 +175,7 @@ impl Index {
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
     /// // Describe the index statistics
-    /// let response = index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
+    /// let response: Result<DescribeIndexStatsResponse, PineconeError> = index.describe_index_stats(Some(Metadata { fields })).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -247,7 +226,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Namespace, SparseValues, Metadata};
+    /// use pinecone_sdk::models::{Namespace, SparseValues, Metadata, UpdateResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -258,7 +237,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Update the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+    /// let response: Result<UpdateResponse, PineconeError> = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -304,7 +283,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::models::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -315,7 +294,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Query the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.query_by_id("vector-id", 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// let response: Result<QueryResponse, PineconeError> = index.query_by_id("vector-id", 10, &Namespace::default(), None, None, None).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -360,7 +339,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::models::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -373,7 +352,7 @@ impl Index {
     /// let vector = vec![1.0, 2.0, 3.0, 4.0];
     ///
     /// // Query the vector in the default namespace
-    /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// let response: Result<QueryResponse, PineconeError> = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -414,7 +393,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::models::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -427,7 +406,7 @@ impl Index {
     /// let ids = ["vector-id"];
     ///
     /// // Delete vectors from the namespace "namespace" that have the ids in the list
-    /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
+    /// let response: Result<(), PineconeError> = index.delete_by_id(&ids, &"namespace".into()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -458,7 +437,7 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::models::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -469,7 +448,7 @@ impl Index {
     /// let mut index = pinecone.index("index-host").await.unwrap();
     ///
     /// // Delete all vectors from the namespace "namespace"
-    /// let response = index.delete_all(&"namespace".into()).await.unwrap();
+    /// let response: Result<(), PineconeError> = index.delete_all(&"namespace".into()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -497,7 +476,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, Namespace};
+    /// use pinecone_sdk::models::{Metadata, Value, Kind, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -512,7 +491,7 @@ impl Index {
     /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
     ///
     /// // Delete vectors from the namespace "namespace" that satisfy the filter
-    /// let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
+    /// let response: Result<(), PineconeError> = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -555,7 +534,7 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// use pinecone_sdk::models::{FetchResponse, Metadata, Value, Kind};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -568,7 +547,7 @@ impl Index {
     /// let vectors = &["1", "2"];
     ///
     /// // Fetch vectors from the default namespace that have the ids in the list
-    /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
+    /// let response: Result<FetchResponse, PineconeError> = index.fetch(vectors, &Default::default()).await;
     /// Ok(())
     /// }
     /// ```
