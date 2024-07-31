@@ -4,7 +4,7 @@ use crate::openapi::models::Embedding as OpenApiEmbedding;
 #[derive(Clone, Default, Debug, PartialEq)]
 pub struct Embedding {
     /// Embedding values
-    values: Vec<f32>,
+    pub values: Vec<f32>,
 }
 
 impl From<OpenApiEmbedding> for Embedding {
