@@ -74,15 +74,14 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Namespace, Vector};
+    /// use pinecone_sdk::pinecone::data::{Vector, UpsertResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// let vectors = [Vector {
     ///     id: "vector-id".to_string(),
@@ -92,7 +91,7 @@ impl Index {
     /// }];
     ///
     /// // Upsert vectors into the namespace "namespace" in the index
-    /// let response = index.upsert(&vectors, &"namespace".into()).await.unwrap();
+    /// let response: UpsertResponse = index.upsert(&vectors, &"namespace".into()).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -130,18 +129,17 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::pinecone::data::ListResponse;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // List all vectors in the namespace "namespace"
-    /// let response = index.list(&"namespace".into(), None, None, None).await.unwrap();
+    /// let response: ListResponse = index.list(&"namespace".into(), None, None, None).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -181,22 +179,22 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, Namespace};
+    /// use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, DescribeIndexStatsResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let kind = Some(Kind::StringValue("value".to_string()));
+    /// fields.insert("field".to_string(), Value { kind });
     ///
     /// // Describe the index statistics
-    /// let response = index.describe_index_stats(Some(Metadata { fields })).await.unwrap();
+    /// let response: DescribeIndexStatsResponse = index.describe_index_stats(Some(Metadata { fields })).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -247,18 +245,23 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Namespace, SparseValues, Metadata};
+    /// use pinecone_sdk::pinecone::data::UpdateResponse;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Update the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.update("vector-id", vec![1.0, 2.0, 3.0, 4.0], None, None, &"namespace".into()).await.unwrap();
+    /// let response: UpdateResponse = index.update(
+    ///     "vector-id",
+    ///     vec![1.0, 2.0, 3.0, 4.0],
+    ///     None,
+    ///     None,
+    ///     &"namespace".into()
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -304,18 +307,24 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
-    /// // Query the vector with id "vector-id" in the namespace "namespace"
-    /// let response = index.query_by_id("vector-id", 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// // Query the vector with id "vector-id" in the default namespace
+    /// let response: QueryResponse = index.query_by_id(
+    ///     "vector-id",
+    ///     10,
+    ///     &Namespace::default(),
+    ///     None,
+    ///     None,
+    ///     None
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -360,20 +369,27 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::Namespace;
+    /// use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// let vector = vec![1.0, 2.0, 3.0, 4.0];
     ///
     /// // Query the vector in the default namespace
-    /// let response = index.query_by_value(vector, None, 10, &Namespace::default(), None, None, None).await.unwrap();
+    /// let response: QueryResponse = index.query_by_value(
+    ///     vector,
+    ///     None,
+    ///     10,
+    ///     &Namespace::default(),
+    ///     None,
+    ///     None,
+    ///     None
+    /// ).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -419,15 +435,14 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// let ids = ["vector-id"];
     ///
     /// // Delete vectors from the namespace "namespace" that have the ids in the list
-    /// let response = index.delete_by_id(&ids, &"namespace".into()).await.unwrap();
+    /// index.delete_by_id(&ids, &"namespace".into()).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -463,13 +478,12 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Delete all vectors from the namespace "namespace"
-    /// let response = index.delete_all(&"namespace".into()).await.unwrap();
+    /// index.delete_all(&"namespace".into()).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -502,17 +516,17 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// // Construct a metadata filter
     /// let mut fields = BTreeMap::new();
-    /// fields.insert("field".to_string(), Value { kind: Some(Kind::StringValue("value".to_string())) });
+    /// let kind = Some(Kind::StringValue("value".to_string()));
+    /// fields.insert("field".to_string(), Value { kind });
     ///
     /// // Delete vectors from the namespace "namespace" that satisfy the filter
-    /// let response = index.delete_by_filter(Metadata { fields }, &"namespace".into()).await.unwrap();
+    /// index.delete_by_filter(Metadata { fields }, &"namespace".into()).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -555,20 +569,19 @@ impl Index {
     /// ```no_run
     /// use std::collections::BTreeMap;
     /// use pinecone_sdk::pinecone::PineconeClient;
-    /// use pinecone_sdk::pinecone::data::{Metadata, Value, Kind};
+    /// use pinecone_sdk::pinecone::data::FetchResponse;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url
-    /// let mut index = pinecone.index("index-host").await.unwrap();
+    /// let mut index = pinecone.index("index-host").await?;
     ///
     /// let vectors = &["1", "2"];
     ///
     /// // Fetch vectors from the default namespace that have the ids in the list
-    /// let response = index.fetch(vectors, &Default::default()).await.unwrap();
+    /// let response: FetchResponse = index.fetch(vectors, &Default::default()).await?;
     /// Ok(())
     /// }
     /// ```
@@ -635,10 +648,9 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
-    /// // Connect to index host url "index-host"
-    /// let index = pinecone.index("index-host").await.unwrap();
+    /// let index = pinecone.index("index-host").await?;
     /// # Ok(())
     /// # }
     /// ```

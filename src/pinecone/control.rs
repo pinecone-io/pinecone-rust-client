@@ -35,7 +35,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Create an index.
     /// let response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
@@ -118,14 +118,14 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError> {
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Create a pod index.
     /// let response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
-    ///     "us-east-1-aws", // Environment
+    ///     "us-east-1", // Environment
     ///     "p1.x1", // Pod type
     ///     1, // Number of pods
     ///     1, // Number of replicas
@@ -260,7 +260,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe an index in the project.
     /// let response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
@@ -292,7 +292,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // List all indexes in the project.
     /// let response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
@@ -330,7 +330,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Configure an index in the project.
     /// let response: Result<IndexModel, PineconeError> = pinecone.configure_index(
@@ -409,7 +409,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Delete an index in the project.
     /// let response: Result<(), PineconeError> = pinecone.delete_index("index-name").await;
@@ -442,7 +442,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe an index in the project.
     /// let response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
@@ -479,14 +479,15 @@ impl PineconeClient {
     /// ### Example
     /// ```no_run
     /// use pinecone_sdk::pinecone::PineconeClient;
+    /// use pinecone_sdk::models::CollectionModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Describe a collection in the project.
-    /// let response = pinecone.describe_collection("collection-name").await;
+    /// let collection: CollectionModel = pinecone.describe_collection("collection-name").await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -513,7 +514,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // List all collections in the project.
     /// let response: Result<CollectionList, PineconeError> = pinecone.list_collections().await;
@@ -544,7 +545,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+    /// let pinecone = PineconeClient::new(None, None, None, None)?;
     ///
     /// // Delete a collection in the project.
     /// let response: Result<(), PineconeError> = pinecone.delete_collection("collection-name").await;
