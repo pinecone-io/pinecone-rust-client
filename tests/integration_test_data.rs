@@ -547,6 +547,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
         .expect("Failed to fetch vectors");
 
     assert_eq!(fetch_response.namespace, namespace.name);
+    assert_eq!(fetch_response.vectors.len(), 2);
     let vectors = fetch_response.vectors;
     assert_eq!(
         *vectors.get("1").unwrap(),
