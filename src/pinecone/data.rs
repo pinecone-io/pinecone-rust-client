@@ -79,7 +79,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -134,7 +134,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -184,7 +184,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -250,7 +250,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -312,7 +312,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -374,7 +374,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -435,7 +435,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -478,7 +478,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -516,7 +516,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -574,7 +574,7 @@ impl Index {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -648,7 +648,7 @@ impl PineconeClient {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new(None, None, None, None)?;
+    /// let pinecone = PineconeClient::new(Default::default())?;
     ///
     /// let index = pinecone.index("index-host").await?;
     /// # Ok(())
@@ -714,6 +714,7 @@ impl PineconeClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pinecone::PineconeClientConfig;
     use httpmock::prelude::*;
 
     #[tokio::test]
@@ -725,7 +726,8 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let params = PineconeClientConfig::default();
+        let pinecone = PineconeClient::new(params).unwrap();
 
         let index = pinecone.index(server.base_url().as_str()).await.unwrap();
 
@@ -741,7 +743,8 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let params = PineconeClientConfig::default();
+        let pinecone = PineconeClient::new(params).unwrap();
 
         let addr = server.address().to_string();
 
@@ -760,7 +763,8 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let params = PineconeClientConfig::default();
+        let pinecone = PineconeClient::new(params).unwrap();
 
         let scheme_host = format!("http://{}", server.host());
 
@@ -779,7 +783,8 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new(None, None, None, None).unwrap();
+        let params = PineconeClientConfig::default();
+        let pinecone = PineconeClient::new(params).unwrap();
 
         let host = server.host();
 
