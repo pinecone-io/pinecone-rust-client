@@ -18,22 +18,33 @@ pub mod data;
 /// Inference module.
 pub mod inference;
 
+/// The `PineconeClientConfig` struct takes in the parameters to configure the Pinecone client.
 #[derive(Default)]
 pub struct PineconeClientConfig {
+    /// Pinecone API key
     pub api_key: Option<String>,
+    /// The Pinecone controller host
     pub control_plane_host: Option<String>,
+    /// Additional headers to be included in all requests
     pub additional_headers: Option<HashMap<String, String>>,
+    /// The source tag
     pub source_tag: Option<String>,
 }
 
 /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
 pub struct PineconeClient {
+    /// Pinecone API key
     api_key: String,
+    /// The Pinecone controller host
     controller_url: String,
+    /// Additional headers to be included in all requests
     additional_headers: HashMap<String, String>,
+    /// The source tag
     source_tag: Option<String>,
+    /// The user agent
     user_agent: Option<String>,
+    /// Configuration used for OpenAPI endpoint calls
     openapi_config: Configuration,
 }
 
