@@ -13,10 +13,14 @@ pub mod pinecone;
 pub mod utils;
 
 /// OpenAPI client for Pinecone.
+#[allow(missing_docs)]
+#[allow(dead_code)]
 mod openapi;
 
 /// Protobuf client for Pinecone.
-pub mod protos;
+#[allow(missing_docs)]
+#[allow(dead_code)]
+mod protos;
 
 /// Models for the Pinecone SDK.
 pub mod models;
