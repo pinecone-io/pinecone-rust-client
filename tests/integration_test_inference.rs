@@ -4,7 +4,7 @@ use pinecone_sdk::utils::errors::PineconeError;
 
 #[tokio::test]
 async fn test_embed() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new(Default::default()).expect("Failed to create client");
+    let pinecone = PineconeClient::new().expect("Failed to create client");
 
     let parameters = EmbedRequestParameters {
         input_type: Some("query".to_string()),
@@ -28,7 +28,7 @@ async fn test_embed() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_embed_invalid_model() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new(Default::default()).expect("Failed to create client");
+    let pinecone = PineconeClient::new().expect("Failed to create client");
 
     let _ = pinecone
         .embed("invalid-model", None, &vec!["Hello, world!"])
@@ -40,7 +40,7 @@ async fn test_embed_invalid_model() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_embed_invalid_parameters() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new(Default::default()).expect("Failed to create client");
+    let pinecone = PineconeClient::new().expect("Failed to create client");
 
     let parameters = EmbedRequestParameters {
         input_type: Some("bad-parameter".to_string()),

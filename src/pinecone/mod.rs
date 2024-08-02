@@ -54,6 +54,37 @@ fn empty_headers_with_api_version() -> HashMap<String, String> {
 impl PineconeClient {
     /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
     /// It is used to create, delete, and manage your indexes and collections.
+    /// This function constructs a `PineconeClient` struct using environment variable values.
+    ///
+    /// ### Return
+    /// * `Result<PineconeClient, PineconeError>`
+    ///
+    /// ### Configuration with environment variables
+    /// The SDK will attempt to read the following environment variables:
+    /// - `PINECONE_API_KEY`: The API key used for authentication. If not passed as an argument, it will be read from the environment variable.
+    /// - `PINECONE_CONTROLLER_HOST`: The Pinecone controller host. Default is `https://api.pinecone.io`.
+    /// - `PINECONE_ADDITIONAL_HEADERS`: Additional headers to be included in all requests. Expects JSON.
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::pinecone::{PineconeClient, PineconeClientConfig};
+    ///
+    /// // Create a Pinecone client with the API key and controller host.
+    /// let pinecone = PineconeClient::new();
+    /// ```
+    pub fn new() -> Result<Self, PineconeError> {
+        let params = PineconeClientConfig {
+            api_key: None,
+            control_plane_host: None,
+            additional_headers: None,
+            source_tag: None,
+        };
+        PineconeClient::with_config(params)
+    }
+
+    /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
+    /// It is used to create, delete, and manage your indexes and collections.
+    /// This function constructs a `PineconeClient` struct using the provided configuration.
     ///
     /// ### Arguments
     /// * `api_key: Option<&str>` - The API key used for authentication.
@@ -80,9 +111,9 @@ impl PineconeClient {
     ///     control_plane_host: Some("INSERT_CONTROLLER_HOST".to_string()),
     ///     ..Default::default()
     /// };
-    /// let pinecone = PineconeClient::new(params);
+    /// let pinecone = PineconeClient::with_config(params);
     /// ```
-    pub fn new(params: PineconeClientConfig) -> Result<Self, PineconeError> {
+    pub fn with_config(params: PineconeClientConfig) -> Result<Self, PineconeError> {
         // get api key
         let api_key = match params.api_key {
             Some(key) => key.to_string(),
@@ -185,7 +216,7 @@ mod tests {
         };
 
         let pinecone =
-            PineconeClient::new(params).expect("Expected to successfully create Pinecone instance");
+            PineconeClient::with_config(params).expect("Expected to successfully create Pinecone instance");
 
         assert_eq!(pinecone.api_key, mock_api_key);
         assert_eq!(pinecone.controller_url, mock_controller_host);
@@ -213,7 +244,7 @@ mod tests {
                 additional_headers: Some(HashMap::new()),
                 ..Default::default()
             };
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect("Expected to successfully create Pinecone instance");
 
             assert_eq!(pinecone.api_key, mock_api_key);
@@ -242,7 +273,7 @@ mod tests {
                 additional_headers: Some(HashMap::new()),
                 ..Default::default()
             };
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect_err("Expected to fail creating Pinecone instance due to missing API key");
 
             assert!(matches!(pinecone, PineconeError::APIKeyMissingError { .. }));
@@ -262,7 +293,7 @@ mod tests {
             source_tag: None,
         };
         let pinecone =
-            PineconeClient::new(params).expect("Expected to successfully create Pinecone instance");
+            PineconeClient::with_config(params).expect("Expected to successfully create Pinecone instance");
 
         assert_eq!(pinecone.controller_url, mock_controller_host);
 
@@ -284,7 +315,7 @@ mod tests {
                     ..Default::default()
                 };
 
-                let pinecone = PineconeClient::new(params)
+                let pinecone = PineconeClient::with_config(params)
                     .expect("Expected to successfully create Pinecone instance with env host");
 
                 assert_eq!(pinecone.controller_url, mock_controller_host);
@@ -305,7 +336,7 @@ mod tests {
                 ..Default::default()
             };
 
-            let pinecone = PineconeClient::new(params).expect(
+            let pinecone = PineconeClient::with_config(params).expect(
                 "Expected to successfully create Pinecone instance with default controller host",
             );
 
@@ -334,7 +365,7 @@ mod tests {
             source_tag: None,
         };
         let pinecone =
-            PineconeClient::new(params).expect("Expected to successfully create Pinecone instance");
+            PineconeClient::with_config(params).expect("Expected to successfully create Pinecone instance");
 
         let expected_headers = {
             let mut headers = mock_headers.clone();
@@ -367,7 +398,7 @@ mod tests {
                     source_tag: None,
                 };
 
-                let pinecone = PineconeClient::new(params)
+                let pinecone = PineconeClient::with_config(params)
                     .expect("Expected to successfully create Pinecone instance with env headers");
 
                 let expected_headers = {
@@ -395,7 +426,7 @@ mod tests {
                 additional_headers: None,
                 source_tag: None,
             };
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect_err("Expected to fail creating Pinecone instance due to invalid headers");
 
             assert!(matches!(
@@ -420,7 +451,7 @@ mod tests {
                 source_tag: None,
             };
 
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect("Expected to successfully create Pinecone instance");
 
             assert_eq!(
@@ -450,7 +481,7 @@ mod tests {
                 source_tag: None,
             };
 
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect("Expected to successfully create Pinecone instance");
 
             // expect headers, except with the added API version header
@@ -488,7 +519,7 @@ mod tests {
                 source_tag: None,
             };
 
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect("Expected to successfully create Pinecone instance");
 
             assert_eq!(pinecone.additional_headers, headers);
@@ -519,7 +550,7 @@ mod tests {
                 source_tag: None,
             };
 
-            let pinecone = PineconeClient::new(params)
+            let pinecone = PineconeClient::with_config(params)
                 .expect("Expected to successfully create Pinecone instance");
 
             assert_eq!(pinecone.additional_headers, headers);
@@ -560,7 +591,7 @@ mod tests {
                     source_tag: None,
                 };
 
-                let pinecone = PineconeClient::new(params)
+                let pinecone = PineconeClient::with_config(params)
                     .expect("Expected to successfully create Pinecone instance");
 
                 let expected_headers = {

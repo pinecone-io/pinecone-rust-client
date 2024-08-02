@@ -23,7 +23,7 @@ impl PineconeClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), pinecone_sdk::utils::errors::PineconeError> {
     ///
-    /// let pinecone = PineconeClient::new(Default::default())?;
+    /// let pinecone = PineconeClient::new()?;
     /// let response = pinecone.embed("multilingual-e5-large", None, &vec!["Hello, world!"]).await.expect("Failed to embed");
     ///
     /// # Ok(())
@@ -86,7 +86,7 @@ mod tests {
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::new(params).expect("Failed to create Pinecone instance");
+        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
 
         let response = pinecone
             .embed("multilingual-e5-large", None, &vec!["Hello, world!"])
@@ -127,7 +127,7 @@ mod tests {
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::new(params).expect("Failed to create Pinecone instance");
+        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
 
         let parameters = EmbedRequestParameters {
             input_type: Some("bad-parameter".to_string()),
