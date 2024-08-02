@@ -1,4 +1,4 @@
-use pinecone_sdk::pinecone::data::Namespace;
+use pinecone_sdk::models::Namespace;
 use rand::Rng;
 
 /// Generates a random string of length 10

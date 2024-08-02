@@ -7,6 +7,9 @@ pub use self::embeddings_list_usage::EmbeddingsListUsage;
 mod metric;
 pub use self::metric::Metric;
 
+mod namespace;
+pub use self::namespace::Namespace;
+
 mod index_model;
 pub use self::index_model::IndexModel;
 
@@ -25,3 +28,8 @@ pub use crate::openapi::models::{
     DeletionProtection, EmbedRequestParameters, IndexModelSpec, IndexModelStatus, IndexSpec,
     PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
+
+pub use crate::protos::{DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues,
+    UpdateResponse, UpsertResponse, Vector};
+
+pub use prost_types::{value::Kind as Kind, Struct as Metadata, Value};
