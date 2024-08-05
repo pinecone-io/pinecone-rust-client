@@ -1,6 +1,6 @@
 use common::{generate_namespace_name, generate_vector, get_pod_index, get_serverless_index};
 use pinecone_sdk::models::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
-use pinecone_sdk::pinecone::{default_client, PineconeClient};
+use pinecone_sdk::pinecone::default_client;
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::vec;
