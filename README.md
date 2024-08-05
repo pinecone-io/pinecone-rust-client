@@ -1,12 +1,10 @@
 # Pinecone Rust SDK
 
+This SDK is still in an alpha state. While it is mostly built out and functional, it may undergo changes as we continue to improve the UX. Please try it out and give us your feedback, but be aware that updates may introduce breaking changes.
+
 ## Documentation
 
 [reference the documentation here]
-
-### Example code
-
-[reference the sample app]
 
 ## Prerequisites
 

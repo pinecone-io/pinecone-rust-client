@@ -4,9 +4,12 @@ version = "0.1.0"
 edition = "2021"
 description = "Pinecone Rust SDK"
 repository = "https://github.com/pinecone-io/pinecone-rust-client"
+homepage = "https://www.pinecone.io/"
 rust-version = "1.78.0"
 readme = "./README.md"
 license = "Apache-2.0"
+keywords = ["pinecone", "vector", "database", "cloud", "vectordb"]
+categories = ["api-bindings", "database"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
