@@ -20,7 +20,11 @@ How to install - instruction for getting the package from crates.io
 
 ## Usage
 
-The `PineconeClient` class is the main point of entry into the Rust SDK. There are a couple of ways to instantiate the client:
+The `PineconeClient` class is the main point of entry into the Rust SDK. Parameters may either be directly passed in as `Options`, or read through environment variables as follows. More detail:
+- The API key must be passed in either as an argument or as an environment variable called `PINECONE_API_KEY`. If passed in as `None`, the client will attempt to read in an environment variable value.
+- The control plane host, if passed in as `None`, will attempt to read in an environment variable called `PINECONE_CONTROLLER_HOST`. If it is not an environment variable, it will default to `https://api.pinecone.io`.
+
+There are a couple of ways to instantiate the client, detailed below:
 ### PineconeClientConfig
 Initialize a `PineconeClientConfig` struct with parameters, and call `config` using the struct.
 ```rust
@@ -36,14 +40,10 @@ let pinecone: PineconeClient = config.client().expect("Failed to create Pinecone
 ```
 
 ### Default client
-Use the `default_client()` function, which is the equivalent of constructing a `PineconeClientConfig` struct with all fields set to `None`.
+Use the `default_client()` function, which is the equivalent of constructing a `PineconeClientConfig` struct with all fields set to `None`. Configuration values will be read from environment variables.
 ```rust
 let pinecone: PineconeClient = pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 ```
-
-Some parameters may be passed in as environment variables:
-- The API key must be passed in either as an argument or as an environment variable called `PINECONE_API_KEY`. If not passed in as an argument, the client will attempt to read in an environment variable value.
-- The control plane host, if not passed in as an argument, will attempt to read in an environment variable called `PINECONE_CONTROLLER_HOST`. If it is not an environment variable, it will default to `https://api.pinecone.io`.
 
 # Indexes
 
