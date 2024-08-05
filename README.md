@@ -41,6 +41,7 @@ Use the `default_client()` function, which is the equivalent of constructing a `
 let pinecone: PineconeClient = pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 ```
 
+Some parameters may be passed in as environment variables:
 - The API key must be passed in either as an argument or as an environment variable called `PINECONE_API_KEY`. If not passed in as an argument, the client will attempt to read in an environment variable value.
 - The control plane host, if not passed in as an argument, will attempt to read in an environment variable called `PINECONE_CONTROLLER_HOST`. If it is not an environment variable, it will default to `https://api.pinecone.io`.
 
