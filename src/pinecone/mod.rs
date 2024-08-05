@@ -56,7 +56,7 @@ impl PineconeClientConfig {
     /// use pinecone_sdk::pinecone::{PineconeClient, PineconeClientConfig};
     ///
     /// // Create a Pinecone client with the API key and controller host.
-    /// 
+    ///
     /// let config = PineconeClientConfig {
     ///     api_key: Some("INSERT_API_KEY".to_string()),
     ///     control_plane_host: Some("INSERT_CONTROLLER_HOST".to_string()),
@@ -82,7 +82,7 @@ impl PineconeClientConfig {
 
         let env_controller = std::env::var("PINECONE_CONTROLLER_HOST")
             .unwrap_or("https://api.pinecone.io".to_string());
-        let controller_host = self.control_plane_host.unwrap_or(env_controller);
+        let controller_host = &self.control_plane_host.clone().unwrap_or(env_controller);
 
         // get user agent
         let user_agent = get_user_agent(self.source_tag.as_ref().map(|s| s.as_str()));
@@ -138,14 +138,14 @@ impl PineconeClientConfig {
         };
 
         // return Pinecone client
-        return Ok(PineconeClient {
+        Ok(PineconeClient {
             api_key,
             controller_url: controller_host.to_string(),
             additional_headers,
             source_tag: self.source_tag,
             user_agent: Some(user_agent),
             openapi_config,
-        });
+        })
     }
 }
 
@@ -198,7 +198,7 @@ impl TryFrom<PineconeClientConfig> for PineconeClient {
 /// ### Example
 /// ```no_run
 /// use pinecone_sdk::pinecone::PineconeClient;
-/// 
+///
 /// // Create a Pinecone client with the API key and controller host read from environment variables.
 /// let pinecone: PineconeClient = pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 /// ```
