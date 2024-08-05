@@ -1,6 +1,6 @@
 use common::{generate_namespace_name, generate_vector, get_pod_index, get_serverless_index};
 use pinecone_sdk::models::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
-use pinecone_sdk::pinecone::PineconeClient;
+use pinecone_sdk::pinecone::{default_client, PineconeClient};
 use pinecone_sdk::utils::errors::PineconeError;
 use std::collections::BTreeMap;
 use std::vec;
@@ -9,7 +9,7 @@ mod common;
 
 #[tokio::test]
 async fn test_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -27,7 +27,7 @@ async fn test_index() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_index_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .index("invalid-host")
@@ -39,7 +39,7 @@ async fn test_index_err() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_upsert() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -71,7 +71,7 @@ async fn test_upsert() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -114,7 +114,7 @@ async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_pod_index())
@@ -147,7 +147,7 @@ async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_describe_index_stats_no_filter() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -172,7 +172,7 @@ async fn test_describe_index_stats_no_filter() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_list_vectors() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -195,7 +195,7 @@ async fn test_list_vectors() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_query_by_id() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -218,7 +218,7 @@ async fn test_query_by_id() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_update_vector() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -258,7 +258,7 @@ async fn test_update_vector() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_query_by_value() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -283,7 +283,7 @@ async fn test_query_by_value() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -312,7 +312,7 @@ async fn test_update_vector_fail_id() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -341,7 +341,7 @@ async fn test_update_vector_fail_namespace() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -387,7 +387,7 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_delete_all_vectors() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -431,7 +431,7 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_delete_by_filter() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_pod_index())
@@ -504,7 +504,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_fetch_vectors() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -578,7 +578,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_fetch_no_match() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())
@@ -604,7 +604,8 @@ async fn test_fetch_no_match() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_fetch_empty_id_list() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone =
+        pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 
     let host = pinecone
         .describe_index(&get_serverless_index())

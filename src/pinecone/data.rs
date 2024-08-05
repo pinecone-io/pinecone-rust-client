@@ -52,13 +52,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Namespace, UpsertResponse, Vector};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -107,13 +106,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Namespace, ListResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -157,13 +155,12 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use std::collections::BTreeMap;
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{DescribeIndexStatsResponse, Value, Kind, Metadata, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -223,13 +220,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Namespace, SparseValues, Metadata, UpdateResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -279,13 +275,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -334,13 +329,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Namespace, QueryResponse};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -387,13 +381,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -430,13 +423,12 @@ impl Index {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::Namespace;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -468,13 +460,12 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use std::collections::BTreeMap;
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{Metadata, Value, Kind, Namespace};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -526,13 +517,12 @@ impl Index {
     /// ### Example
     /// ```no_run
     /// use std::collections::BTreeMap;
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{FetchResponse, Metadata, Value, Kind};
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let mut index = pinecone.index("index-host").await?;
     ///
@@ -601,12 +591,11 @@ impl PineconeClient {
     /// ### Example
     ///
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// # use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// let index = pinecone.index("index-host").await?;
     /// # Ok(())
@@ -672,7 +661,7 @@ impl PineconeClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pinecone::PineconeClientConfig;
+    use crate::pinecone::default_client;
     use httpmock::prelude::*;
 
     #[tokio::test]
@@ -684,7 +673,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new().unwrap();
+        let pinecone = default_client().expect("Failed to create Pinecone instance");
 
         let index = pinecone.index(server.base_url().as_str()).await.unwrap();
 
@@ -700,7 +689,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new().unwrap();
+        let pinecone = default_client().expect("Failed to create Pinecone instance");;
 
         let addr = server.address().to_string();
 
@@ -719,7 +708,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new().unwrap();
+        let pinecone = default_client().expect("Failed to create Pinecone instance");;
 
         let scheme_host = format!("http://{}", server.host());
 
@@ -738,7 +727,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = PineconeClient::new().unwrap();
+        let pinecone = default_client().expect("Failed to create Pinecone instance");
 
         let host = server.host();
 

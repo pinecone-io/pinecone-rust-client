@@ -29,13 +29,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Create an index.
     /// let response: Result<IndexModel, PineconeError> = pinecone.create_serverless_index(
@@ -111,14 +110,13 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError> {
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Create a pod index.
     /// let response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
@@ -254,13 +252,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::IndexModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Describe an index in the project.
     /// let response: Result<IndexModel, PineconeError> = pinecone.describe_index("index-name").await;
@@ -286,13 +283,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::IndexList;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // List all indexes in the project.
     /// let response: Result<IndexList, PineconeError> = pinecone.list_indexes().await;
@@ -324,13 +320,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::{DeletionProtection, IndexModel};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Configure an index in the project.
     /// let response: Result<IndexModel, PineconeError> = pinecone.configure_index(
@@ -404,12 +399,11 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Delete an index in the project.
     /// let response: Result<(), PineconeError> = pinecone.delete_index("index-name").await;
@@ -436,13 +430,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::CollectionModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Describe an index in the project.
     /// let response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
@@ -478,13 +471,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::CollectionModel;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Describe a collection in the project.
     /// let collection: CollectionModel = pinecone.describe_collection("collection-name").await?;
@@ -508,13 +500,12 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::models::CollectionList;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // List all collections in the project.
     /// let response: Result<CollectionList, PineconeError> = pinecone.list_collections().await;
@@ -540,12 +531,11 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::pinecone::PineconeClient;
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = PineconeClient::new()?;
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Delete a collection in the project.
     /// let response: Result<(), PineconeError> = pinecone.delete_collection("collection-name").await;
@@ -602,12 +592,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -663,12 +653,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -715,12 +705,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -763,12 +753,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -811,12 +801,12 @@ mod tests {
             );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -849,12 +839,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_serverless_index(
@@ -908,12 +898,12 @@ mod tests {
         });
 
         // Construct Pinecone instance with the mock server URL
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call describe_index and verify the result
         let index = pinecone
@@ -961,12 +951,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let describe_index_response = pinecone
             .describe_index("invalid-index")
@@ -991,12 +981,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let describe_index_response = pinecone
             .describe_index("index-name")
@@ -1052,12 +1042,12 @@ mod tests {
         });
 
         // Construct Pinecone instance with the mock server URL
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call list_indexes and verify the result
         let index_list = pinecone
@@ -1103,12 +1093,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let list_indexes_response = pinecone
             .list_indexes()
@@ -1164,12 +1154,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1247,12 +1237,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1310,12 +1300,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1362,12 +1352,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1414,12 +1404,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_index_response = pinecone
             .create_pod_index(
@@ -1477,12 +1467,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let res = pinecone
             .handle_poll_index("index-name", WaitPolicy::WaitFor(Duration::from_secs(1)))
@@ -1523,12 +1513,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let start_time = std::time::Instant::now();
         let err = pinecone
@@ -1583,12 +1573,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index(
@@ -1650,12 +1640,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", Some(DeletionProtection::Disabled), None, None)
@@ -1673,12 +1663,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_configure_index_no_params() -> Result<(), PineconeError> {
-        let params = PineconeClientConfig {
+    async fn test_configure_index_no_config() -> Result<(), PineconeError> {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index("index-name", None, None, None)
@@ -1713,12 +1703,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index(
@@ -1759,12 +1749,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index(
@@ -1805,12 +1795,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index(
@@ -1841,12 +1831,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
             .configure_index(
@@ -1877,12 +1867,12 @@ mod tests {
             then.status(202);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let _ = pinecone
             .delete_index("index-name")
@@ -1911,12 +1901,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let delete_index_response = pinecone
             .delete_index("invalid-index")
@@ -1942,12 +1932,12 @@ mod tests {
             then.status(412);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let delete_index_response = pinecone
             .delete_index("index-name")
@@ -1973,12 +1963,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let delete_index_response = pinecone
             .delete_index("index-name")
@@ -2018,12 +2008,12 @@ mod tests {
         });
 
         // Construct Pinecone instance with the mock server URL
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call create_collection and verify the result
         let collection = pinecone
@@ -2067,12 +2057,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("invalid_collection", "valid-index")
@@ -2106,12 +2096,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("invalid_collection", "valid-index")
@@ -2137,12 +2127,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let create_collection_response = pinecone
             .create_collection("collection-name", "index1")
@@ -2180,12 +2170,12 @@ mod tests {
         });
 
         // Construct Pinecone instance with the mock server URL
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call describe_collection and verify the result
         let collection = pinecone
@@ -2223,12 +2213,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let response = pinecone
             .describe_collection("invalid-collection")
@@ -2253,12 +2243,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let response = pinecone
             .describe_collection("collection-name")
@@ -2316,12 +2306,12 @@ mod tests {
         });
 
         // Construct Pinecone instance with the mock server URL
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call list_collections and verify the result
         let collection_list = pinecone
@@ -2374,12 +2364,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         // Call list_collections and verify the result
         let list_collections_response = pinecone
@@ -2405,12 +2395,12 @@ mod tests {
             then.status(202);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let _ = pinecone
             .delete_collection("collection-name")
@@ -2439,12 +2429,12 @@ mod tests {
                 );
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let delete_collection_response = pinecone
             .delete_collection("collection-name")
@@ -2470,12 +2460,12 @@ mod tests {
             then.status(500);
         });
 
-        let params = PineconeClientConfig {
+        let config = PineconeClientConfig {
             api_key: Some("api_key".to_string()),
             control_plane_host: Some(server.base_url()),
             ..Default::default()
         };
-        let pinecone = PineconeClient::with_config(params).expect("Failed to create Pinecone instance");
+        let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let delete_collection_response = pinecone
             .delete_collection("collection-name")

@@ -3,7 +3,7 @@ use common::{
     get_serverless_index,
 };
 use pinecone_sdk::models::{Cloud, DeletionProtection, Metric, WaitPolicy};
-use pinecone_sdk::pinecone::{PineconeClient, PineconeClientConfig};
+use pinecone_sdk::pinecone::{default_client, PineconeClientConfig};
 use pinecone_sdk::utils::errors::PineconeError;
 use serial_test::serial;
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ mod common;
 
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .describe_index(&get_serverless_index())
@@ -25,7 +25,7 @@ async fn test_describe_index() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_describe_index_fail() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .describe_index("invalid-index")
@@ -37,7 +37,7 @@ async fn test_describe_index_fail() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_list_indexes() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let index1_name = &generate_index_name();
     let index2_name = &generate_index_name();
@@ -113,7 +113,7 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_delete_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let name = &generate_index_name();
 
@@ -148,7 +148,7 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_pod_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let name = &generate_index_name();
 
@@ -192,7 +192,7 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let name = &generate_index_name();
 
@@ -236,7 +236,7 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_delete_index_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .delete_index("invalid-index")
@@ -249,7 +249,7 @@ async fn test_delete_index_err() -> Result<(), PineconeError> {
 #[tokio::test]
 #[serial]
 async fn test_configure_index() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .configure_index(
@@ -266,7 +266,7 @@ async fn test_configure_index() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let index_name = &generate_index_name();
     let _ = pinecone
@@ -302,7 +302,7 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_configure_optional_deletion_prot() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let index_name = &generate_index_name();
     let _ = pinecone
@@ -353,7 +353,7 @@ async fn test_configure_optional_deletion_prot() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .configure_index(
@@ -370,7 +370,7 @@ async fn test_configure_serverless_index_err() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .configure_index(
@@ -388,7 +388,7 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
 #[tokio::test]
 #[serial]
 async fn test_create_delete_collection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let collection_name = generate_collection_name();
 
@@ -420,7 +420,7 @@ async fn test_create_delete_collection() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let collection_name = generate_collection_name();
 
@@ -434,7 +434,7 @@ async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_create_collection_invalid_err() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let collection_name = generate_collection_name();
 
@@ -448,7 +448,7 @@ async fn test_create_collection_invalid_err() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_describe_collection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let collection_name = &get_collection();
 
@@ -462,7 +462,7 @@ async fn test_describe_collection() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_describe_collection_fail() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .describe_collection("invalid-collection")
@@ -474,7 +474,7 @@ async fn test_describe_collection_fail() -> Result<(), PineconeError> {
 
 #[tokio::test]
 async fn test_list_collections() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .list_collections()
@@ -494,12 +494,12 @@ async fn test_list_collections_invalid_api_version() -> Result<(), PineconeError
     .cloned()
     .collect();
 
-    let params = PineconeClientConfig {
+    let config = PineconeClientConfig {
         additional_headers: Some(headers),
         ..Default::default()
     };
 
-    let pinecone = PineconeClient::with_config(params).expect("Failed to create client");
+    let pinecone = config.client().expect("Failed to create client");
 
     let _ = pinecone
         .list_collections()
@@ -511,7 +511,7 @@ async fn test_list_collections_invalid_api_version() -> Result<(), PineconeError
 
 #[tokio::test]
 async fn test_delete_collection_invalid_collection() -> Result<(), PineconeError> {
-    let pinecone = PineconeClient::new().expect("Failed to create client");
+    let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
         .delete_collection("invalid-collection")
