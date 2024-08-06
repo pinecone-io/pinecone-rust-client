@@ -1,16 +1,14 @@
 # Pinecone Rust SDK
 
+This SDK is still in an alpha state. While it is mostly built out and functional, it may undergo changes as we continue to improve the UX. Please try it out and give us your feedback, but be aware that updates may introduce breaking changes.
+
 ## Documentation
 
 [reference the documentation here]
 
-### Example code
-
-[reference the sample app]
-
 ## Prerequisites
 
-Rust version?
+Rust version: tested with Rust version 1.78.0
 
 Before you can use the Pinecone SDK, you must sign up for an account and find your API key in the Pinecone console dashboard at [https://app.pinecone.io](https://app.pinecone.io).
 
