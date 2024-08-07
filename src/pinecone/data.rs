@@ -689,7 +689,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = default_client().expect("Failed to create Pinecone instance");;
+        let pinecone = default_client().expect("Failed to create Pinecone instance");
 
         let addr = server.address().to_string();
 
@@ -708,7 +708,7 @@ mod tests {
             then.status(200);
         });
 
-        let pinecone = default_client().expect("Failed to create Pinecone instance");;
+        let pinecone = default_client().expect("Failed to create Pinecone instance");
 
         let scheme_host = format!("http://{}", server.host());
 
