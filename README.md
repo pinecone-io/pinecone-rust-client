@@ -4,7 +4,7 @@ This SDK is still in an alpha state. While it is mostly built out and functional
 
 ## Documentation
 
-[reference the documentation here]
+The documentation can be found [here](https://docs.rs/pinecone-sdk/latest/pinecone_sdk/).
 
 ## Prerequisites
 
