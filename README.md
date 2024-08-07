@@ -38,7 +38,7 @@ let pinecone: PineconeClient = config.client().expect("Failed to create Pinecone
 ```
 
 ### Default client
-Use the `default_client()` function, which is the equivalent of constructing a `PineconeClientConfig` struct with all fields set to `None`. Configuration values will be read from environment variables.
+Use the `default_client()` function, which is the equivalent of constructing a `PineconeClientConfig` struct with all fields set to `None`. The API key and control plane host (optional) will be read from environment variables.
 ```rust
 let pinecone: PineconeClient = pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 ```
@@ -390,7 +390,7 @@ let pinecone = config.client()?;
 
 let mut index = pinecone.index("index-host").await?;
 
-let vectors = &["1".to_string(), "2".to_string()];
+let vectors = &["1", "2"];
 
 let response: FetchResponse = index.fetch(vectors, &Default::default()).await?;
 ```

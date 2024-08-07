@@ -23,13 +23,15 @@ mod embedding;
 pub use self::embedding::Embedding;
 
 pub use crate::openapi::models::{
-    serverless_spec::Cloud, CollectionList, CollectionModel, ConfigureIndexRequest,
-    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
-    DeletionProtection, EmbedRequestParameters, IndexModelSpec, IndexModelStatus, IndexSpec,
-    PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    index_model_status::State, serverless_spec::Cloud, CollectionList, CollectionModel,
+    ConfigureIndexRequest, ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod,
+    CreateCollectionRequest, DeletionProtection, EmbedRequestParameters, IndexModelSpec,
+    IndexModelStatus, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
 };
 
-pub use crate::protos::{DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues,
-    UpdateResponse, UpsertResponse, Vector};
+pub use crate::protos::{
+    DescribeIndexStatsResponse, FetchResponse, ListResponse, QueryResponse, SparseValues,
+    UpdateResponse, UpsertResponse, Vector,
+};
 
-pub use prost_types::{value::Kind as Kind, Struct as Metadata, Value};
+pub use prost_types::{value::Kind, Struct as Metadata, Value};
