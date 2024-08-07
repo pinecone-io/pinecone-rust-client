@@ -14,7 +14,7 @@ Before you can use the Pinecone SDK, you must sign up for an account and find yo
 
 ## Installation
 
-How to install - instruction for getting the package from crates.io
+Run `cargo add pinecone-sdk` to add the crate as a dependency. More on the crate can be found [here](https://crates.io/crates/pinecone-sdk).
 
 ## Usage
 
