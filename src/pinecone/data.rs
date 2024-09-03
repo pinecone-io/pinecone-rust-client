@@ -634,20 +634,14 @@ impl PineconeClient {
 
         // connect to server
         let endpoint = Channel::from_shared(host)
-            .map_err(|e| PineconeError::ConnectionError {
-                source: Box::new(e),
-            })?
+            .map_err(|e| PineconeError::ConnectionError { source: e.into() })?
             .tls_config(tls_config)
-            .map_err(|e| PineconeError::ConnectionError {
-                source: Box::new(e),
-            })?;
+            .map_err(|e| PineconeError::ConnectionError { source: e.into() })?;
 
         let channel = endpoint
             .connect()
             .await
-            .map_err(|e| PineconeError::ConnectionError {
-                source: Box::new(e),
-            })?;
+            .map_err(|e| PineconeError::ConnectionError { source: e.into() })?;
 
         // add api key in metadata through interceptor
         let token: TonicMetadataVal<_> = self.api_key.parse().unwrap();
