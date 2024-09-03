@@ -61,7 +61,7 @@ The following example creates a serverless index in the `us-east-1` region of AW
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
+use pinecone_sdk::models::{Metric, Cloud, WaitPolicy, IndexModel};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -85,7 +85,7 @@ The following example creates a pod index in the `us-east-1` region of AWS.
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
+use pinecone_sdk::models::{Metric, Cloud, WaitPolicy, IndexModel};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -112,7 +112,7 @@ Pod indexes support several optional configuration fields. The following example
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::{Metric, Cloud, WaitPolicy, IndexModel};
+use pinecone_sdk::models::{Metric, Cloud, WaitPolicy, IndexModel};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -143,7 +143,8 @@ let index_description: IndexModel = pinecone.create_pod_index(
 The following example lists all indexes in your project.
 
 ```rust
-use pinecone_sdk::pinecone::{PineconeClientConfig, control::IndexList};
+use pinecone_sdk::pinecone::PineconeClientConfig;
+use pinecone_sdk::models::IndexList;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -159,7 +160,8 @@ let index_list: IndexList = pinecone.list_indexes().await?;
 The following example returns information about the index `index-name`.
 
 ```rust
-use pinecone_sdk::pinecone::{PineconeClientConfig, control::IndexModel};
+use pinecone_sdk::pinecone::PineconeClientConfig;
+use pinecone_sdk::models::IndexModel;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -177,7 +179,8 @@ Configuring an index takes in three optional parameters -- a DeletionProtection 
 The following example disables deletion protection for the index `index-name`.
 
 ```rust
-use pinecone_sdk::pinecone::{PineconeClientConfig, control::IndexModel};
+use pinecone_sdk::pinecone::PineconeClientConfig;
+use pinecone_sdk::models::IndexModel;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -191,7 +194,8 @@ let index_description: IndexModel = pinecone.configure_index("index-name", Some(
 The following example changes the index `index-name` to have 6 replicas and pod type `s1`. The deletion protection type will not be changed in this case.
 
 ```rust
-use pinecone_sdk::pinecone::{PineconeClientConfig, control::IndexModel};
+use pinecone_sdk::pinecone::PineconeClientConfig;
+use pinecone_sdk::models::IndexModel;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -226,7 +230,7 @@ Without filter
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::DescribeIndexStatsResponse;
+use pinecone_sdk::models::DescribeIndexStatsResponse;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -244,7 +248,7 @@ With filter
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Value, Kind, Metadata, DescribeIndexStatsResponse};
+use pinecone_sdk::models::{Value, Kind, Metadata, DescribeIndexStatsResponse};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -267,7 +271,7 @@ The following example upserts two vectors into the index with host `index-host`.
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Vector, UpsertResponse};
+use pinecone_sdk::models::{Vector, UpsertResponse};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -302,7 +306,7 @@ The following example queries the index with host `index-host` for the vector wi
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
+use pinecone_sdk::models::{Namespace, QueryResponse};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -330,7 +334,7 @@ The following example queries the index with host `index-host` for the vector wi
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Namespace, QueryResponse};
+use pinecone_sdk::models::{Namespace, QueryResponse};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -384,7 +388,7 @@ The following example deletes vectors that satisfy the filter in the namespace `
 ```rust
 use std::collections::BTreeMap;
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Metadata, Value, Kind, Namespace};
+use pinecone_sdk::models::{Metadata, Value, Kind, Namespace};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -423,7 +427,7 @@ The following example fetches the vectors with IDs `1` and `2` from the default 
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::FetchResponse;
+use pinecone_sdk::models::FetchResponse;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -444,7 +448,7 @@ The following example updates the vector with ID `vector-id` in the namespace `n
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::UpdateResponse;
+use pinecone_sdk::models::UpdateResponse;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -463,7 +467,7 @@ The following example lists vectors in the namespace `namespace`.
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::data::{Namespace, ListResponse};
+use pinecone_sdk::models::{Namespace, ListResponse};
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -484,7 +488,7 @@ The following example creates a collection `collection-name` in the index `index
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::CollectionModel;
+use pinecone_sdk::models::CollectionModel;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -501,7 +505,7 @@ The following example lists all collections in a project.
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::CollectionList;
+use pinecone_sdk::models::CollectionList;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
@@ -518,7 +522,7 @@ The following example describes the collection `collection-name`.
 
 ```rust
 use pinecone_sdk::pinecone::PineconeClientConfig;
-use pinecone_sdk::pinecone::control::CollectionModel;
+use pinecone_sdk::models::CollectionModel;
 
 let config = PineconeClientConfig {
     api_key: Some('<<PINECONE_API_KEY>>'),
