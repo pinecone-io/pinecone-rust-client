@@ -124,7 +124,7 @@ impl PineconeClientConfig {
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
-            .map_err(|e| PineconeError::ReqwestError { source: e })?;
+            .map_err(|e| PineconeError::ReqwestError { source: e.into() })?;
 
         let openapi_config = Configuration {
             base_path: controller_host.to_string(),
