@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// CreateCollectionRequest : The configuration needed to create a Pinecone collection.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateCollectionRequest {
-    /// The name of the collection to be created. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'. 
+    /// The name of the collection to be created. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'.
     #[serde(rename = "name")]
     pub name: String,
     /// The name of the index to be used as the source for the collection.
@@ -25,10 +25,6 @@ pub struct CreateCollectionRequest {
 impl CreateCollectionRequest {
     /// The configuration needed to create a Pinecone collection.
     pub fn new(name: String, source: String) -> CreateCollectionRequest {
-        CreateCollectionRequest {
-            name,
-            source,
-        }
+        CreateCollectionRequest { name, source }
     }
 }
-

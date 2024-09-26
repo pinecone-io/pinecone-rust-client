@@ -38,7 +38,13 @@ pub struct PodSpec {
 
 impl PodSpec {
     /// Configuration needed to deploy a pod-based index.
-    pub fn new(environment: String, replicas: i32, shards: i32, pod_type: String, pods: i32) -> PodSpec {
+    pub fn new(
+        environment: String,
+        replicas: i32,
+        shards: i32,
+        pod_type: String,
+        pods: i32,
+    ) -> PodSpec {
         PodSpec {
             environment,
             replicas,
@@ -50,4 +56,3 @@ impl PodSpec {
         }
     }
 }
-

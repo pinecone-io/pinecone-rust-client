@@ -654,7 +654,6 @@ impl PineconeClient {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::pinecone::default_client;
     use httpmock::prelude::*;
 

@@ -22,9 +22,6 @@ pub struct PodSpecMetadataConfig {
 impl PodSpecMetadataConfig {
     /// Configuration for the behavior of Pinecone's internal metadata index. By default, all metadata is indexed; when `metadata_config` is present, only specified metadata fields are indexed. These configurations are only valid for use with pod-based indexes.
     pub fn new() -> PodSpecMetadataConfig {
-        PodSpecMetadataConfig {
-            indexed: None,
-        }
+        PodSpecMetadataConfig { indexed: None }
     }
 }
-

@@ -21,9 +21,6 @@ pub struct CollectionList {
 impl CollectionList {
     /// The list of collections that exist in the project.
     pub fn new() -> CollectionList {
-        CollectionList {
-            collections: None,
-        }
+        CollectionList { collections: None }
     }
 }
-

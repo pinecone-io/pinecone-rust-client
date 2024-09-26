@@ -19,9 +19,6 @@ pub struct ConfigureIndexRequestSpec {
 
 impl ConfigureIndexRequestSpec {
     pub fn new(pod: models::ConfigureIndexRequestSpecPod) -> ConfigureIndexRequestSpec {
-        ConfigureIndexRequestSpec {
-            pod: Box::new(pod),
-        }
+        ConfigureIndexRequestSpec { pod: Box::new(pod) }
     }
 }
-

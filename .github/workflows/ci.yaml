@@ -1,34 +1,55 @@
 name: CI
 
 on:
-    pull_request: {}
-    push:
-      branches:
-        - main
-    workflow_dispatch: {}
+  pull_request: {}
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
 
 jobs:
-    test:
-        runs-on: ${{ matrix.os }}
-        strategy:
-          matrix:
-            os: [ubuntu-latest]
-            rust: [stable]    
-        steps:
-        - uses: actions/checkout@v4
-        - uses: hecrj/setup-rust-action@v2
-          with:
-            rust-version: ${{ matrix.rust }}
-        - name: Install protoc
-          uses: arduino/setup-protoc@v3
-        - name: Build SDK
-          run: cargo build
-        - name: Build documentation
-          run: cargo doc --no-deps
-        - name: Run tests
-          env:
-            PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
-            SERVERLESS_INDEX_NAME: ${{ secrets.SERVERLESS_INDEX_NAME }}
-            POD_INDEX_NAME: ${{ secrets.POD_INDEX_NAME }}
-            COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
-          run: cargo test --verbose
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hecrj/setup-rust-action@v2
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+      - name: Build SDK
+        run: cargo build
+      - name: Build documentation
+        run: cargo doc --no-deps
+      - name: Run tests
+        env:
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          SERVERLESS_INDEX_NAME: ${{ secrets.SERVERLESS_INDEX_NAME }}
+          POD_INDEX_NAME: ${{ secrets.POD_INDEX_NAME }}
+          COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+        run: cargo test --verbose
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Enforce formatting
+        run: cargo fmt --check
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
