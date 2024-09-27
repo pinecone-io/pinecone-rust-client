@@ -1,7 +1,7 @@
 use regex::Regex;
 
 /// Normalizes the source tag.
-fn build_source_tag(source_tag: &String) -> String {
+fn build_source_tag(source_tag: &str) -> String {
     // 1. Lowercase
     // 2. Limit charset to [a-z0-9_ ]
     // 3. Trim left/right empty space
@@ -22,12 +22,9 @@ fn build_source_tag(source_tag: &String) -> String {
 pub fn get_user_agent(source_tag: Option<&str>) -> String {
     let mut user_agent = format!("lang=rust; pinecone-rust-client={}", "0.1.0");
     if let Some(st) = source_tag {
-        user_agent.push_str(&format!(
-            "; source_tag={}",
-            build_source_tag(&st.to_string())
-        ));
+        user_agent.push_str(&format!("; source_tag={}", build_source_tag(st)));
     }
-    return user_agent;
+    user_agent
 }
 
 #[cfg(test)]

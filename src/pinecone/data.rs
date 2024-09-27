@@ -33,6 +33,7 @@ impl Interceptor for ApiKeyInterceptor {
 
 /// A client for interacting with a Pinecone index.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Index {
     /// The name of the index.
     host: String,
@@ -298,6 +299,7 @@ impl Index {
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
+        #[allow(deprecated)]
         let request = protos::QueryRequest {
             id: id.to_string(),
             top_k,
@@ -345,6 +347,7 @@ impl Index {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub async fn query_by_value(
         &mut self,
         vector: Vec<f32>,
@@ -355,6 +358,7 @@ impl Index {
         include_values: Option<bool>,
         include_metadata: Option<bool>,
     ) -> Result<QueryResponse, PineconeError> {
+        #[allow(deprecated)]
         let request = protos::QueryRequest {
             id: "".to_string(),
             top_k,

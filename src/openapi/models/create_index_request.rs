@@ -44,11 +44,7 @@ impl CreateIndexRequest {
             dimension,
             metric: None,
             deletion_protection: None,
-            spec: if let Some(x) = spec {
-                Some(Box::new(x))
-            } else {
-                None
-            },
+            spec: spec.map(Box::new),
         }
     }
 }
