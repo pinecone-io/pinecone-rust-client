@@ -2,7 +2,7 @@ api_version := "2024-07"
 
 # Generate version file
 generate-version:
-  echo "/// Pinecone API version\npub const API_VERSION: &str = \"{{api_version}}\";" > src/version.rs
+  echo "/// Pinecone API version\npub const API_VERSION: &str = \"{{api_version}}\";" > pinecone-sdk/src/version.rs
 
 # Build the OpenAPI and Protobuf definitions in `codegen/apis`
 build-apis:
