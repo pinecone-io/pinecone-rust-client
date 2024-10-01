@@ -50,6 +50,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_serverless_index(
         &self,
         name: &str,
@@ -80,7 +81,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
@@ -106,7 +107,7 @@ impl PineconeClient {
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
-    /// * Result<IndexModel, PineconeError>`
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -140,6 +141,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_pod_index(
         &self,
         name: &str,
@@ -184,7 +186,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         // poll index status
         match self.handle_poll_index(name, timeout).await {
@@ -268,7 +270,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::describe_index(&self.openapi_config, name)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         Ok(res.into())
     }
@@ -299,7 +301,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::list_indexes(&self.openapi_config)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         Ok(res.into())
     }
@@ -310,10 +312,10 @@ impl PineconeClient {
     /// Deletion protection can be changed for both pod and serverless indexes, while pod types and number of replicas can only be changed for pod indexes.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the index to be configured.
-    /// * deletion_protection: Option<DeletionProtection> - Deletion protection for the index.
-    /// * replicas: Option<i32> - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
-    /// * pod_type: Option<&str> - The new pod_type for the index. This parameter should be `None` if the index is serverless.
+    /// * `name: &str` - The name of the index to be configured.
+    /// * `deletion_protection: Option<DeletionProtection>` - Deletion protection for the index.
+    /// * `replicas: Option<i32>` - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
+    /// * `pod_type: Option<&str>` - The new pod_type for the index. This parameter should be `None` if the index is serverless.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -344,7 +346,7 @@ impl PineconeClient {
         replicas: Option<i32>,
         pod_type: Option<&str>,
     ) -> Result<IndexModel, PineconeError> {
-        if replicas == None && pod_type == None && deletion_protection == None {
+        if replicas.is_none() && pod_type.is_none() && deletion_protection.is_none() {
             return Err(PineconeError::InvalidConfigurationError {
                 message: "At least one of deletion_protection, number of replicas, or pod type must be provided".to_string(),
             });
@@ -384,7 +386,7 @@ impl PineconeClient {
             configure_index_request,
         )
         .await
-        .map_err(|e| PineconeError::from(e))?;
+        .map_err(PineconeError::from)?;
 
         Ok(res.into())
     }
@@ -392,7 +394,7 @@ impl PineconeClient {
     /// Deletes an index.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the index to be deleted.
+    /// * `name: &str` - The name of the index to be deleted.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
@@ -412,11 +414,11 @@ impl PineconeClient {
     /// ```
     pub async fn delete_index(&self, name: &str) -> Result<(), PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::delete_index(&self.openapi_config, name)
+        manage_indexes_api::delete_index(&self.openapi_config, name)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
-        Ok(res)
+        Ok(())
     }
 
     /// Creates a collection from an index.
@@ -456,7 +458,7 @@ impl PineconeClient {
         let res =
             manage_indexes_api::create_collection(&self.openapi_config, create_collection_request)
                 .await
-                .map_err(|e| PineconeError::from(e))?;
+                .map_err(PineconeError::from)?;
 
         Ok(res)
     }
@@ -464,7 +466,7 @@ impl PineconeClient {
     /// Describe a collection.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the collection to describe.
+    /// * `name: &str` - The name of the collection to describe.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
@@ -486,7 +488,7 @@ impl PineconeClient {
     pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
         let res = manage_indexes_api::describe_collection(&self.openapi_config, name)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         Ok(res)
     }
@@ -516,7 +518,7 @@ impl PineconeClient {
         // make openAPI call
         let res = manage_indexes_api::list_collections(&self.openapi_config)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         Ok(res)
     }
@@ -524,7 +526,7 @@ impl PineconeClient {
     /// Deletes a collection.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the collection to be deleted.
+    /// * `name: &str` - The name of the collection to be deleted.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
@@ -544,11 +546,11 @@ impl PineconeClient {
     /// ```
     pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
         // make openAPI call
-        let res = manage_indexes_api::delete_collection(&self.openapi_config, name)
+        manage_indexes_api::delete_collection(&self.openapi_config, name)
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
-        Ok(res)
+        Ok(())
     }
 }
 

@@ -32,11 +32,11 @@ impl PineconeClient {
         &self,
         model: &str,
         parameters: Option<EmbedRequestParameters>,
-        inputs: &Vec<&str>,
+        inputs: &[&str],
     ) -> Result<EmbeddingsList, PineconeError> {
         let request = EmbedRequest {
             model: model.to_string(),
-            parameters: parameters.map(|x| Box::new(x)),
+            parameters: parameters.map(Box::new),
             inputs: inputs
                 .iter()
                 .map(|&x| EmbedRequestInputsInner {
@@ -47,7 +47,7 @@ impl PineconeClient {
 
         let res = inference_api::embed(&self.openapi_config, Some(request))
             .await
-            .map_err(|e| PineconeError::from(e))?;
+            .map_err(PineconeError::from)?;
 
         Ok(res.into())
     }

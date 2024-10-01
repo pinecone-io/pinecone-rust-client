@@ -1,8 +1,8 @@
 //! # Pinecone Rust SDK
 //!
 //! > ⚠️ **Warning:** This SDK is still in an alpha state. While it is mostly built out and functional,
-//! it may undergo changes as we continue to improve the UX. Please try it out and give us your feedback,
-//! but be aware that updates may introduce breaking changes.
+//! > it may undergo changes as we continue to improve the UX. Please try it out and give us your feedback,
+//! > but be aware that updates may introduce breaking changes.
 //!
 //! `pinecone-sdk` provides an interface for working with Pinecone services such as the Database and Inference APIs.
 //! See [docs.pinecone.io](https://docs.pinecone.io/) for more information.

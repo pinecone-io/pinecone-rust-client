@@ -85,7 +85,7 @@ impl PineconeClientConfig {
         let controller_host = &self.control_plane_host.clone().unwrap_or(env_controller);
 
         // get user agent
-        let user_agent = get_user_agent(self.source_tag.as_ref().map(|s| s.as_str()));
+        let user_agent = get_user_agent(self.source_tag.as_deref());
 
         // get additional headers
         let mut additional_headers =
@@ -151,6 +151,7 @@ impl PineconeClientConfig {
 
 /// The `PineconeClient` struct is the main entry point for interacting with Pinecone via this Rust SDK.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct PineconeClient {
     /// Pinecone API key
     api_key: String,

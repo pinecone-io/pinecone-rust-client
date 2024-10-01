@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// CreateIndexRequest : The configuration needed to create a Pinecone index.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateIndexRequest {
-    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'. 
+    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'.
     #[serde(rename = "name")]
     pub name: String,
     /// The dimensions of the vectors to be inserted in the index.
@@ -23,7 +23,10 @@ pub struct CreateIndexRequest {
     /// The distance metric to be used for similarity search. You can use 'euclidean', 'cosine', or 'dotproduct'.
     #[serde(rename = "metric", skip_serializing_if = "Option::is_none")]
     pub metric: Option<Metric>,
-    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "deletion_protection",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub deletion_protection: Option<models::DeletionProtection>,
     #[serde(rename = "spec", deserialize_with = "Option::deserialize")]
     pub spec: Option<Box<models::IndexSpec>>,
@@ -31,13 +34,17 @@ pub struct CreateIndexRequest {
 
 impl CreateIndexRequest {
     /// The configuration needed to create a Pinecone index.
-    pub fn new(name: String, dimension: i32, spec: Option<models::IndexSpec>) -> CreateIndexRequest {
+    pub fn new(
+        name: String,
+        dimension: i32,
+        spec: Option<models::IndexSpec>,
+    ) -> CreateIndexRequest {
         CreateIndexRequest {
             name,
             dimension,
             metric: None,
             deletion_protection: None,
-            spec: if let Some(x) = spec {Some(Box::new(x))} else {None},
+            spec: spec.map(Box::new),
         }
     }
 }
@@ -57,4 +64,3 @@ impl Default for Metric {
         Self::Cosine
     }
 }
-
