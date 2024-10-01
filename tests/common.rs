@@ -16,22 +16,26 @@ pub fn generate_random_string() -> String {
 }
 
 /// Generates a random index name
+#[allow(dead_code)]
 pub fn generate_index_name() -> String {
     format!("test-index-{}", generate_random_string())
 }
 
 /// Generates a random collection name
+#[allow(dead_code)]
 pub fn generate_collection_name() -> String {
     format!("test-collection-{}", generate_random_string())
 }
 
 /// Generates a random namespace name
+#[allow(dead_code)]
 pub fn generate_namespace_name() -> Namespace {
     let name = format!("test-namespace-{}", generate_random_string());
     name.into()
 }
 
 /// Generates a random vector of length `length`
+#[allow(dead_code)]
 pub fn generate_vector(length: usize) -> Vec<f32> {
     let mut rng = rand::thread_rng();
     (0..length).map(|_| rng.gen()).collect()
@@ -48,6 +52,7 @@ pub fn get_pod_index() -> String {
 }
 
 /// Returns the name of the collection from the environment variable
+#[allow(dead_code)]
 pub fn get_collection() -> String {
     std::env::var("COLLECTION_NAME").unwrap()
 }

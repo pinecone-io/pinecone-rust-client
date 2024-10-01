@@ -107,7 +107,7 @@ impl PineconeClient {
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
-    /// * Result<IndexModel, PineconeError>`
+    /// * `Result<IndexModel, PineconeError>`
     ///
     /// ### Example
     /// ```no_run
@@ -312,10 +312,10 @@ impl PineconeClient {
     /// Deletion protection can be changed for both pod and serverless indexes, while pod types and number of replicas can only be changed for pod indexes.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the index to be configured.
-    /// * deletion_protection: Option<DeletionProtection> - Deletion protection for the index.
-    /// * replicas: Option<i32> - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
-    /// * pod_type: Option<&str> - The new pod_type for the index. This parameter should be `None` if the index is serverless.
+    /// * `name: &str` - The name of the index to be configured.
+    /// * `deletion_protection: Option<DeletionProtection>` - Deletion protection for the index.
+    /// * `replicas: Option<i32>` - The desired number of replicas, lowest value is 0. This parameter should be `None` if the index is serverless.
+    /// * `pod_type: Option<&str>` - The new pod_type for the index. This parameter should be `None` if the index is serverless.
     ///
     /// ### Return
     /// * `Result<IndexModel, PineconeError>`
@@ -394,7 +394,7 @@ impl PineconeClient {
     /// Deletes an index.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the index to be deleted.
+    /// * `name: &str` - The name of the index to be deleted.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
@@ -466,7 +466,7 @@ impl PineconeClient {
     /// Describe a collection.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the collection to describe.
+    /// * `name: &str` - The name of the collection to describe.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
@@ -526,7 +526,7 @@ impl PineconeClient {
     /// Deletes a collection.
     ///
     /// ### Arguments
-    /// * name: &str - The name of the collection to be deleted.
+    /// * `name: &str` - The name of the collection to be deleted.
     ///
     /// ### Return
     /// * `Result<(), PineconeError>`
