@@ -11,7 +11,7 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// EmbeddingsListUsage : Usage statistics for model inference including any instruction prefixes
+/// EmbeddingsListUsage : Usage statistics for the model inference.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmbeddingsListUsage {
     #[serde(rename = "total_tokens", skip_serializing_if = "Option::is_none")]
@@ -19,8 +19,11 @@ pub struct EmbeddingsListUsage {
 }
 
 impl EmbeddingsListUsage {
-    /// Usage statistics for model inference including any instruction prefixes
+    /// Usage statistics for the model inference.
     pub fn new() -> EmbeddingsListUsage {
-        EmbeddingsListUsage { total_tokens: None }
+        EmbeddingsListUsage {
+            total_tokens: None,
+        }
     }
 }
+

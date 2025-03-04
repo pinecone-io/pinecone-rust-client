@@ -21,6 +21,9 @@ pub struct IndexList {
 impl IndexList {
     /// The list of indexes that exist in the project.
     pub fn new() -> IndexList {
-        IndexList { indexes: None }
+        IndexList {
+            indexes: None,
+        }
     }
 }
+

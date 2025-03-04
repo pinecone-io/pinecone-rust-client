@@ -96,7 +96,7 @@ pub struct DeleteRequest {
     pub namespace: ::prost::alloc::string::String,
     /// If specified, the metadata filter here will be used to select the vectors to delete. This is mutually exclusive
     /// with specifying ids to delete in the ids param or using `delete_all=True`.
-    /// For guidance and examples, see [Filter with metadata](<https://docs.pinecone.io/guides/data/filter-with-metadata>).
+    /// For guidance and examples, see [Understanding metadata](<https://docs.pinecone.io/guides/data/understanding-metadata>).
     /// Serverless indexes do not support delete by metadata. Instead, you can use the `list` operation to fetch the vector IDs based on their common ID prefix and then delete the records by ID.
     #[prost(message, optional, tag = "4")]
     pub filter: ::core::option::Option<::prost_types::Struct>,
@@ -204,7 +204,7 @@ pub struct QueryRequest {
     /// The number of results to return for each query.
     #[prost(uint32, tag = "2")]
     pub top_k: u32,
-    /// The filter to apply. You can use vector metadata to limit your search. See [Filter with metadata](<https://docs.pinecone.io/guides/data/filter-with-metadata>).
+    /// The filter to apply. You can use vector metadata to limit your search. See [Understanding metadata](<https://docs.pinecone.io/guides/data/understanding-metadata>). You can use vector metadata to limit your search. See [Understanding metadata](<https://docs.pinecone.io/guides/data/understanding-metadata>).
     #[prost(message, optional, tag = "3")]
     pub filter: ::core::option::Option<::prost_types::Struct>,
     /// Indicates whether vector values are included in the response.
@@ -213,17 +213,17 @@ pub struct QueryRequest {
     /// Indicates whether metadata is included in the response as well as the ids.
     #[prost(bool, tag = "5")]
     pub include_metadata: bool,
-    /// DEPRECATED. The query vectors. Each `query()` request can contain only one of the parameters `queries`, `vector`, or  `id`.
+    /// DEPRECATED. Use `vector` or `id` instead.
     #[deprecated]
     #[prost(message, repeated, tag = "6")]
     pub queries: ::prost::alloc::vec::Vec<QueryVector>,
-    /// The query vector. This should be the same length as the dimension of the index being queried. Each `query()` request can contain only one of the parameters `id` or `vector`.
+    /// The query vector. This should be the same length as the dimension of the index being queried. Each request can contain either the `id` or `vector` parameter.
     #[prost(float, repeated, tag = "7")]
     pub vector: ::prost::alloc::vec::Vec<f32>,
     /// The query sparse values.
     #[prost(message, optional, tag = "9")]
     pub sparse_vector: ::core::option::Option<SparseValues>,
-    /// The unique ID of the vector to be used as a query vector. Each `query()` request can contain only one of the parameters `queries`, `vector`, or  `id`.
+    /// The unique ID of the vector to be used as a query vector. Each request can contain either the `vector` or `id` parameter.
     #[prost(string, tag = "8")]
     pub id: ::prost::alloc::string::String,
 }
@@ -313,7 +313,10 @@ pub struct DescribeIndexStatsResponse {
     /// summary of its contents. If a metadata filter expression is present, the
     /// summary will reflect only vectors matching that expression.
     #[prost(map = "string, message", tag = "1")]
-    pub namespaces: ::std::collections::HashMap<::prost::alloc::string::String, NamespaceSummary>,
+    pub namespaces: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        NamespaceSummary,
+    >,
     /// The dimension of the indexed vectors.
     #[prost(uint32, tag = "2")]
     pub dimension: u32,
@@ -321,7 +324,7 @@ pub struct DescribeIndexStatsResponse {
     ///
     /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
     ///
-    /// The index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](<https://docs.pinecone.io/reference/api/control-plane/describe_index>).
+    /// The index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](<https://docs.pinecone.io/reference/api/2024-07/control-plane/describe_index>).
     #[prost(float, tag = "3")]
     pub index_fullness: f32,
     /// The total number of vectors in the index, regardless of whether a metadata filter expression was passed
@@ -331,8 +334,8 @@ pub struct DescribeIndexStatsResponse {
 /// Generated client implementations.
 pub mod vector_service_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
-    use tonic::codegen::http::Uri;
     use tonic::codegen::*;
+    use tonic::codegen::http::Uri;
     /// The `VectorService` interface is exposed by Pinecone's vector index services.
     /// This service could also be called a `gRPC` service or a `REST`-like api.
     #[derive(Debug, Clone)]
@@ -378,8 +381,9 @@ pub mod vector_service_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
-                Into<StdError> + Send + Sync,
+            <T as tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+            >>::Error: Into<StdError> + Send + Sync,
         {
             VectorServiceClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -423,17 +427,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::UpsertRequest>,
         ) -> std::result::Result<tonic::Response<super::UpsertResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/Upsert");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "Upsert"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "Upsert"));
             self.inner.unary(req, path, codec).await
         }
         /// Delete vectors
@@ -445,17 +451,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteRequest>,
         ) -> std::result::Result<tonic::Response<super::DeleteResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/Delete");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "Delete"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "Delete"));
             self.inner.unary(req, path, codec).await
         }
         /// Fetch vectors
@@ -467,17 +475,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::FetchRequest>,
         ) -> std::result::Result<tonic::Response<super::FetchResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/Fetch");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "Fetch"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "Fetch"));
             self.inner.unary(req, path, codec).await
         }
         /// List vector IDs
@@ -493,17 +503,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ListRequest>,
         ) -> std::result::Result<tonic::Response<super::ListResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/List");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "List"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "List"));
             self.inner.unary(req, path, codec).await
         }
         /// Query vectors
@@ -515,17 +527,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::QueryRequest>,
         ) -> std::result::Result<tonic::Response<super::QueryResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/Query");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "Query"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "Query"));
             self.inner.unary(req, path, codec).await
         }
         /// Update a vector
@@ -537,17 +551,19 @@ pub mod vector_service_client {
             &mut self,
             request: impl tonic::IntoRequest<super::UpdateRequest>,
         ) -> std::result::Result<tonic::Response<super::UpdateResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/VectorService/Update");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("VectorService", "Update"));
+            req.extensions_mut().insert(GrpcMethod::new("VectorService", "Update"));
             self.inner.unary(req, path, codec).await
         }
         /// Get index stats
@@ -555,21 +571,26 @@ pub mod vector_service_client {
         /// The `describe_index_stats` operation returns statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
         ///
         /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
-        ///
-        /// For pod-based indexes, the index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](https://docs.pinecone.io/reference/api/control-plane/describe_index).
         pub async fn describe_index_stats(
             &mut self,
             request: impl tonic::IntoRequest<super::DescribeIndexStatsRequest>,
-        ) -> std::result::Result<tonic::Response<super::DescribeIndexStatsResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        ) -> std::result::Result<
+            tonic::Response<super::DescribeIndexStatsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/VectorService/DescribeIndexStats");
+            let path = http::uri::PathAndQuery::from_static(
+                "/VectorService/DescribeIndexStats",
+            );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("VectorService", "DescribeIndexStats"));
@@ -647,12 +668,13 @@ pub mod vector_service_server {
         /// The `describe_index_stats` operation returns statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
         ///
         /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
-        ///
-        /// For pod-based indexes, the index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](https://docs.pinecone.io/reference/api/control-plane/describe_index).
         async fn describe_index_stats(
             &self,
             request: tonic::Request<super::DescribeIndexStatsRequest>,
-        ) -> std::result::Result<tonic::Response<super::DescribeIndexStatsResponse>, tonic::Status>;
+        ) -> std::result::Result<
+            tonic::Response<super::DescribeIndexStatsResponse>,
+            tonic::Status,
+        >;
     }
     /// The `VectorService` interface is exposed by Pinecone's vector index services.
     /// This service could also be called a `gRPC` service or a `REST`-like api.
@@ -679,7 +701,10 @@ pub mod vector_service_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(
+            inner: T,
+            interceptor: F,
+        ) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -735,16 +760,23 @@ pub mod vector_service_server {
                 "/VectorService/Upsert" => {
                     #[allow(non_camel_case_types)]
                     struct UpsertSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::UpsertRequest> for UpsertSvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::UpsertRequest>
+                    for UpsertSvc<T> {
                         type Response = super::UpsertResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::UpsertRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::upsert(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::upsert(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -774,16 +806,23 @@ pub mod vector_service_server {
                 "/VectorService/Delete" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::DeleteRequest> for DeleteSvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::DeleteRequest>
+                    for DeleteSvc<T> {
                         type Response = super::DeleteResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DeleteRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::delete(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::delete(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -813,16 +852,22 @@ pub mod vector_service_server {
                 "/VectorService/Fetch" => {
                     #[allow(non_camel_case_types)]
                     struct FetchSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::FetchRequest> for FetchSvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::FetchRequest> for FetchSvc<T> {
                         type Response = super::FetchResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::FetchRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::fetch(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::fetch(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -852,16 +897,22 @@ pub mod vector_service_server {
                 "/VectorService/List" => {
                     #[allow(non_camel_case_types)]
                     struct ListSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::ListRequest> for ListSvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::ListRequest> for ListSvc<T> {
                         type Response = super::ListResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ListRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::list(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::list(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -891,16 +942,22 @@ pub mod vector_service_server {
                 "/VectorService/Query" => {
                     #[allow(non_camel_case_types)]
                     struct QuerySvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::QueryRequest> for QuerySvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::QueryRequest> for QuerySvc<T> {
                         type Response = super::QueryResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::QueryRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::query(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::query(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -930,16 +987,23 @@ pub mod vector_service_server {
                 "/VectorService/Update" => {
                     #[allow(non_camel_case_types)]
                     struct UpdateSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService> tonic::server::UnaryService<super::UpdateRequest> for UpdateSvc<T> {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::UpdateRequest>
+                    for UpdateSvc<T> {
                         type Response = super::UpdateResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::UpdateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut =
-                                async move { <T as VectorService>::update(&inner, request).await };
+                            let fut = async move {
+                                <T as VectorService>::update(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -969,19 +1033,23 @@ pub mod vector_service_server {
                 "/VectorService/DescribeIndexStats" => {
                     #[allow(non_camel_case_types)]
                     struct DescribeIndexStatsSvc<T: VectorService>(pub Arc<T>);
-                    impl<T: VectorService>
-                        tonic::server::UnaryService<super::DescribeIndexStatsRequest>
-                        for DescribeIndexStatsSvc<T>
-                    {
+                    impl<
+                        T: VectorService,
+                    > tonic::server::UnaryService<super::DescribeIndexStatsRequest>
+                    for DescribeIndexStatsSvc<T> {
                         type Response = super::DescribeIndexStatsResponse;
-                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DescribeIndexStatsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as VectorService>::describe_index_stats(&inner, request).await
+                                <T as VectorService>::describe_index_stats(&inner, request)
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -1009,14 +1077,18 @@ pub mod vector_service_server {
                     };
                     Box::pin(fut)
                 }
-                _ => Box::pin(async move {
-                    Ok(http::Response::builder()
-                        .status(200)
-                        .header("grpc-status", "12")
-                        .header("content-type", "application/grpc")
-                        .body(empty_body())
-                        .unwrap())
-                }),
+                _ => {
+                    Box::pin(async move {
+                        Ok(
+                            http::Response::builder()
+                                .status(200)
+                                .header("grpc-status", "12")
+                                .header("content-type", "application/grpc")
+                                .body(empty_body())
+                                .unwrap(),
+                        )
+                    })
+                }
             }
         }
     }
