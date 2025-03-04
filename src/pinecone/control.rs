@@ -162,10 +162,10 @@ impl PineconeClient {
 
         let pod_spec = PodSpec {
             environment: environment.to_string(),
-            replicas,
-            shards,
+            replicas: Some(replicas),
+            shards: Some(shards),
             pod_type: pod_type.to_string(),
-            pods,
+            pods: Some(pods),
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection: source_collection.map(|s| s.to_string()),
         };
@@ -1196,9 +1196,9 @@ mod tests {
                 "imdb_rating".to_string()
             ])
         );
-        assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, 1);
-        assert_eq!(pod_spec.shards, 1);
+        assert_eq!(pod_spec.pods, Some(1));
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
 
         mock.assert();
 
@@ -1272,9 +1272,9 @@ mod tests {
         assert_eq!(pod_spec.environment, "us-east-1-aws");
         assert_eq!(pod_spec.pod_type, "p1.x1");
         assert_eq!(pod_spec.metadata_config.as_ref().unwrap().indexed, None);
-        assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, 1);
-        assert_eq!(pod_spec.shards, 1);
+        assert_eq!(pod_spec.pods, Some(1));
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
 
         mock.assert();
 
@@ -1595,7 +1595,7 @@ mod tests {
         assert_eq!(configure_index_response.name, "index-name");
 
         let spec = configure_index_response.spec.pod.unwrap();
-        assert_eq!(spec.replicas, 6);
+        assert_eq!(spec.replicas, Some(6));
         assert_eq!(spec.pod_type.as_str(), "p1.x1");
 
         mock.assert();

@@ -176,10 +176,10 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-west1-gcp");
-    assert_eq!(spec.replicas, 1);
-    assert_eq!(spec.shards, 1);
+    assert_eq!(spec.replicas, Some(1));
+    assert_eq!(spec.shards, Some(1));
     assert_eq!(spec.pod_type, "p1.x1");
-    assert_eq!(spec.pods, 1);
+    assert_eq!(spec.pods, Some(1));
     assert_eq!(spec.source_collection, None);
 
     let _ = pinecone
@@ -220,10 +220,10 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
 
     let spec = response.spec.pod.unwrap();
     assert_eq!(spec.environment, "us-east-1-aws");
-    assert_eq!(spec.replicas, 1);
-    assert_eq!(spec.shards, 1);
+    assert_eq!(spec.replicas, Some(1));
+    assert_eq!(spec.shards, Some(1));
     assert_eq!(spec.pod_type, "p1.x1");
-    assert_eq!(spec.pods, 1);
+    assert_eq!(spec.pods, Some(1));
     assert_eq!(spec.source_collection, Some("valid-collection".to_string()));
 
     let _ = pinecone
