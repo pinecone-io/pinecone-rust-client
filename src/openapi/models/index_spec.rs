@@ -18,6 +18,8 @@ pub struct IndexSpec {
     pub serverless: Option<Box<models::ServerlessSpec>>,
     #[serde(rename = "pod", skip_serializing_if = "Option::is_none")]
     pub pod: Option<Box<models::PodSpec>>,
+    #[serde(rename = "byoc", skip_serializing_if = "Option::is_none")]
+    pub byoc: Option<Box<models::ByocSpec>>,
 }
 
 impl IndexSpec {
@@ -26,6 +28,7 @@ impl IndexSpec {
         IndexSpec {
             serverless: None,
             pod: None,
+            byoc: None,
         }
     }
 }

@@ -41,6 +41,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [ByocSpec](docs/ByocSpec.md)
  - [CollectionList](docs/CollectionList.md)
  - [CollectionModel](docs/CollectionModel.md)
  - [ConfigureIndexRequest](docs/ConfigureIndexRequest.md)

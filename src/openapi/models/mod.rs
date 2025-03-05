@@ -1,3 +1,5 @@
+pub mod byoc_spec;
+pub use self::byoc_spec::ByocSpec;
 pub mod collection_list;
 pub use self::collection_list::CollectionList;
 pub mod collection_model;
