@@ -2,7 +2,7 @@ use std::cmp::min;
 use std::time::Duration;
 
 use crate::openapi::apis::manage_indexes_api;
-use crate::openapi::models::{ByocSpec, CreateIndexRequest};
+use crate::openapi::models::{CreateIndexRequest, DedicatedSpec};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
@@ -68,7 +68,7 @@ impl PineconeClient {
                 region: region.to_string(),
             })),
             pod: None,
-            byoc: None,
+            dedicated: None,
         };
 
         let create_index_request = CreateIndexRequest {
@@ -174,7 +174,7 @@ impl PineconeClient {
         let spec = IndexSpec {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
-            byoc: None,
+            dedicated: None,
         };
 
         let create_index_request = CreateIndexRequest {
@@ -197,7 +197,7 @@ impl PineconeClient {
         }
     }
 
-    /// Creates a BYOC index.
+    /// Creates a dedicated index.
     ///
     /// ### Arguments
     /// * `name: &str` - The name of the index
@@ -221,7 +221,7 @@ impl PineconeClient {
     /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Create a pod index.
-    /// let response: Result<IndexModel, PineconeError> = pinecone.create_byoc_index(
+    /// let response: Result<IndexModel, PineconeError> = pinecone.create_dedicated_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
@@ -233,7 +233,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn create_byoc_index(
+    pub async fn create_dedicated_index(
         &self,
         name: &str,
         dimension: i32,
@@ -243,14 +243,14 @@ impl PineconeClient {
         timeout: WaitPolicy,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
-        let spec = ByocSpec {
+        let spec = DedicatedSpec {
             environment: environment.to_string(),
         };
 
         let spec = IndexSpec {
             serverless: None,
             pod: None,
-            byoc: Some(Box::new(spec)),
+            dedicated: Some(Box::new(spec)),
         };
 
         let create_index_request = CreateIndexRequest {
@@ -1007,7 +1007,7 @@ mod tests {
                     region: "us-east-1".to_string(),
                 })),
                 pod: None,
-                byoc: None,
+                dedicated: None,
             },
         };
 

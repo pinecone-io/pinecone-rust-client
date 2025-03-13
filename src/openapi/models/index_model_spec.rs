@@ -17,8 +17,8 @@ pub struct IndexModelSpec {
     pub pod: Option<Box<models::PodSpec>>,
     #[serde(rename = "serverless", skip_serializing_if = "Option::is_none")]
     pub serverless: Option<Box<models::ServerlessSpec>>,
-    #[serde(rename = "byoc", skip_serializing_if = "Option::is_none")]
-    pub byoc: Option<Box<models::ByocSpec>>,
+    #[serde(rename = "dedicated", skip_serializing_if = "Option::is_none")]
+    pub dedicated: Option<Box<models::DedicatedSpec>>,
 }
 
 impl IndexModelSpec {
@@ -26,8 +26,7 @@ impl IndexModelSpec {
         IndexModelSpec {
             pod: None,
             serverless: None,
-            byoc: None,
+            dedicated: None,
         }
     }
 }
-

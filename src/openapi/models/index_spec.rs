@@ -11,25 +11,24 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// IndexSpec : The spec object defines how the index should be deployed.  For serverless indexes, you define only the [cloud and region](http://docs.pinecone.io/guides/indexes/understanding-indexes#cloud-regions) where the index should be hosted. For pod-based indexes, you define the [environment](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-environments) where the index should be hosted, the [pod type and size](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-types) to use, and other index characteristics. 
+/// IndexSpec : The spec object defines how the index should be deployed.  For serverless indexes, you define only the [cloud and region](http://docs.pinecone.io/guides/indexes/understanding-indexes#cloud-regions) where the index should be hosted. For pod-based indexes, you define the [environment](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-environments) where the index should be hosted, the [pod type and size](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-types) to use, and other index characteristics.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexSpec {
     #[serde(rename = "serverless", skip_serializing_if = "Option::is_none")]
     pub serverless: Option<Box<models::ServerlessSpec>>,
     #[serde(rename = "pod", skip_serializing_if = "Option::is_none")]
     pub pod: Option<Box<models::PodSpec>>,
-    #[serde(rename = "byoc", skip_serializing_if = "Option::is_none")]
-    pub byoc: Option<Box<models::ByocSpec>>,
+    #[serde(rename = "dedicated", skip_serializing_if = "Option::is_none")]
+    pub dedicated: Option<Box<models::DedicatedSpec>>,
 }
 
 impl IndexSpec {
-    /// The spec object defines how the index should be deployed.  For serverless indexes, you define only the [cloud and region](http://docs.pinecone.io/guides/indexes/understanding-indexes#cloud-regions) where the index should be hosted. For pod-based indexes, you define the [environment](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-environments) where the index should be hosted, the [pod type and size](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-types) to use, and other index characteristics. 
+    /// The spec object defines how the index should be deployed.  For serverless indexes, you define only the [cloud and region](http://docs.pinecone.io/guides/indexes/understanding-indexes#cloud-regions) where the index should be hosted. For pod-based indexes, you define the [environment](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-environments) where the index should be hosted, the [pod type and size](http://docs.pinecone.io/guides/indexes/pods/understanding-pod-based-indexes#pod-types) to use, and other index characteristics.
     pub fn new() -> IndexSpec {
         IndexSpec {
             serverless: None,
             pod: None,
-            byoc: None,
+            dedicated: None,
         }
     }
 }
-
