@@ -11,16 +11,17 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// CollectionList : The list of collections that exist in the project.
+/// ByocSpec : Configuration needed to deploy an index in a BYOC environment.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CollectionList {
-    #[serde(rename = "collections", skip_serializing_if = "Option::is_none")]
-    pub collections: Option<Vec<models::CollectionModel>>,
+pub struct ByocSpec {
+    /// The environment where the index is hosted.
+    #[serde(rename = "environment")]
+    pub environment: String,
 }
 
-impl CollectionList {
-    /// The list of collections that exist in the project.
-    pub fn new() -> CollectionList {
-        CollectionList { collections: None }
+impl ByocSpec {
+    /// Configuration needed to deploy an index in a BYOC environment.
+    pub fn new(environment: String) -> ByocSpec {
+        ByocSpec { environment }
     }
 }

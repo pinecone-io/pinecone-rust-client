@@ -11,16 +11,17 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// CollectionList : The list of collections that exist in the project.
+/// PaginationResponse : The pagination object that is returned with paginated responses.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CollectionList {
-    #[serde(rename = "collections", skip_serializing_if = "Option::is_none")]
-    pub collections: Option<Vec<models::CollectionModel>>,
+pub struct PaginationResponse {
+    /// The token to use to retrieve the next page of results.
+    #[serde(rename = "next")]
+    pub next: String,
 }
 
-impl CollectionList {
-    /// The list of collections that exist in the project.
-    pub fn new() -> CollectionList {
-        CollectionList { collections: None }
+impl PaginationResponse {
+    /// The pagination object that is returned with paginated responses.
+    pub fn new(next: String) -> PaginationResponse {
+        PaginationResponse { next }
     }
 }
