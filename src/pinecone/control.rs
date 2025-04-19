@@ -11,6 +11,7 @@ use crate::models::{
     ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
     IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, WaitPolicy,
 };
+use crate::openapi::models;
 
 impl PineconeClient {
     /// Creates a serverless index.
@@ -60,6 +61,8 @@ impl PineconeClient {
         region: &str,
         deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
+        tags: Option<std::collections::HashMap<String, String>>,
+        vector_type: String,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
@@ -68,14 +71,17 @@ impl PineconeClient {
                 region: region.to_string(),
             })),
             pod: None,
+            byoc: None,
         };
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension,
+            dimension: Some(dimension),
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(create_index_request_spec)),
+            tags,
+            vector_type: Some(vector_type),
         };
 
         // make openAPI call
@@ -156,16 +162,18 @@ impl PineconeClient {
         metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
         timeout: WaitPolicy,
+        tags: Option<std::collections::HashMap<String, String>>,
+        vector_type: String,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
 
         let pod_spec = PodSpec {
             environment: environment.to_string(),
-            replicas,
-            shards,
+            replicas: Some(replicas),
+            shards: Some(shards),
             pod_type: pod_type.to_string(),
-            pods,
+            pods: Some(pods),
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection: source_collection.map(|s| s.to_string()),
         };
@@ -173,14 +181,17 @@ impl PineconeClient {
         let spec = IndexSpec {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
+            byoc: None,
         };
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension,
+            dimension: Some(dimension),
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(spec)),
+            tags,
+            vector_type: Some(vector_type),
         };
 
         // make openAPI call
@@ -345,6 +356,8 @@ impl PineconeClient {
         deletion_protection: Option<DeletionProtection>,
         replicas: Option<i32>,
         pod_type: Option<&str>,
+        tags: Option<std::collections::HashMap<String, String>>,
+        embed: Option<Box<models::ConfigureIndexRequestEmbed>>,
     ) -> Result<IndexModel, PineconeError> {
         if replicas.is_none() && pod_type.is_none() && deletion_protection.is_none() {
             return Err(PineconeError::InvalidConfigurationError {
@@ -377,6 +390,8 @@ impl PineconeClient {
         let configure_index_request = ConfigureIndexRequest {
             spec,
             deletion_protection,
+            tags,
+            embed,
         };
 
         // make openAPI call
