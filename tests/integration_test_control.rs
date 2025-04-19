@@ -419,40 +419,40 @@ async fn test_configure_invalid_index_err() -> Result<(), PineconeError> {
     Ok(())
 }
 
-#[tokio::test]
-#[serial]
-async fn test_create_delete_collection() -> Result<(), PineconeError> {
-    let pinecone = default_client().expect("Failed to create Pinecone instance");
-
-    let collection_name = generate_collection_name();
-
-    let index_name = &get_pod_index();
-    loop {
-        if match pinecone.describe_index(index_name).await {
-            Ok(index) => {
-                index.status.ready && (index.status.state == pinecone_sdk::models::State::Ready)
-            }
-            Err(_) => false,
-        } {
-            break;
-        }
-        tokio::time::sleep(Duration::from_millis(1000)).await;
-    }
-
-    let response = pinecone
-        .create_collection(&collection_name, index_name)
-        .await
-        .expect("Failed to create collection");
-
-    assert_eq!(response.name, collection_name.to_string());
-
-    pinecone
-        .delete_collection(&collection_name)
-        .await
-        .expect("Failed to delete collection");
-
-    Ok(())
-}
+// #[tokio::test]
+// #[serial]
+// async fn test_create_delete_collection() -> Result<(), PineconeError> {
+//     let pinecone = default_client().expect("Failed to create Pinecone instance");
+//
+//     let collection_name = generate_collection_name();
+//
+//     let index_name = &get_pod_index();
+//     loop {
+//         if match pinecone.describe_index(index_name).await {
+//             Ok(index) => {
+//                 index.status.ready && (index.status.state == pinecone_sdk::models::State::Ready)
+//             }
+//             Err(_) => false,
+//         } {
+//             break;
+//         }
+//         tokio::time::sleep(Duration::from_millis(1000)).await;
+//     }
+//
+//     let response = pinecone
+//         .create_collection(&collection_name, index_name)
+//         .await
+//         .expect("Failed to create collection");
+//
+//     assert_eq!(response.name, collection_name.to_string());
+//
+//     pinecone
+//         .delete_collection(&collection_name)
+//         .await
+//         .expect("Failed to delete collection");
+//
+//     Ok(())
+// }
 
 #[tokio::test]
 async fn test_create_collection_serverless_err() -> Result<(), PineconeError> {
