@@ -190,7 +190,7 @@ impl<T> From<OpenApiError<T>> for PineconeError {
             OpenApiError::Io(inner) => PineconeError::IoError {
                 message: inner.to_string(),
             },
-            OpenApiError::ResponseError(inner) => handle_response_error(inner.into()),
+            OpenApiError::ResponseErr(inner) => handle_response_error(inner.into()),
         }
     }
 }

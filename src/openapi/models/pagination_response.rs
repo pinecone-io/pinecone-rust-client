@@ -22,9 +22,6 @@ pub struct PaginationResponse {
 impl PaginationResponse {
     /// The pagination object that is returned with paginated responses.
     pub fn new(next: String) -> PaginationResponse {
-        PaginationResponse {
-            next,
-        }
+        PaginationResponse { next }
     }
 }
-

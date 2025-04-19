@@ -11,8 +11,8 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// DeletionProtection : Whether [deletion protection](http://docs.pinecone.io/guides/indexes/manage-indexes#configure-deletion-protection) is enabled/disabled for the index. 
-/// Whether [deletion protection](http://docs.pinecone.io/guides/indexes/manage-indexes#configure-deletion-protection) is enabled/disabled for the index. 
+/// DeletionProtection : Whether [deletion protection](http://docs.pinecone.io/guides/indexes/manage-indexes#configure-deletion-protection) is enabled/disabled for the index.
+/// Whether [deletion protection](http://docs.pinecone.io/guides/indexes/manage-indexes#configure-deletion-protection) is enabled/disabled for the index.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum DeletionProtection {
     #[serde(rename = "disabled")]

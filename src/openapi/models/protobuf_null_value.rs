@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 pub enum ProtobufNullValue {
     #[serde(rename = "NULL_VALUE")]
     NullValue,
-
 }
 
 impl std::fmt::Display for ProtobufNullValue {
@@ -33,4 +32,3 @@ impl Default for ProtobufNullValue {
         Self::NullValue
     }
 }
-

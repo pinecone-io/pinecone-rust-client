@@ -16,7 +16,10 @@ use serde::{Deserialize, Serialize};
 pub struct ConfigureIndexRequest {
     #[serde(rename = "spec", skip_serializing_if = "Option::is_none")]
     pub spec: Option<Box<models::ConfigureIndexRequestSpec>>,
-    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "deletion_protection",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub deletion_protection: Option<models::DeletionProtection>,
     /// Custom user tags added to an index. Keys must be 80 characters or less. Values must be 120 characters or less. Keys must be alphanumeric, '_', or '-'.  Values must be alphanumeric, ';', '@', '_', '-', '.', '+', or ' '. To unset a key, set the value to be an empty string.
     #[serde(rename = "tags", skip_serializing_if = "Option::is_none")]

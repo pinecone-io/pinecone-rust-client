@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// IndexModel : The IndexModel describes the configuration and status of a Pinecone index.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexModel {
-    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'. 
+    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'.
     #[serde(rename = "name")]
     pub name: String,
     /// The dimensions of the vectors to be inserted in the index.
@@ -26,7 +26,10 @@ pub struct IndexModel {
     /// The URL address where the index is hosted.
     #[serde(rename = "host")]
     pub host: String,
-    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "deletion_protection",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub deletion_protection: Option<models::DeletionProtection>,
     /// Custom user tags added to an index. Keys must be 80 characters or less. Values must be 120 characters or less. Keys must be alphanumeric, '_', or '-'.  Values must be alphanumeric, ';', '@', '_', '-', '.', '+', or ' '. To unset a key, set the value to be an empty string.
     #[serde(rename = "tags", skip_serializing_if = "Option::is_none")]
@@ -44,7 +47,14 @@ pub struct IndexModel {
 
 impl IndexModel {
     /// The IndexModel describes the configuration and status of a Pinecone index.
-    pub fn new(name: String, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus, vector_type: String) -> IndexModel {
+    pub fn new(
+        name: String,
+        metric: Metric,
+        host: String,
+        spec: models::IndexModelSpec,
+        status: models::IndexModelStatus,
+        vector_type: String,
+    ) -> IndexModel {
         IndexModel {
             name,
             dimension: None,
@@ -75,4 +85,3 @@ impl Default for Metric {
         Self::Cosine
     }
 }
-

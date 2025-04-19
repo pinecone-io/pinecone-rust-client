@@ -17,7 +17,7 @@ async fn test_index() -> Result<(), PineconeError> {
         .unwrap()
         .host;
 
-    let _ = pinecone
+    pinecone
         .index(host.as_str())
         .await
         .expect("Failed to target index");
@@ -29,7 +29,7 @@ async fn test_index() -> Result<(), PineconeError> {
 async fn test_index_err() -> Result<(), PineconeError> {
     let pinecone = default_client().expect("Failed to create Pinecone instance");
 
-    let _ = pinecone
+    pinecone
         .index("invalid-host")
         .await
         .expect_err("Expected to fail targeting index");
@@ -370,14 +370,14 @@ async fn test_delete_vectors_by_ids() -> Result<(), PineconeError> {
     ];
 
     let namespace = &generate_namespace_name();
-    let _ = index
+    index
         .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
     let ids = &["1", "2"];
 
-    let _ = index
+    index
         .delete_by_id(ids, namespace)
         .await
         .expect("Failed to delete vectors by ids");
@@ -416,12 +416,12 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
     ];
 
     let namespace = &generate_namespace_name();
-    let _ = index
+    index
         .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
 
-    let _ = index
+    index
         .delete_all(namespace)
         .await
         .expect("Failed to delete all vectors");
@@ -478,7 +478,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
     ];
 
     let namespace = &generate_namespace_name();
-    let _ = index
+    index
         .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
@@ -494,7 +494,7 @@ async fn test_delete_by_filter() -> Result<(), PineconeError> {
         .collect(),
     };
 
-    let _ = index
+    index
         .delete_by_filter(filter, namespace)
         .await
         .expect("Failed to delete all vectors");
@@ -534,7 +534,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
 
     let namespace = &generate_namespace_name();
 
-    let _ = index
+    index
         .upsert(vectors, namespace)
         .await
         .expect("Failed to upsert");
@@ -568,7 +568,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
         }
     );
 
-    let _ = index
+    index
         .delete_all(namespace)
         .await
         .expect("Failed to delete all vectors");
@@ -618,7 +618,7 @@ async fn test_fetch_empty_id_list() -> Result<(), PineconeError> {
         .await
         .expect("Failed to target index");
 
-    let _ = index
+    index
         .fetch(&[], &Default::default())
         .await
         .expect_err("Expected error to be thrown");

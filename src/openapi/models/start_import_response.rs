@@ -22,9 +22,6 @@ pub struct StartImportResponse {
 impl StartImportResponse {
     /// The response for the `start_import` operation.
     pub fn new() -> StartImportResponse {
-        StartImportResponse {
-            id: None,
-        }
+        StartImportResponse { id: None }
     }
 }
-

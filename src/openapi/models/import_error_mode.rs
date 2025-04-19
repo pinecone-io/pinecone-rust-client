@@ -22,9 +22,7 @@ pub struct ImportErrorMode {
 impl ImportErrorMode {
     /// Indicates how to respond to errors during the import process.
     pub fn new() -> ImportErrorMode {
-        ImportErrorMode {
-            on_error: None,
-        }
+        ImportErrorMode { on_error: None }
     }
 }
 /// Indicates how to respond to errors during the import process.
@@ -41,4 +39,3 @@ impl Default for OnError {
         Self::Abort
     }
 }
-

@@ -20,9 +20,6 @@ pub struct SearchRecordsResponseResult {
 
 impl SearchRecordsResponseResult {
     pub fn new(hits: Vec<models::Hit>) -> SearchRecordsResponseResult {
-        SearchRecordsResponseResult {
-            hits,
-        }
+        SearchRecordsResponseResult { hits }
     }
 }
-

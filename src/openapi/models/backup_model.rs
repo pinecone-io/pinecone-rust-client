@@ -63,7 +63,14 @@ pub struct BackupModel {
 
 impl BackupModel {
     /// The BackupModel describes the configuration and status of a Pinecone backup.
-    pub fn new(backup_id: String, source_index_name: String, source_index_id: String, status: String, cloud: String, region: String) -> BackupModel {
+    pub fn new(
+        backup_id: String,
+        source_index_name: String,
+        source_index_id: String,
+        status: String,
+        cloud: String,
+        region: String,
+    ) -> BackupModel {
         BackupModel {
             backup_id,
             source_index_name,

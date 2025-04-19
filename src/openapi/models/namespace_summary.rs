@@ -22,9 +22,6 @@ pub struct NamespaceSummary {
 impl NamespaceSummary {
     /// A summary of the contents of a namespace.
     pub fn new() -> NamespaceSummary {
-        NamespaceSummary {
-            vector_count: None,
-        }
+        NamespaceSummary { vector_count: None }
     }
 }
-

@@ -19,9 +19,6 @@ pub struct Pagination {
 
 impl Pagination {
     pub fn new() -> Pagination {
-        Pagination {
-            next: None,
-        }
+        Pagination { next: None }
     }
 }
-

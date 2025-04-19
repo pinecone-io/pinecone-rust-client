@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// CreateBackupRequest : The configuration needed to create a backup of an index.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateBackupRequest {
-    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'. 
+    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// A description of the backup.
@@ -31,4 +31,3 @@ impl CreateBackupRequest {
         }
     }
 }
-

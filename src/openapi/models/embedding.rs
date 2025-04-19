@@ -22,9 +22,6 @@ pub struct Embedding {
 impl Embedding {
     /// Embedding of a single input
     pub fn new() -> Embedding {
-        Embedding {
-            values: None,
-        }
+        Embedding { values: None }
     }
 }
-

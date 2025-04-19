@@ -22,9 +22,6 @@ pub struct UpsertRecord {
 impl UpsertRecord {
     /// The request for the `upsert` operation.
     pub fn new(_id: String) -> UpsertRecord {
-        UpsertRecord {
-            _id,
-        }
+        UpsertRecord { _id }
     }
 }
-

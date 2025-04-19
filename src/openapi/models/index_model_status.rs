@@ -21,13 +21,10 @@ pub struct IndexModelStatus {
 
 impl IndexModelStatus {
     pub fn new(ready: bool, state: State) -> IndexModelStatus {
-        IndexModelStatus {
-            ready,
-            state,
-        }
+        IndexModelStatus { ready, state }
     }
 }
-/// 
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum State {
     #[serde(rename = "Initializing")]
@@ -55,4 +52,3 @@ impl Default for State {
         Self::Initializing
     }
 }
-

@@ -17,7 +17,7 @@ pub struct SearchRecordsRequestRerank {
     /// The name of the [reranking model](https://docs.pinecone.io/guides/inference/understanding-inference#reranking-models) to use.
     #[serde(rename = "model")]
     pub model: String,
-    /// The field(s) to consider for reranking. If not provided, the default is `[\"text\"]`.  The number of fields supported is [model-specific](https://docs.pinecone.io/guides/inference/understanding-inference#reranking-models). 
+    /// The field(s) to consider for reranking. If not provided, the default is `[\"text\"]`.  The number of fields supported is [model-specific](https://docs.pinecone.io/guides/inference/understanding-inference#reranking-models).
     #[serde(rename = "rank_fields")]
     pub rank_fields: Vec<String>,
     /// The number of top results to return after reranking. Defaults to top_k.
@@ -43,4 +43,3 @@ impl SearchRecordsRequestRerank {
         }
     }
 }
-

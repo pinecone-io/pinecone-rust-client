@@ -25,10 +25,6 @@ pub struct SparseValues {
 impl SparseValues {
     /// Vector sparse data. Represented as a list of indices and a list of  corresponded values, which must be with the same length.
     pub fn new(indices: Vec<i64>, values: Vec<f32>) -> SparseValues {
-        SparseValues {
-            indices,
-            values,
-        }
+        SparseValues { indices, values }
     }
 }
-

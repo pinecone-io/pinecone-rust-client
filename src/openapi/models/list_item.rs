@@ -19,9 +19,6 @@ pub struct ListItem {
 
 impl ListItem {
     pub fn new() -> ListItem {
-        ListItem {
-            id: None,
-        }
+        ListItem { id: None }
     }
 }
-

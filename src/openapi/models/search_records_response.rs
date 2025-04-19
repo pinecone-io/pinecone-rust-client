@@ -22,11 +22,13 @@ pub struct SearchRecordsResponse {
 
 impl SearchRecordsResponse {
     /// The records search response.
-    pub fn new(result: models::SearchRecordsResponseResult, usage: models::SearchUsage) -> SearchRecordsResponse {
+    pub fn new(
+        result: models::SearchRecordsResponseResult,
+        usage: models::SearchUsage,
+    ) -> SearchRecordsResponse {
         SearchRecordsResponse {
             result: Box::new(result),
             usage: Box::new(usage),
         }
     }
 }
-

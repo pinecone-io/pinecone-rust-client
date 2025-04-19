@@ -25,10 +25,7 @@ pub struct ServerlessSpec {
 impl ServerlessSpec {
     /// Configuration needed to deploy a serverless index.
     pub fn new(cloud: Cloud, region: String) -> ServerlessSpec {
-        ServerlessSpec {
-            cloud,
-            region,
-        }
+        ServerlessSpec { cloud, region }
     }
 }
 /// The public cloud where you would like your index hosted.
@@ -47,4 +44,3 @@ impl Default for Cloud {
         Self::Gcp
     }
 }
-

@@ -20,9 +20,6 @@ pub struct Usage {
 
 impl Usage {
     pub fn new() -> Usage {
-        Usage {
-            read_units: None,
-        }
+        Usage { read_units: None }
     }
 }
-

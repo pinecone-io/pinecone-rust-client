@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// CreateIndexForModelRequest : The desired configuration for the index and associated embedding model.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CreateIndexForModelRequest {
-    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'. 
+    /// The name of the index. Resource name must be 1-45 characters long, start and end with an alphanumeric character, and consist only of lower case alphanumeric characters or '-'.
     #[serde(rename = "name")]
     pub name: String,
     /// The public cloud where you would like your index hosted.
@@ -23,7 +23,10 @@ pub struct CreateIndexForModelRequest {
     /// The region where you would like your index to be created.
     #[serde(rename = "region")]
     pub region: String,
-    #[serde(rename = "deletion_protection", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "deletion_protection",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub deletion_protection: Option<models::DeletionProtection>,
     /// Custom user tags added to an index. Keys must be 80 characters or less. Values must be 120 characters or less. Keys must be alphanumeric, '_', or '-'.  Values must be alphanumeric, ';', '@', '_', '-', '.', '+', or ' '. To unset a key, set the value to be an empty string.
     #[serde(rename = "tags", skip_serializing_if = "Option::is_none")]
@@ -34,7 +37,12 @@ pub struct CreateIndexForModelRequest {
 
 impl CreateIndexForModelRequest {
     /// The desired configuration for the index and associated embedding model.
-    pub fn new(name: String, cloud: Cloud, region: String, embed: models::CreateIndexForModelRequestEmbed) -> CreateIndexForModelRequest {
+    pub fn new(
+        name: String,
+        cloud: Cloud,
+        region: String,
+        embed: models::CreateIndexForModelRequestEmbed,
+    ) -> CreateIndexForModelRequest {
         CreateIndexForModelRequest {
             name,
             cloud,

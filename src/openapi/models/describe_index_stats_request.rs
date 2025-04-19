@@ -22,9 +22,6 @@ pub struct DescribeIndexStatsRequest {
 impl DescribeIndexStatsRequest {
     /// The request for the `describe_index_stats` operation.
     pub fn new() -> DescribeIndexStatsRequest {
-        DescribeIndexStatsRequest {
-            filter: None,
-        }
+        DescribeIndexStatsRequest { filter: None }
     }
 }
-

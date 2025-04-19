@@ -88,7 +88,7 @@ mod tests {
         let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let response = pinecone
-            .embed("multilingual-e5-large", None, &vec!["Hello, world!"])
+            .embed("multilingual-e5-large", None, &["Hello, world!"])
             .await
             .expect("Failed to embed");
 
@@ -137,7 +137,7 @@ mod tests {
             .embed(
                 "multilingual-e5-large",
                 Some(parameters),
-                &vec!["Hello, world!"],
+                &["Hello, world!"],
             )
             .await
             .expect_err("Expected to fail embedding with invalid arguments");

@@ -20,9 +20,6 @@ pub struct SearchVector {
 
 impl SearchVector {
     pub fn new() -> SearchVector {
-        SearchVector {
-            values: None,
-        }
+        SearchVector { values: None }
     }
 }
-
