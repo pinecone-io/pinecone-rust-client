@@ -610,7 +610,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Initializing"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -673,7 +674,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Initializing"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -927,7 +929,8 @@ mod tests {
                         "status": {
                             "ready": true,
                             "state": "Ready"
-                        }
+                        },
+                        "vector_type": "dense"
                     }"#,
                 );
         });
@@ -1059,7 +1062,8 @@ mod tests {
                             "status": {
                                 "ready": false,
                                 "state": "Initializing"
-                            }
+                            },
+                            "vector_type": "dense"
                         },
                         {
                             "name": "index2",
@@ -1070,7 +1074,8 @@ mod tests {
                             "status": {
                                 "ready": false,
                                 "state": "Initializing"
-                            }
+                            },
+                            "vector_type": "dense"
                         }
                     ]
                 }"#,
@@ -1184,7 +1189,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }
             "#,
                 );
@@ -1269,7 +1275,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }
             "#,
                 );
@@ -1508,7 +1515,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Ready"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -1614,7 +1622,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -1683,7 +1692,8 @@ mod tests {
                         "status": {
                             "ready": true,
                             "state": "ScalingUpPodSize"
-                        }
+                        },
+                        "vector_type": "dense"
                     }"#,
                 );
         });
