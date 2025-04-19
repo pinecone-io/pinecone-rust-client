@@ -19,9 +19,9 @@ use super::{Error, configuration};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EmbedError {
-    Status400(models::ErrorResponse),
-    Status401(models::ErrorResponse),
-    Status500(models::ErrorResponse),
+    Status400(models::ListIndexes401Response),
+    Status401(models::ListIndexes401Response),
+    Status500(models::ListIndexes401Response),
     UnknownValue(serde_json::Value),
 }
 
@@ -62,3 +62,4 @@ pub async fn embed(configuration: &configuration::Configuration, embed_request: 
         Err(Error::ResponseError(local_var_error))
     }
 }
+

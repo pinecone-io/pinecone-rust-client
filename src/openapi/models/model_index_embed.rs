@@ -67,3 +67,4 @@ impl Default for Metric {
         Self::Cosine
     }
 }
+

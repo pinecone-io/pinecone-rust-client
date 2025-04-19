@@ -23,62 +23,69 @@ openapi = { path = "./openapi" }
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://api.pinecone.io*
+All URIs are relative to *https://unknown*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*ManageIndexesApi* | [**configure_index**](docs/ManageIndexesApi.md#configure_index) | **PATCH** /indexes/{index_name} | Configure an index
-*ManageIndexesApi* | [**create_backup**](docs/ManageIndexesApi.md#create_backup) | **POST** /indexes/{index_name}/backups | Create a backup of an index
-*ManageIndexesApi* | [**create_collection**](docs/ManageIndexesApi.md#create_collection) | **POST** /collections | Create a collection
-*ManageIndexesApi* | [**create_index**](docs/ManageIndexesApi.md#create_index) | **POST** /indexes | Create an index
-*ManageIndexesApi* | [**create_index_for_model**](docs/ManageIndexesApi.md#create_index_for_model) | **POST** /indexes/create-for-model | Create an index with integrated embedding
-*ManageIndexesApi* | [**create_index_from_backup**](docs/ManageIndexesApi.md#create_index_from_backup) | **POST** /backups/{backup_id}/create-index | Create an index from a backup
-*ManageIndexesApi* | [**delete_backup**](docs/ManageIndexesApi.md#delete_backup) | **DELETE** /backups/{backup_id} | Delete a backup
-*ManageIndexesApi* | [**delete_collection**](docs/ManageIndexesApi.md#delete_collection) | **DELETE** /collections/{collection_name} | Delete a collection
-*ManageIndexesApi* | [**delete_index**](docs/ManageIndexesApi.md#delete_index) | **DELETE** /indexes/{index_name} | Delete an index
-*ManageIndexesApi* | [**describe_backup**](docs/ManageIndexesApi.md#describe_backup) | **GET** /backups/{backup_id} | Describe a backup
-*ManageIndexesApi* | [**describe_collection**](docs/ManageIndexesApi.md#describe_collection) | **GET** /collections/{collection_name} | Describe a collection
-*ManageIndexesApi* | [**describe_index**](docs/ManageIndexesApi.md#describe_index) | **GET** /indexes/{index_name} | Describe an index
-*ManageIndexesApi* | [**describe_restore_job**](docs/ManageIndexesApi.md#describe_restore_job) | **GET** /restore-jobs/{job_id} | Describe a restore job
-*ManageIndexesApi* | [**list_collections**](docs/ManageIndexesApi.md#list_collections) | **GET** /collections | List collections
-*ManageIndexesApi* | [**list_index_backups**](docs/ManageIndexesApi.md#list_index_backups) | **GET** /indexes/{index_name}/backups | List backups for an index
-*ManageIndexesApi* | [**list_indexes**](docs/ManageIndexesApi.md#list_indexes) | **GET** /indexes | List indexes
-*ManageIndexesApi* | [**list_project_backups**](docs/ManageIndexesApi.md#list_project_backups) | **GET** /backups | List backups for all indexes in a project
-*ManageIndexesApi* | [**list_restore_jobs**](docs/ManageIndexesApi.md#list_restore_jobs) | **GET** /restore-jobs | List restore jobs
+*BulkOperationsApi* | [**cancel_bulk_import**](docs/BulkOperationsApi.md#cancel_bulk_import) | **DELETE** /bulk/imports/{id} | Cancel an import
+*BulkOperationsApi* | [**describe_bulk_import**](docs/BulkOperationsApi.md#describe_bulk_import) | **GET** /bulk/imports/{id} | Describe an import
+*BulkOperationsApi* | [**list_bulk_imports**](docs/BulkOperationsApi.md#list_bulk_imports) | **GET** /bulk/imports | List imports
+*BulkOperationsApi* | [**start_bulk_import**](docs/BulkOperationsApi.md#start_bulk_import) | **POST** /bulk/imports | Start import
+*NamespaceOperationsApi* | [**delete_namespace**](docs/NamespaceOperationsApi.md#delete_namespace) | **DELETE** /namespaces/{namespace} | Delete a namespace
+*NamespaceOperationsApi* | [**describe_namespace**](docs/NamespaceOperationsApi.md#describe_namespace) | **GET** /namespaces/{namespace} | Describe a namespace
+*NamespaceOperationsApi* | [**list_namespaces**](docs/NamespaceOperationsApi.md#list_namespaces) | **GET** /namespaces | Get list of all namespaces
+*VectorOperationsApi* | [**delete_vectors**](docs/VectorOperationsApi.md#delete_vectors) | **POST** /vectors/delete | Delete vectors
+*VectorOperationsApi* | [**describe_index_stats**](docs/VectorOperationsApi.md#describe_index_stats) | **POST** /describe_index_stats | Get index stats
+*VectorOperationsApi* | [**fetch_vectors**](docs/VectorOperationsApi.md#fetch_vectors) | **GET** /vectors/fetch | Fetch vectors
+*VectorOperationsApi* | [**list_vectors**](docs/VectorOperationsApi.md#list_vectors) | **GET** /vectors/list | List vector IDs
+*VectorOperationsApi* | [**query_vectors**](docs/VectorOperationsApi.md#query_vectors) | **POST** /query | Search with a vector
+*VectorOperationsApi* | [**search_records_namespace**](docs/VectorOperationsApi.md#search_records_namespace) | **POST** /records/namespaces/{namespace}/search | Search with text
+*VectorOperationsApi* | [**update_vector**](docs/VectorOperationsApi.md#update_vector) | **POST** /vectors/update | Update a vector
+*VectorOperationsApi* | [**upsert_records_namespace**](docs/VectorOperationsApi.md#upsert_records_namespace) | **POST** /records/namespaces/{namespace}/upsert | Upsert text
+*VectorOperationsApi* | [**upsert_vectors**](docs/VectorOperationsApi.md#upsert_vectors) | **POST** /vectors/upsert | Upsert vectors
 
 
 ## Documentation For Models
 
- - [BackupList](docs/BackupList.md)
- - [BackupModel](docs/BackupModel.md)
- - [ByocSpec](docs/ByocSpec.md)
- - [CollectionList](docs/CollectionList.md)
- - [CollectionModel](docs/CollectionModel.md)
- - [ConfigureIndexRequest](docs/ConfigureIndexRequest.md)
- - [ConfigureIndexRequestEmbed](docs/ConfigureIndexRequestEmbed.md)
- - [ConfigureIndexRequestSpec](docs/ConfigureIndexRequestSpec.md)
- - [ConfigureIndexRequestSpecPod](docs/ConfigureIndexRequestSpecPod.md)
- - [CreateBackupRequest](docs/CreateBackupRequest.md)
- - [CreateCollectionRequest](docs/CreateCollectionRequest.md)
- - [CreateIndexForModelRequest](docs/CreateIndexForModelRequest.md)
- - [CreateIndexForModelRequestEmbed](docs/CreateIndexForModelRequestEmbed.md)
- - [CreateIndexFromBackupRequest](docs/CreateIndexFromBackupRequest.md)
- - [CreateIndexRequest](docs/CreateIndexRequest.md)
- - [DeletionProtection](docs/DeletionProtection.md)
- - [ErrorResponse](docs/ErrorResponse.md)
- - [ErrorResponseError](docs/ErrorResponseError.md)
- - [IndexList](docs/IndexList.md)
- - [IndexModel](docs/IndexModel.md)
- - [IndexModelSpec](docs/IndexModelSpec.md)
- - [IndexModelStatus](docs/IndexModelStatus.md)
- - [IndexSpec](docs/IndexSpec.md)
- - [ModelIndexEmbed](docs/ModelIndexEmbed.md)
- - [PaginationResponse](docs/PaginationResponse.md)
- - [PodSpec](docs/PodSpec.md)
- - [PodSpecMetadataConfig](docs/PodSpecMetadataConfig.md)
- - [RestoreJobList](docs/RestoreJobList.md)
- - [RestoreJobModel](docs/RestoreJobModel.md)
- - [ServerlessSpec](docs/ServerlessSpec.md)
+ - [DeleteRequest](docs/DeleteRequest.md)
+ - [DescribeIndexStatsRequest](docs/DescribeIndexStatsRequest.md)
+ - [FetchResponse](docs/FetchResponse.md)
+ - [Hit](docs/Hit.md)
+ - [ImportErrorMode](docs/ImportErrorMode.md)
+ - [ImportModel](docs/ImportModel.md)
+ - [IndexDescription](docs/IndexDescription.md)
+ - [ListImportsResponse](docs/ListImportsResponse.md)
+ - [ListItem](docs/ListItem.md)
+ - [ListNamespacesResponse](docs/ListNamespacesResponse.md)
+ - [ListResponse](docs/ListResponse.md)
+ - [NamespaceDescription](docs/NamespaceDescription.md)
+ - [NamespaceSummary](docs/NamespaceSummary.md)
+ - [Pagination](docs/Pagination.md)
+ - [ProtobufAny](docs/ProtobufAny.md)
+ - [ProtobufNullValue](docs/ProtobufNullValue.md)
+ - [QueryRequest](docs/QueryRequest.md)
+ - [QueryResponse](docs/QueryResponse.md)
+ - [QueryVector](docs/QueryVector.md)
+ - [RpcStatus](docs/RpcStatus.md)
+ - [ScoredVector](docs/ScoredVector.md)
+ - [SearchRecordsRequest](docs/SearchRecordsRequest.md)
+ - [SearchRecordsRequestQuery](docs/SearchRecordsRequestQuery.md)
+ - [SearchRecordsRequestRerank](docs/SearchRecordsRequestRerank.md)
+ - [SearchRecordsResponse](docs/SearchRecordsResponse.md)
+ - [SearchRecordsResponseResult](docs/SearchRecordsResponseResult.md)
+ - [SearchRecordsVector](docs/SearchRecordsVector.md)
+ - [SearchUsage](docs/SearchUsage.md)
+ - [SearchVector](docs/SearchVector.md)
+ - [SingleQueryResults](docs/SingleQueryResults.md)
+ - [SparseValues](docs/SparseValues.md)
+ - [StartImportRequest](docs/StartImportRequest.md)
+ - [StartImportResponse](docs/StartImportResponse.md)
+ - [UpdateRequest](docs/UpdateRequest.md)
+ - [UpsertRecord](docs/UpsertRecord.md)
+ - [UpsertRequest](docs/UpsertRequest.md)
+ - [UpsertResponse](docs/UpsertResponse.md)
+ - [Usage](docs/Usage.md)
+ - [Vector](docs/Vector.md)
 
 
 To get access to the crate's generated documentation, use:

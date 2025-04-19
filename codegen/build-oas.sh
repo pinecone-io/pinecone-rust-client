@@ -14,7 +14,7 @@ if [ -z "$version" ]; then
 fi
 
 docker run --rm -v $(pwd):/workspace openapitools/openapi-generator-cli:v7.6.0 generate \
-	--input-spec /workspace/codegen/apis/_build/$version/db_control_$version.oas.yaml \
+	--input-spec /workspace/codegen/apis/_build/$version/db_data_$version.oas.yaml \
 	--generator-name rust \
 	--output /workspace/$tempdir \
 	--additional-properties "packageVersion=0.0.1"

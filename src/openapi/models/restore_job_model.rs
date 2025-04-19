@@ -42,14 +42,7 @@ pub struct RestoreJobModel {
 
 impl RestoreJobModel {
     /// The RestoreJobModel describes the status of a restore job.
-    pub fn new(
-        restore_job_id: String,
-        backup_id: String,
-        target_index_name: String,
-        target_index_id: String,
-        status: String,
-        created_at: String,
-    ) -> RestoreJobModel {
+    pub fn new(restore_job_id: String, backup_id: String, target_index_name: String, target_index_id: String, status: String, created_at: String) -> RestoreJobModel {
         RestoreJobModel {
             restore_job_id,
             backup_id,
@@ -62,3 +55,4 @@ impl RestoreJobModel {
         }
     }
 }
+

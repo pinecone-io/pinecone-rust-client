@@ -1,5 +1,5 @@
 /*
- * Pinecone Control Plane API
+ * Pinecone Data Plane API
  *
  * Pinecone is a vector database that makes it easy to search and retrieve billions of high-dimensional vectors.
  *

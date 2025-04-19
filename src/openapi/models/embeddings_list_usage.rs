@@ -21,6 +21,9 @@ pub struct EmbeddingsListUsage {
 impl EmbeddingsListUsage {
     /// Usage statistics for model inference including any instruction prefixes
     pub fn new() -> EmbeddingsListUsage {
-        EmbeddingsListUsage { total_tokens: None }
+        EmbeddingsListUsage {
+            total_tokens: None,
+        }
     }
 }
+
