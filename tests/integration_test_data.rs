@@ -539,7 +539,7 @@ async fn test_fetch_vectors() -> Result<(), PineconeError> {
         .await
         .expect("Failed to upsert");
 
-    std::thread::sleep(std::time::Duration::from_secs(5));
+    std::thread::sleep(std::time::Duration::from_secs(15));
 
     let fetch_response = index
         .fetch(&["1", "2"], namespace)
