@@ -88,7 +88,8 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
     assert_eq!(index1.dimension, Some(2));
     assert_eq!(index1.metric, Metric::Cosine);
     let spec1 = index1.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec1.cloud, Cloud::Aws);
+    let spec1_cloud: Cloud = spec1.cloud.into();
+    assert_eq!(spec1_cloud, Cloud::Aws);
     assert_eq!(spec1.region, "us-west-2");
 
     let index2 = indexes
@@ -100,7 +101,8 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
     assert_eq!(index2.dimension, Some(2));
     assert_eq!(index2.metric, Metric::Dotproduct);
     let spec2 = index2.spec.serverless.as_ref().unwrap();
-    assert_eq!(spec2.cloud, Cloud::Aws);
+    let spec2_cloud: Cloud = spec2.cloud.into();
+    assert_eq!(spec2_cloud, Cloud::Aws);
     assert_eq!(spec2.region, "us-west-2");
 
     pinecone
@@ -142,7 +144,8 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
     assert_eq!(response.metric, Metric::Euclidean);
 
     let spec = response.spec.serverless.unwrap();
-    assert_eq!(spec.cloud, Cloud::Aws);
+    let spec_cloud: Cloud = spec.cloud.into();
+    assert_eq!(spec_cloud, Cloud::Aws);
     assert_eq!(spec.region, "us-west-2");
 
     pinecone

@@ -3,15 +3,15 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use crate::openapi::apis::manage_indexes_api;
-use crate::openapi::models::{ByocSpec, CreateIndexRequest};
+use crate::openapi::models::{ByocSpec, CreateIndexForModelRequestEmbed, CreateIndexRequest};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
 use crate::models::{
     Cloud, CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
-    IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, VectorType,
-    WaitPolicy,
+    ConfigureIndexRequestSpecPod, CreateCollectionRequest, CreateIndexForModelOptions,
+    DeletionProtection, IndexList, IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig,
+    ServerlessSpec, VectorType, WaitPolicy,
 };
 use crate::openapi::models;
 
@@ -71,7 +71,7 @@ impl PineconeClient {
         // create request specs
         let create_index_request_spec = IndexSpec {
             serverless: Some(Box::new(ServerlessSpec {
-                cloud,
+                cloud: cloud.into(),
                 region: region.to_string(),
             })),
             pod: None,
@@ -250,6 +250,7 @@ impl PineconeClient {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_byoc_index(
         &self,
         name: &str,
@@ -284,6 +285,40 @@ impl PineconeClient {
 
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
+            .await
+            .map_err(PineconeError::from)?;
+
+        // poll index status
+        match self.handle_poll_index(name, timeout).await {
+            Ok(_) => Ok(res.into()),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Creates an integrated index for a model.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn create_index_for_model(
+        &self,
+        name: &str,
+        cloud: Cloud,
+        region: &str,
+        embed: CreateIndexForModelOptions,
+        deletion_protection: Option<DeletionProtection>,
+        tags: Option<HashMap<String, String>>,
+        timeout: WaitPolicy,
+    ) -> Result<IndexModel, PineconeError> {
+        let embed: CreateIndexForModelRequestEmbed = embed.into();
+
+        let request = models::CreateIndexForModelRequest {
+            name: name.to_string(),
+            cloud: cloud.into(),
+            region: region.to_string(),
+            embed: Box::new(embed),
+            deletion_protection,
+            tags,
+        };
+
+        let res = manage_indexes_api::create_index_for_model(&self.openapi_config, request)
             .await
             .map_err(PineconeError::from)?;
 
@@ -908,14 +943,14 @@ mod tests {
             then.status(422)
                 .header("content-type", "application/json")
                 .body(
-                r#"{
+                    r#"{
                     "error": {
                             "code": "INVALID_ARGUMENT",
                             "message": "Failed to deserialize the JSON body into the target type: missing field `metric` at line 1 column 16"
                         },
                     "status": 422
                 }"#,
-            );
+                );
         });
 
         let config = PineconeClientConfig {
@@ -1051,6 +1086,9 @@ mod tests {
                 pod: None,
                 byoc: None,
             },
+            vector_type: VectorType::Dense,
+            tags: None,
+            embed: None,
         };
 
         assert_eq!(index, expected);
@@ -1191,6 +1229,9 @@ mod tests {
                     deletion_protection: None,
                     spec: models::IndexModelSpec::default(),
                     status: models::IndexModelStatus::default(),
+                    embed: None,
+                    tags: None,
+                    vector_type: VectorType::Dense,
                 },
                 IndexModel {
                     name: "index2".to_string(),
@@ -1200,6 +1241,9 @@ mod tests {
                     deletion_protection: None,
                     spec: models::IndexModelSpec::default(),
                     status: models::IndexModelStatus::default(),
+                    embed: None,
+                    tags: None,
+                    vector_type: VectorType::Dense,
                 },
             ]),
         };

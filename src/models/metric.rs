@@ -52,3 +52,35 @@ impl From<Metric> for ResponseMetric {
         }
     }
 }
+
+impl From<Metric> for crate::openapi::models::create_index_for_model_request_embed::Metric {
+    fn from(model: Metric) -> Self {
+        match model {
+            Metric::Cosine => {
+                crate::openapi::models::create_index_for_model_request_embed::Metric::Cosine
+            }
+            Metric::Euclidean => {
+                crate::openapi::models::create_index_for_model_request_embed::Metric::Euclidean
+            }
+            Metric::Dotproduct => {
+                crate::openapi::models::create_index_for_model_request_embed::Metric::Dotproduct
+            }
+        }
+    }
+}
+
+impl From<crate::openapi::models::create_index_for_model_request_embed::Metric> for Metric {
+    fn from(model: crate::openapi::models::create_index_for_model_request_embed::Metric) -> Self {
+        match model {
+            crate::openapi::models::create_index_for_model_request_embed::Metric::Cosine => {
+                Metric::Cosine
+            }
+            crate::openapi::models::create_index_for_model_request_embed::Metric::Euclidean => {
+                Metric::Euclidean
+            }
+            crate::openapi::models::create_index_for_model_request_embed::Metric::Dotproduct => {
+                Metric::Dotproduct
+            }
+        }
+    }
+}
