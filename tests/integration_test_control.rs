@@ -7,12 +7,33 @@ use pinecone_sdk::pinecone::{default_client, PineconeClientConfig};
 use pinecone_sdk::utils::errors::PineconeError;
 use serial_test::serial;
 use std::collections::HashMap;
+use std::env;
 use std::time::Duration;
 
 mod common;
 
 #[tokio::test]
+async fn test_get_envs() -> Result<(), PineconeError> {
+    fn get_env_var(key: &str) -> String {
+        env::var(key).unwrap_or_else(|_| panic!("Environment variable {} not set", key))
+    }
+    println!("env var COLLECTION_NAME={}", get_env_var("COLLECTION_NAME"));
+    println!(
+        "env var DATA_PLANE_INDEX_NAME={}",
+        get_env_var("DATA_PLANE_INDEX_NAME")
+    );
+    println!("env var POD_INDEX_NAME={}", get_env_var("POD_INDEX_NAME"));
+    println!(
+        "env var SERVERLESS_INDEX_NAME={}",
+        get_env_var("SERVERLESS_INDEX_NAME")
+    );
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
+    // get environment variables
+
     let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     pinecone
