@@ -2,7 +2,7 @@ use common::{
     generate_collection_name, generate_index_name, get_collection, get_pod_index,
     get_serverless_index,
 };
-use pinecone_sdk::models::{Cloud, DeletionProtection, Metric, WaitPolicy};
+use pinecone_sdk::models::{Cloud, DeletionProtection, Metric, VectorType, WaitPolicy};
 use pinecone_sdk::pinecone::{default_client, PineconeClientConfig};
 use pinecone_sdk::utils::errors::PineconeError;
 use serial_test::serial;
@@ -52,8 +52,8 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             "us-west-2",
             DeletionProtection::Disabled,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -67,8 +67,8 @@ async fn test_create_list_indexes() -> Result<(), PineconeError> {
             "us-west-2",
             DeletionProtection::Disabled,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -131,8 +131,8 @@ async fn test_create_delete_index() -> Result<(), PineconeError> {
             "us-west-2",
             DeletionProtection::Disabled,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -173,8 +173,8 @@ async fn test_create_pod_index() -> Result<(), PineconeError> {
             None,
             None,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -219,8 +219,8 @@ async fn test_create_pod_index_collection() -> Result<(), PineconeError> {
             None,
             Some("valid-collection"),
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -291,8 +291,8 @@ async fn test_configure_deletion_protection() -> Result<(), PineconeError> {
             "us-east-1",
             DeletionProtection::Enabled,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
@@ -341,8 +341,8 @@ async fn test_configure_optional_deletion_prot() -> Result<(), PineconeError> {
             None,
             None,
             WaitPolicy::NoWait,
+            VectorType::Dense,
             None,
-            "dense".to_string(),
         )
         .await
         .expect("Failed to create index");
