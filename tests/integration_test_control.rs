@@ -13,17 +13,10 @@ use std::time::Duration;
 mod common;
 
 #[tokio::test]
-async fn test_get_envs() -> Result<(), PineconeError> {
-    fn get_env_var(key: &str) -> String {
-        env::var(key).unwrap_or_else(|_| panic!("Environment variable {} not set", key))
-    }
-    println!("env var COLLECTION_NAME={}", get_env_var("COLLECTION_NAME"));
-    println!("env var POD_INDEX_NAME={}", get_env_var("POD_INDEX_NAME"));
-    println!(
-        "env var SERVERLESS_INDEX_NAME={}",
-        get_env_var("SERVERLESS_INDEX_NAME")
-    );
-    Ok(())
+async fn test_get_envs() -> Result<(), String> {
+    println!("env var POD_INDEX_NAME={}", get_pod_index());
+    println!("env var SERVERLESS_INDEX_NAME={}", get_serverless_index());
+    Err("Test failed".to_string())
 }
 
 #[tokio::test]
