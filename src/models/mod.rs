@@ -22,6 +22,9 @@ pub use self::wait_policy::WaitPolicy;
 mod embedding;
 pub use self::embedding::Embedding;
 
+mod vector_type;
+pub use self::vector_type::VectorType;
+
 pub use crate::openapi::models::{
     index_model_status::State, serverless_spec::Cloud, CollectionList, CollectionModel,
     ConfigureIndexRequest, ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod,

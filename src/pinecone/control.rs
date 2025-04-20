@@ -9,7 +9,8 @@ use crate::utils::errors::PineconeError;
 use crate::models::{
     Cloud, CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
     ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
-    IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, WaitPolicy,
+    IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, VectorType,
+    WaitPolicy,
 };
 use crate::openapi::models;
 
@@ -45,7 +46,7 @@ impl PineconeClient {
     ///     Cloud::Aws, // Cloud provider
     ///     "us-east-1", // Region
     ///     DeletionProtection::Enabled, // Deletion protection
-    ///     WaitPolicy::NoWait // Timeout
+    ///     WaitPolicy::NoWait, // Timeout
     ///     None,
     ///    "dense".to_string(), // Vector type
     /// ).await;
@@ -64,7 +65,7 @@ impl PineconeClient {
         deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
         tags: Option<std::collections::HashMap<String, String>>,
-        vector_type: String,
+        vector_type: VectorType,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
@@ -167,7 +168,7 @@ impl PineconeClient {
         source_collection: Option<&str>,
         timeout: WaitPolicy,
         tags: Option<std::collections::HashMap<String, String>>,
-        vector_type: String,
+        vector_type: VectorType,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
@@ -194,8 +195,8 @@ impl PineconeClient {
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(spec)),
-            tags,
             vector_type: Some(vector_type),
+            tags,
         };
 
         // make openAPI call

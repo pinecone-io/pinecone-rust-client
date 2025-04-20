@@ -10,6 +10,7 @@
 
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
+use crate::models::VectorType;
 
 /// IndexDescription : The response for the `describe_index_stats` operation.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -31,7 +32,7 @@ pub struct IndexDescription {
     pub metric: Option<String>,
     /// The type of vectors stored in the index.
     #[serde(rename = "vectorType", skip_serializing_if = "Option::is_none")]
-    pub vector_type: Option<String>,
+    pub vector_type: Option<VectorType>,
 }
 
 impl IndexDescription {
