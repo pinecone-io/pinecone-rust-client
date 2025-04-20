@@ -18,10 +18,6 @@ async fn test_get_envs() -> Result<(), PineconeError> {
         env::var(key).unwrap_or_else(|_| panic!("Environment variable {} not set", key))
     }
     println!("env var COLLECTION_NAME={}", get_env_var("COLLECTION_NAME"));
-    println!(
-        "env var DATA_PLANE_INDEX_NAME={}",
-        get_env_var("DATA_PLANE_INDEX_NAME")
-    );
     println!("env var POD_INDEX_NAME={}", get_env_var("POD_INDEX_NAME"));
     println!(
         "env var SERVERLESS_INDEX_NAME={}",
