@@ -13,10 +13,15 @@ use std::time::Duration;
 mod common;
 
 #[tokio::test]
-async fn test_get_envs() -> Result<(), String> {
-    println!("env var POD_INDEX_NAME={}", get_pod_index());
-    println!("env var SERVERLESS_INDEX_NAME={}", get_serverless_index());
-    Err("Test failed".to_string())
+async fn test_get_envs_svls() -> Result<(), String> {
+    assert_eq!("blah", get_serverless_index());
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_get_envs_pod() -> Result<(), String> {
+    assert_eq!("blah", get_pod_index());
+    Ok(())
 }
 
 #[tokio::test]
