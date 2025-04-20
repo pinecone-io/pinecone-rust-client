@@ -15,7 +15,7 @@ async fn test_embed() -> Result<(), PineconeError> {
         .embed(
             "multilingual-e5-large",
             Some(parameters),
-            &vec!["Hello, world!"],
+            &["Hello, world!"],
         )
         .await
         .expect("Failed to embed");
@@ -31,7 +31,7 @@ async fn test_embed_invalid_model() -> Result<(), PineconeError> {
     let pinecone = default_client().expect("Failed to create Pinecone instance");
 
     let _ = pinecone
-        .embed("invalid-model", None, &vec!["Hello, world!"])
+        .embed("invalid-model", None, &["Hello, world!"])
         .await
         .expect_err("Expected to fail embedding with invalid model");
 
@@ -51,7 +51,7 @@ async fn test_embed_invalid_parameters() -> Result<(), PineconeError> {
         .embed(
             "multilingual-e5-large",
             Some(parameters),
-            &vec!["Hello, world!"],
+            &["Hello, world!"],
         )
         .await
         .expect_err("Expected to fail embedding with invalid model parameters");

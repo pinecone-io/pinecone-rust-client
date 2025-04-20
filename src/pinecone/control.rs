@@ -11,6 +11,7 @@ use crate::models::{
     ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
     IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, WaitPolicy,
 };
+use crate::openapi::models;
 
 impl PineconeClient {
     /// Creates a serverless index.
@@ -45,6 +46,8 @@ impl PineconeClient {
     ///     "us-east-1", // Region
     ///     DeletionProtection::Enabled, // Deletion protection
     ///     WaitPolicy::NoWait // Timeout
+    ///     None,
+    ///    "dense".to_string(), // Vector type
     /// ).await;
     ///
     /// # Ok(())
@@ -60,6 +63,8 @@ impl PineconeClient {
         region: &str,
         deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
+        tags: Option<std::collections::HashMap<String, String>>,
+        vector_type: String,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
@@ -68,14 +73,17 @@ impl PineconeClient {
                 region: region.to_string(),
             })),
             pod: None,
+            byoc: None,
         };
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension,
+            dimension: Some(dimension),
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(create_index_request_spec)),
+            tags,
+            vector_type: Some(vector_type),
         };
 
         // make openAPI call
@@ -136,6 +144,8 @@ impl PineconeClient {
     ///         "imdb_rating"]),
     ///     Some("example-collection"), // Source collection
     ///     WaitPolicy::WaitFor(Duration::from_secs(10)), // Timeout
+    ///     None,
+    ///     "dense".to_string(), // Vector type
     /// )
     /// .await;
     /// # Ok(())
@@ -156,16 +166,18 @@ impl PineconeClient {
         metadata_indexed: Option<&[&str]>,
         source_collection: Option<&str>,
         timeout: WaitPolicy,
+        tags: Option<std::collections::HashMap<String, String>>,
+        vector_type: String,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
 
         let pod_spec = PodSpec {
             environment: environment.to_string(),
-            replicas,
-            shards,
+            replicas: Some(replicas),
+            shards: Some(shards),
             pod_type: pod_type.to_string(),
-            pods,
+            pods: Some(pods),
             metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
             source_collection: source_collection.map(|s| s.to_string()),
         };
@@ -173,14 +185,17 @@ impl PineconeClient {
         let spec = IndexSpec {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
+            byoc: None,
         };
 
         let create_index_request = CreateIndexRequest {
             name: name.to_string(),
-            dimension,
+            dimension: Some(dimension),
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(spec)),
+            tags,
+            vector_type: Some(vector_type),
         };
 
         // make openAPI call
@@ -334,7 +349,9 @@ impl PineconeClient {
     ///     "index-name",
     ///     Some(DeletionProtection::Enabled),
     ///     Some(6),
-    ///     Some("s1.x1")
+    ///     Some("s1.x1"),
+    ///     None,
+    ///     None,
     /// ).await;
     /// # Ok(())
     /// # }
@@ -345,6 +362,8 @@ impl PineconeClient {
         deletion_protection: Option<DeletionProtection>,
         replicas: Option<i32>,
         pod_type: Option<&str>,
+        tags: Option<std::collections::HashMap<String, String>>,
+        embed: Option<Box<models::ConfigureIndexRequestEmbed>>,
     ) -> Result<IndexModel, PineconeError> {
         if replicas.is_none() && pod_type.is_none() && deletion_protection.is_none() {
             return Err(PineconeError::InvalidConfigurationError {
@@ -377,6 +396,8 @@ impl PineconeClient {
         let configure_index_request = ConfigureIndexRequest {
             spec,
             deletion_protection,
+            tags,
+            embed,
         };
 
         // make openAPI call
@@ -589,7 +610,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Initializing"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -610,6 +632,8 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect("Failed to create serverless index");
@@ -617,7 +641,7 @@ mod tests {
         mock.assert();
 
         assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, 10);
+        assert_eq!(create_index_response.dimension, Some(10));
         assert_eq!(create_index_response.metric, Metric::Euclidean);
 
         let spec = create_index_response.spec.serverless.unwrap();
@@ -650,7 +674,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Initializing"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -671,12 +696,14 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect("Failed to create serverless index");
 
         assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, 10);
+        assert_eq!(create_index_response.dimension, Some(10));
         assert_eq!(create_index_response.metric, Metric::Cosine);
 
         let spec = create_index_response.spec.serverless.unwrap();
@@ -723,6 +750,8 @@ mod tests {
                 "abc",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -771,6 +800,8 @@ mod tests {
                 "us-west-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -819,6 +850,8 @@ mod tests {
                 "us-west-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -857,6 +890,8 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected create_index to return an error");
@@ -894,7 +929,8 @@ mod tests {
                         "status": {
                             "ready": true,
                             "state": "Ready"
-                        }
+                        },
+                        "vector_type": "dense"
                     }"#,
                 );
         });
@@ -916,7 +952,7 @@ mod tests {
         let expected = IndexModel {
             name: "serverless-index".to_string(),
             metric: Metric::Cosine,
-            dimension: 1536,
+            dimension: Some(1536),
             status: openapi::models::IndexModelStatus {
                 ready: true,
                 state: openapi::models::index_model_status::State::Ready,
@@ -929,6 +965,7 @@ mod tests {
                     region: "us-east-1".to_string(),
                 })),
                 pod: None,
+                byoc: None,
             },
         };
 
@@ -1025,7 +1062,8 @@ mod tests {
                             "status": {
                                 "ready": false,
                                 "state": "Initializing"
-                            }
+                            },
+                            "vector_type": "dense"
                         },
                         {
                             "name": "index2",
@@ -1036,7 +1074,8 @@ mod tests {
                             "status": {
                                 "ready": false,
                                 "state": "Initializing"
-                            }
+                            },
+                            "vector_type": "dense"
                         }
                     ]
                 }"#,
@@ -1062,7 +1101,7 @@ mod tests {
             indexes: Some(vec![
                 IndexModel {
                     name: "index1".to_string(),
-                    dimension: 1536,
+                    dimension: Some(1536),
                     metric: Metric::Cosine,
                     host: "host1".to_string(),
                     deletion_protection: None,
@@ -1071,7 +1110,7 @@ mod tests {
                 },
                 IndexModel {
                     name: "index2".to_string(),
-                    dimension: 1536,
+                    dimension: Some(1536),
                     metric: Metric::Cosine,
                     host: "host2".to_string(),
                     deletion_protection: None,
@@ -1150,7 +1189,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }
             "#,
                 );
@@ -1174,15 +1214,17 @@ mod tests {
                 1,
                 1,
                 DeletionProtection::Enabled,
-                Some(&vec!["genre", "title", "imdb_rating"]),
+                Some(&["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect("Failed to create pod index");
 
         assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, 1536);
+        assert_eq!(create_index_response.dimension, Some(1536));
         assert_eq!(create_index_response.metric, Metric::Euclidean);
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
@@ -1196,9 +1238,9 @@ mod tests {
                 "imdb_rating".to_string()
             ])
         );
-        assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, 1);
-        assert_eq!(pod_spec.shards, 1);
+        assert_eq!(pod_spec.pods, Some(1));
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
 
         mock.assert();
 
@@ -1233,7 +1275,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }
             "#,
                 );
@@ -1260,21 +1303,23 @@ mod tests {
                 None,
                 None,
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect("Failed to create pod index");
 
         assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, 1536);
+        assert_eq!(create_index_response.dimension, Some(1536));
         assert_eq!(create_index_response.metric, Metric::Cosine);
 
         let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
         assert_eq!(pod_spec.environment, "us-east-1-aws");
         assert_eq!(pod_spec.pod_type, "p1.x1");
         assert_eq!(pod_spec.metadata_config.as_ref().unwrap().indexed, None);
-        assert_eq!(pod_spec.pods, 1);
-        assert_eq!(pod_spec.replicas, 1);
-        assert_eq!(pod_spec.shards, 1);
+        assert_eq!(pod_spec.pods, Some(1));
+        assert_eq!(pod_spec.replicas, Some(1));
+        assert_eq!(pod_spec.shards, Some(1));
 
         mock.assert();
 
@@ -1323,6 +1368,8 @@ mod tests {
                 None,
                 Some("example-collection"),
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
@@ -1372,9 +1419,11 @@ mod tests {
                 1,
                 1,
                 DeletionProtection::Enabled,
-                Some(&vec!["genre", "title", "imdb_rating"]),
+                Some(&["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
@@ -1424,9 +1473,11 @@ mod tests {
                 1,
                 1,
                 DeletionProtection::Enabled,
-                Some(&vec!["genre", "title", "imdb_rating"]),
+                Some(&["genre", "title", "imdb_rating"]),
                 Some("example-collection"),
                 WaitPolicy::NoWait,
+                None,
+                "dense".to_string(),
             )
             .await
             .expect_err("Expected create_pod_index to return an error");
@@ -1464,7 +1515,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "Ready"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -1570,7 +1622,8 @@ mod tests {
                     "status": {
                         "ready": true,
                         "state": "ScalingUpPodSize"
-                    }
+                    },
+                    "vector_type": "dense"
                 }"#,
                 );
         });
@@ -1588,6 +1641,8 @@ mod tests {
                 Some(DeletionProtection::Disabled),
                 Some(6),
                 Some("p1.x1"),
+                None,
+                None,
             )
             .await
             .expect("Failed to configure index");
@@ -1595,7 +1650,7 @@ mod tests {
         assert_eq!(configure_index_response.name, "index-name");
 
         let spec = configure_index_response.spec.pod.unwrap();
-        assert_eq!(spec.replicas, 6);
+        assert_eq!(spec.replicas, Some(6));
         assert_eq!(spec.pod_type.as_str(), "p1.x1");
 
         mock.assert();
@@ -1637,7 +1692,8 @@ mod tests {
                         "status": {
                             "ready": true,
                             "state": "ScalingUpPodSize"
-                        }
+                        },
+                        "vector_type": "dense"
                     }"#,
                 );
         });
@@ -1650,7 +1706,14 @@ mod tests {
         let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", Some(DeletionProtection::Disabled), None, None)
+            .configure_index(
+                "index-name",
+                Some(DeletionProtection::Disabled),
+                None,
+                None,
+                None,
+                None,
+            )
             .await
             .expect("Failed to configure index");
 
@@ -1673,7 +1736,7 @@ mod tests {
         let pinecone = config.client().expect("Failed to create Pinecone instance");
 
         let configure_index_response = pinecone
-            .configure_index("index-name", None, None, None)
+            .configure_index("index-name", None, None, None, None, None)
             .await;
 
         assert!(matches!(
@@ -1718,6 +1781,8 @@ mod tests {
                 Some(DeletionProtection::Enabled),
                 Some(6),
                 Some("p1.x1"),
+                None,
+                None,
             )
             .await
             .expect_err("Expected to fail to configure index");
@@ -1764,6 +1829,8 @@ mod tests {
                 Some(DeletionProtection::Disabled),
                 Some(6),
                 Some("p1.x1"),
+                None,
+                None,
             )
             .await
             .expect_err("Expected to fail to configure index");
@@ -1810,6 +1877,8 @@ mod tests {
                 Some(DeletionProtection::Enabled),
                 Some(6),
                 Some("p1.x1"),
+                None,
+                None,
             )
             .await
             .expect_err("Expected to fail to configure index");
@@ -1846,6 +1915,8 @@ mod tests {
                 Some(DeletionProtection::Enabled),
                 Some(6),
                 Some("p1.x1"),
+                None,
+                None,
             )
             .await
             .expect_err("Expected to fail to configure index");
@@ -1876,7 +1947,7 @@ mod tests {
         };
         let pinecone = config.client().expect("Failed to create Pinecone instance");
 
-        let _ = pinecone
+        pinecone
             .delete_index("index-name")
             .await
             .expect("Failed to delete index");
@@ -2404,7 +2475,7 @@ mod tests {
         };
         let pinecone = config.client().expect("Failed to create Pinecone instance");
 
-        let _ = pinecone
+        pinecone
             .delete_collection("collection-name")
             .await
             .expect("Failed to delete collection");

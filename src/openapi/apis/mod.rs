@@ -13,7 +13,7 @@ pub enum Error<T> {
     Reqwest(reqwest::Error),
     Serde(serde_json::Error),
     Io(std::io::Error),
-    ResponseError(ResponseContent<T>),
+    ResponseErr(ResponseContent<T>),
 }
 
 impl<T> fmt::Display for Error<T> {
@@ -22,7 +22,7 @@ impl<T> fmt::Display for Error<T> {
             Error::Reqwest(e) => ("reqwest", e.to_string()),
             Error::Serde(e) => ("serde", e.to_string()),
             Error::Io(e) => ("IO", e.to_string()),
-            Error::ResponseError(e) => ("response", format!("status code {}", e.status)),
+            Error::ResponseErr(e) => ("response", format!("status code {}", e.status)),
         };
         write!(f, "error in {}: {}", module, e)
     }
@@ -34,7 +34,7 @@ impl<T: fmt::Debug> error::Error for Error<T> {
             Error::Reqwest(e) => e,
             Error::Serde(e) => e,
             Error::Io(e) => e,
-            Error::ResponseError(_) => return None,
+            Error::ResponseErr(_) => return None,
         })
     }
 }
@@ -92,7 +92,9 @@ pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String
     unimplemented!("Only objects are supported with style=deepObject")
 }
 
+pub mod bulk_operations_api;
+pub mod configuration;
 pub mod inference_api;
 pub mod manage_indexes_api;
-
-pub mod configuration;
+pub mod namespace_operations_api;
+pub mod vector_operations_api;

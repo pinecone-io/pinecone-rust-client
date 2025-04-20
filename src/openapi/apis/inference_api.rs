@@ -65,6 +65,6 @@ pub async fn embed(
             content: local_var_content,
             entity: local_var_entity,
         };
-        Err(Error::ResponseError(local_var_error))
+        Err(Error::ResponseErr(local_var_error))
     }
 }

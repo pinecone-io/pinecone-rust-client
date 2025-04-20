@@ -7,7 +7,7 @@ pub struct IndexModel {
     /// Index name
     pub name: String,
     /// Index dimension
-    pub dimension: i32,
+    pub dimension: Option<i32>,
     /// Index metric
     pub metric: Metric,
     /// Index host
