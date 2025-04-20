@@ -1,8 +1,9 @@
 use std::cmp::min;
+use std::collections::HashMap;
 use std::time::Duration;
 
 use crate::openapi::apis::manage_indexes_api;
-use crate::openapi::models::CreateIndexRequest;
+use crate::openapi::models::{ByocSpec, CreateIndexRequest};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
@@ -65,7 +66,7 @@ impl PineconeClient {
         deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
         vector_type: VectorType,
-        tags: Option<std::collections::HashMap<String, String>>,
+        tags: Option<HashMap<String, String>>,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
@@ -168,7 +169,7 @@ impl PineconeClient {
         source_collection: Option<&str>,
         timeout: WaitPolicy,
         vector_type: VectorType,
-        tags: Option<std::collections::HashMap<String, String>>,
+        tags: Option<HashMap<String, String>>,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
@@ -187,6 +188,88 @@ impl PineconeClient {
             serverless: None,
             pod: Some(Box::new(pod_spec)),
             byoc: None,
+        };
+
+        let create_index_request = CreateIndexRequest {
+            name: name.to_string(),
+            dimension: Some(dimension),
+            deletion_protection: Some(deletion_protection),
+            metric: Some(metric.into()),
+            spec: Some(Box::new(spec)),
+            vector_type: Some(vector_type),
+            tags,
+        };
+
+        // make openAPI call
+        let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
+            .await
+            .map_err(PineconeError::from)?;
+
+        // poll index status
+        match self.handle_poll_index(name, timeout).await {
+            Ok(_) => Ok(res.into()),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Creates a BYOC index.
+    ///
+    /// ### Arguments
+    /// * `name: &str` - The name of the index
+    /// * `dimension: i32` - The dimension of the index
+    /// * `metric: Metric` - The metric to use for the index
+    /// * `environment: &str` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
+    /// * `deletion_protection: DeletionProtection` - Deletion protection for the index.
+    /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
+    ///
+    /// ### Return
+    /// * `Result<IndexModel, PineconeError>`
+    ///
+    /// ### Example
+    /// ```no_run
+    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection, VectorType};
+    /// use pinecone_sdk::utils::errors::PineconeError;
+    /// use std::time::Duration;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), PineconeError> {
+    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
+    ///
+    /// // Create a pod index.
+    /// let response: Result<IndexModel, PineconeError> = pinecone.create_byoc_index(
+    ///     "index_name", // Name of the index
+    ///     10, // Dimension of the index
+    ///     Metric::Cosine, // Distance metric
+    ///     "aws-us-east-1-b921", // Environment
+    ///     DeletionProtection::Enabled, // Deletion protection
+    ///     WaitPolicy::WaitFor(Duration::from_secs(10)), // Timeout
+    ///     VectorType::Dense, // Vector type
+    ///     None, // tags
+    /// )
+    /// .await;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn create_byoc_index(
+        &self,
+        name: &str,
+        dimension: i32,
+        metric: Metric,
+        environment: &str,
+        deletion_protection: DeletionProtection,
+        timeout: WaitPolicy,
+        vector_type: VectorType,
+        tags: Option<HashMap<String, String>>,
+    ) -> Result<IndexModel, PineconeError> {
+        // create request specs
+        let spec = ByocSpec {
+            environment: environment.to_string(),
+        };
+
+        let spec = IndexSpec {
+            serverless: None,
+            pod: None,
+            byoc: Some(Box::new(spec)),
         };
 
         let create_index_request = CreateIndexRequest {
@@ -363,7 +446,7 @@ impl PineconeClient {
         deletion_protection: Option<DeletionProtection>,
         replicas: Option<i32>,
         pod_type: Option<&str>,
-        tags: Option<std::collections::HashMap<String, String>>,
+        tags: Option<HashMap<String, String>>,
         embed: Option<Box<models::ConfigureIndexRequestEmbed>>,
     ) -> Result<IndexModel, PineconeError> {
         if replicas.is_none() && pod_type.is_none() && deletion_protection.is_none() {
