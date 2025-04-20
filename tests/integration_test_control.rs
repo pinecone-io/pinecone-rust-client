@@ -7,22 +7,8 @@ use pinecone_sdk::pinecone::{default_client, PineconeClientConfig};
 use pinecone_sdk::utils::errors::PineconeError;
 use serial_test::serial;
 use std::collections::HashMap;
-use std::env;
-use std::time::Duration;
 
 mod common;
-
-#[tokio::test]
-async fn test_get_envs_svls() -> Result<(), String> {
-    assert_eq!("blah", get_serverless_index());
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_get_envs_pod() -> Result<(), String> {
-    assert_eq!("blah", get_pod_index());
-    Ok(())
-}
 
 #[tokio::test]
 async fn test_describe_index() -> Result<(), PineconeError> {
