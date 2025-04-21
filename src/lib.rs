@@ -48,9 +48,9 @@
 //!
 //! ```no_run
 //! use pinecone_sdk::pinecone;
-//! use pinecone_sdk::models::{Cloud, DeletionProtection, IndexModel, Metric, WaitPolicy};
+//! use pinecone_sdk::models::{Cloud, DeletionProtection, IndexModel, Metric, VectorType, WaitPolicy};
 //! use pinecone_sdk::utils::errors::PineconeError;
-//! # async fn create_index_and_collection() -> Result<(), PineconeError> {
+//! # async fn create_index() -> Result<(), PineconeError> {
 //!     let client: pinecone::PineconeClient =
 //!     pinecone::default_client().expect("Failed to create PineconeClient");
 //!
@@ -63,17 +63,15 @@
 //!             "us-east-1",
 //!             DeletionProtection::Disabled,
 //!             WaitPolicy::NoWait,
+//!             VectorType::Dense,
+//!             None,
 //!         )
 //!         .await?;
 //!
-//!     let collection = client.create_collection("my-collection-name", "my-previous-index-name").await?;
-//!
 //!     let index_description = client.describe_index("index-name").await?;
-//!     let collection_description = client.describe_collection("my-collection-name").await?;
 //!     let indexes = client.list_indexes().await?;
 //!
 //!     println!("Index description: {:?}", index_description);
-//!     println!("Collection description: {:?}", collection_description);
 //!     println!("Index list: {:?}", indexes);
 //!
 //! #   Ok(())
