@@ -1,4 +1,4 @@
-use crate::pinecone::{PineconeClient, PINECONE_API_VERSION_KEY};
+use crate::pinecone::PineconeClient;
 use crate::protos::vector_service_client::VectorServiceClient;
 use crate::utils::errors::{handle_response_error, PineconeError};
 use once_cell::sync::Lazy;
@@ -133,7 +133,7 @@ impl Index {
             .collect::<Vec<String>>()
             .join("\n");
 
-        req_builder = req_builder.json(&ndjson);
+        req_builder = req_builder.body(ndjson);
 
         let req = req_builder
             .build()
@@ -807,5 +807,15 @@ mod tests {
             .index(host.as_str())
             .await
             .expect_err("Expected connection error");
+    }
+
+    #[tokio::test]
+    async fn test_serialize_json() {
+        let json_val = serde_json::json!({
+            "_id": "123",
+            "hello": "world"}
+        );
+        let json = r#"{"_id":"123","hello":"world"}"#;
+        assert_eq!(json_val.to_string(), json);
     }
 }
