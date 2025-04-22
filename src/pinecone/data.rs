@@ -2,6 +2,7 @@ use crate::pinecone::PineconeClient;
 use crate::protos::vector_service_client::VectorServiceClient;
 use crate::utils::errors::PineconeError;
 use once_cell::sync::Lazy;
+use std::sync::Arc;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
 use tonic::service::Interceptor;
@@ -12,6 +13,7 @@ use crate::models::{
     DescribeIndexStatsResponse, FetchResponse, ListResponse, Metadata, Namespace, QueryResponse,
     SparseValues, UpdateResponse, UpsertResponse, Vector,
 };
+use crate::openapi::apis::vector_operations_api;
 use crate::protos;
 
 #[derive(Debug, Clone)]
@@ -38,6 +40,7 @@ pub struct Index {
     /// The name of the index.
     host: String,
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
+    client: Arc<PineconeClient>,
 }
 
 impl Index {
@@ -623,6 +626,7 @@ impl PineconeClient {
         let index = Index {
             host: endpoint.clone(),
             connection: self.new_index_connection(endpoint).await?,
+            client: Arc::new(self.clone()),
         };
 
         Ok(index)
