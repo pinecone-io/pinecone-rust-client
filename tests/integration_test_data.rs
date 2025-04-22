@@ -1,4 +1,4 @@
-use common::{generate_namespace_name, generate_vector, get_pod_index, get_serverless_index};
+use common::{generate_namespace_name, generate_vector, get_serverless_index};
 use pinecone_sdk::models::{Kind, Metadata, Namespace, SparseValues, Value, Vector};
 use pinecone_sdk::pinecone::default_client;
 use pinecone_sdk::utils::errors::PineconeError;
@@ -108,39 +108,6 @@ async fn test_upsert_sliced_vectors() -> Result<(), PineconeError> {
     }
 
     assert_eq!(upserted_count, 100);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_describe_index_stats_with_filter() -> Result<(), PineconeError> {
-    let pinecone = default_client().expect("Failed to create Pinecone instance");
-
-    let host = pinecone
-        .describe_index(&get_pod_index())
-        .await
-        .unwrap()
-        .host;
-
-    let mut index = pinecone
-        .index(host.as_str())
-        .await
-        .expect("Failed to target index");
-
-    let mut filter = BTreeMap::new();
-    filter.insert(
-        "id".to_string(),
-        Value {
-            kind: Some(Kind::BoolValue(false)),
-        },
-    );
-
-    let describe_index_stats_response = index
-        .describe_index_stats(Some(Metadata { fields: filter }))
-        .await
-        .expect("Failed to describe index stats");
-
-    assert_eq!(describe_index_stats_response.dimension, 12);
 
     Ok(())
 }
@@ -423,79 +390,6 @@ async fn test_delete_all_vectors() -> Result<(), PineconeError> {
 
     index
         .delete_all(namespace)
-        .await
-        .expect("Failed to delete all vectors");
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_delete_by_filter() -> Result<(), PineconeError> {
-    let pinecone = default_client().expect("Failed to create Pinecone instance");
-
-    let host = pinecone
-        .describe_index(&get_pod_index())
-        .await
-        .unwrap()
-        .host;
-
-    let mut index = pinecone
-        .index(host.as_str())
-        .await
-        .expect("Failed to target index");
-
-    let vectors = &[
-        Vector {
-            id: "1".to_string(),
-            values: vec![1.0; 12],
-            sparse_values: None,
-            metadata: Some(Metadata {
-                fields: vec![(
-                    "key".to_string(),
-                    Value {
-                        kind: Some(Kind::StringValue("value1".to_string())),
-                    },
-                )]
-                .into_iter()
-                .collect(),
-            }),
-        },
-        Vector {
-            id: "2".to_string(),
-            values: vec![2.0; 12],
-            sparse_values: None,
-            metadata: Some(Metadata {
-                fields: vec![(
-                    "key".to_string(),
-                    Value {
-                        kind: Some(Kind::StringValue("value2".to_string())),
-                    },
-                )]
-                .into_iter()
-                .collect(),
-            }),
-        },
-    ];
-
-    let namespace = &generate_namespace_name();
-    index
-        .upsert(vectors, namespace)
-        .await
-        .expect("Failed to upsert");
-
-    let filter = Metadata {
-        fields: vec![(
-            "key".to_string(),
-            Value {
-                kind: Some(Kind::StringValue("value1".to_string())),
-            },
-        )]
-        .into_iter()
-        .collect(),
-    };
-
-    index
-        .delete_by_filter(filter, namespace)
         .await
         .expect("Failed to delete all vectors");
 

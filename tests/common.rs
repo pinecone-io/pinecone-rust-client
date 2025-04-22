@@ -46,11 +46,6 @@ pub fn get_serverless_index() -> String {
     std::env::var("SERVERLESS_INDEX_NAME").unwrap()
 }
 
-/// Returns the name of the pod collection from the environment variable
-pub fn get_pod_index() -> String {
-    std::env::var("POD_INDEX_NAME").unwrap()
-}
-
 /// Returns the name of the collection from the environment variable
 #[allow(dead_code)]
 pub fn get_collection() -> String {

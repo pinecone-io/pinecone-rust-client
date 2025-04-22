@@ -11,7 +11,9 @@ mod namespace;
 pub use self::namespace::Namespace;
 
 mod index_model;
-pub use self::index_model::IndexModel;
+pub use self::index_model::{
+    CreateIndexForModelOptions, FieldMapEntry, IndexModel, ModelParameterValue,
+};
 
 mod index_list;
 pub use self::index_list::IndexList;
@@ -22,11 +24,19 @@ pub use self::wait_policy::WaitPolicy;
 mod embedding;
 pub use self::embedding::Embedding;
 
+mod vector_type;
+pub use self::vector_type::VectorType;
+
+mod cloud;
+pub use self::cloud::Cloud;
+
 pub use crate::openapi::models::{
-    index_model_status::State, serverless_spec::Cloud, CollectionList, CollectionModel,
-    ConfigureIndexRequest, ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod,
-    CreateCollectionRequest, DeletionProtection, EmbedRequestParameters, IndexModelSpec,
-    IndexModelStatus, IndexSpec, PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    index_model_status::State, CollectionList, CollectionModel, ConfigureIndexRequest,
+    ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
+    DeletionProtection, EmbedRequestParameters, IndexModelSpec, IndexModelStatus, IndexSpec,
+    PodSpec, PodSpecMetadataConfig, SearchRecordsRequest, SearchRecordsRequestQuery,
+    SearchRecordsRequestRerank, SearchRecordsResponse, ServerlessSpec, UpsertRecord,
+    UpsertResponse as UpsertRecordResponse,
 };
 
 pub use crate::protos::{

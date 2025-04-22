@@ -1,7 +1,8 @@
 use crate::pinecone::PineconeClient;
 use crate::protos::vector_service_client::VectorServiceClient;
-use crate::utils::errors::PineconeError;
+use crate::utils::errors::{handle_response_error, PineconeError};
 use once_cell::sync::Lazy;
+use std::sync::Arc;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
 use tonic::service::interceptor::InterceptedService;
 use tonic::service::Interceptor;
@@ -11,6 +12,13 @@ use tonic::{Request, Status};
 use crate::models::{
     DescribeIndexStatsResponse, FetchResponse, ListResponse, Metadata, Namespace, QueryResponse,
     SparseValues, UpdateResponse, UpsertResponse, Vector,
+};
+use crate::openapi::apis::configuration::Configuration;
+use crate::openapi::apis::vector_operations_api::UpsertRecordsNamespaceError;
+use crate::openapi::apis::{vector_operations_api, ResponseContent};
+use crate::openapi::models::{
+    SearchRecordsRequest, SearchRecordsRequestQuery, SearchRecordsRequestRerank,
+    SearchRecordsResponse,
 };
 use crate::protos;
 
@@ -33,11 +41,9 @@ impl Interceptor for ApiKeyInterceptor {
 
 /// A client for interacting with a Pinecone index.
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct Index {
-    /// The name of the index.
-    host: String,
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
+    client: Arc<PineconeClient>,
 }
 
 impl Index {
@@ -90,6 +96,107 @@ impl Index {
             .await
             .map_err(|e| PineconeError::DataPlaneError { status: e })?
             .into_inner();
+
+        Ok(response)
+    }
+
+    /// TODO
+    pub async fn upsert_records(
+        &mut self,
+        namespace: &str,
+        records: &[serde_json::Value],
+    ) -> Result<(), PineconeError> {
+        let configuration = &self.client.openapi_config;
+        let client = &self.client.openapi_config.client;
+
+        let uri_str = format!(
+            "{}/records/namespaces/{namespace}/upsert",
+            configuration.base_path,
+            namespace = crate::openapi::apis::urlencode(namespace)
+        );
+        let mut req_builder = client.request(reqwest::Method::POST, uri_str.as_str());
+
+        if let Some(ref user_agent) = configuration.user_agent {
+            req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
+        }
+        if let Some(ref apikey) = configuration.api_key {
+            let key = apikey.key.clone();
+            let value = match apikey.prefix {
+                Some(ref prefix) => format!("{} {}", prefix, key),
+                None => key,
+            };
+            req_builder = req_builder.header("Api-Key", value);
+        };
+        req_builder = req_builder.header(reqwest::header::CONTENT_TYPE, "application/x-ndjson");
+
+        let ndjson = records
+            .iter()
+            .map(|r| r.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        req_builder = req_builder.body(ndjson);
+
+        let req = req_builder
+            .build()
+            .map_err(|e| PineconeError::ReqwestError {
+                source: anyhow::Error::from(e),
+            })?;
+
+        let resp = client
+            .execute(req)
+            .await
+            .map_err(|e| PineconeError::ReqwestError {
+                source: anyhow::Error::from(e),
+            })?;
+
+        let status = resp.status();
+        let content = resp.text().await.map_err(|e| PineconeError::ReqwestError {
+            source: anyhow::Error::from(e),
+        })?;
+
+        if !status.is_client_error() && !status.is_server_error() {
+            Ok(())
+        } else {
+            let entity: Option<UpsertRecordsNamespaceError> = serde_json::from_str(&content).ok();
+            Err(handle_response_error(
+                ResponseContent {
+                    status,
+                    content,
+                    entity,
+                }
+                .into(),
+            ))
+        }
+    }
+
+    /// TODO
+    pub async fn search_records_by_text(
+        &mut self,
+        namespace: &str,
+        query_text: &str,
+        top_k: u32,
+        fields: Option<Vec<String>>,
+        rerank: Option<SearchRecordsRequestRerank>,
+    ) -> Result<SearchRecordsResponse, PineconeError> {
+        let response = vector_operations_api::search_records_namespace(
+            &self.client.openapi_config,
+            namespace,
+            SearchRecordsRequest {
+                query: Box::new(SearchRecordsRequestQuery {
+                    inputs: Some(serde_json::json!({
+                        "text": query_text,
+                    })),
+                    top_k: top_k as i32,
+                    filter: None,
+                    vector: None,
+                    id: None,
+                }),
+                fields,
+                rerank: rerank.map(Box::new),
+            },
+        )
+        .await?;
 
         Ok(response)
     }
@@ -621,8 +728,14 @@ impl PineconeClient {
         };
 
         let index = Index {
-            host: endpoint.clone(),
-            connection: self.new_index_connection(endpoint).await?,
+            connection: self.new_index_connection(endpoint.clone()).await?,
+            client: Arc::new(PineconeClient {
+                openapi_config: Configuration {
+                    base_path: endpoint.clone(),
+                    ..self.openapi_config.clone()
+                },
+                ..self.clone()
+            }),
         };
 
         Ok(index)
@@ -674,7 +787,7 @@ mod tests {
 
         let index = pinecone.index(server.base_url().as_str()).await.unwrap();
 
-        assert_eq!(index.host, server.base_url());
+        assert_eq!(index.client.openapi_config.base_path, server.base_url());
     }
 
     #[tokio::test]
@@ -732,5 +845,15 @@ mod tests {
             .index(host.as_str())
             .await
             .expect_err("Expected connection error");
+    }
+
+    #[tokio::test]
+    async fn test_serialize_json() {
+        let json_val = serde_json::json!({
+            "_id": "123",
+            "hello": "world"}
+        );
+        let json = r#"{"_id":"123","hello":"world"}"#;
+        assert_eq!(json_val.to_string(), json);
     }
 }

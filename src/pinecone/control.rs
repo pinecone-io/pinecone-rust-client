@@ -1,15 +1,16 @@
 use std::cmp::min;
+use std::collections::HashMap;
 use std::time::Duration;
 
 use crate::openapi::apis::manage_indexes_api;
-use crate::openapi::models::CreateIndexRequest;
+use crate::openapi::models::{ByocSpec, CreateIndexForModelRequestEmbed, CreateIndexRequest};
 use crate::pinecone::PineconeClient;
 use crate::utils::errors::PineconeError;
 
 use crate::models::{
-    Cloud, CollectionList, CollectionModel, ConfigureIndexRequest, ConfigureIndexRequestSpec,
-    ConfigureIndexRequestSpecPod, CreateCollectionRequest, DeletionProtection, IndexList,
-    IndexModel, IndexSpec, Metric, PodSpec, PodSpecMetadataConfig, ServerlessSpec, WaitPolicy,
+    Cloud, ConfigureIndexRequest, ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod,
+    CreateIndexForModelOptions, DeletionProtection, IndexList, IndexModel, IndexSpec, Metric,
+    ServerlessSpec, VectorType, WaitPolicy,
 };
 use crate::openapi::models;
 
@@ -30,7 +31,7 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
+    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection, VectorType};
     /// use pinecone_sdk::utils::errors::PineconeError;
     ///
     /// # #[tokio::main]
@@ -45,9 +46,9 @@ impl PineconeClient {
     ///     Cloud::Aws, // Cloud provider
     ///     "us-east-1", // Region
     ///     DeletionProtection::Enabled, // Deletion protection
-    ///     WaitPolicy::NoWait // Timeout
+    ///     WaitPolicy::NoWait, // Timeout
+    ///     VectorType::Dense, // Vector type
     ///     None,
-    ///    "dense".to_string(), // Vector type
     /// ).await;
     ///
     /// # Ok(())
@@ -63,13 +64,13 @@ impl PineconeClient {
         region: &str,
         deletion_protection: DeletionProtection,
         timeout: WaitPolicy,
-        tags: Option<std::collections::HashMap<String, String>>,
-        vector_type: String,
+        vector_type: VectorType,
+        tags: Option<HashMap<String, String>>,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
         let create_index_request_spec = IndexSpec {
             serverless: Some(Box::new(ServerlessSpec {
-                cloud,
+                cloud: cloud.into(),
                 region: region.to_string(),
             })),
             pod: None,
@@ -82,8 +83,8 @@ impl PineconeClient {
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(create_index_request_spec)),
-            tags,
             vector_type: Some(vector_type),
+            tags,
         };
 
         // make openAPI call
@@ -98,20 +99,14 @@ impl PineconeClient {
         }
     }
 
-    /// Creates a pod index.
+    /// Creates a BYOC index.
     ///
     /// ### Arguments
     /// * `name: &str` - The name of the index
     /// * `dimension: i32` - The dimension of the index
     /// * `metric: Metric` - The metric to use for the index
     /// * `environment: &str` - The environment where the pod index will be deployed. Example: 'us-east1-gcp'
-    /// * `pod_type: &str` - This value combines pod type and pod size into a single string. This configuration is your main lever for vertical scaling.
-    /// * `pods: i32` - The number of pods to deploy.
-    /// * `replicas: i32` - The number of replicas to deploy for the pod index.
-    /// * `shards: i32` - The number of shards to use. Shards are used to expand the amount of vectors you can store beyond the capacity of a single pod.
     /// * `deletion_protection: DeletionProtection` - Deletion protection for the index.
-    /// * `metadata_indexed: Option<&[&str]>` - The metadata fields to index.
-    /// * `source_collection: Option<&str>` - The name of the collection to use as the source for the pod index. This configuration is only used when creating a pod index from an existing collection.
     /// * `timeout: WaitPolicy` - The wait policy for index creation. If the index becomes ready before the specified duration, the function will return early. If the index is not ready after the specified duration, the function will return an error.
     ///
     /// ### Return
@@ -119,7 +114,7 @@ impl PineconeClient {
     ///
     /// ### Example
     /// ```no_run
-    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection};
+    /// use pinecone_sdk::models::{IndexModel, Metric, Cloud, WaitPolicy, DeletionProtection, VectorType};
     /// use pinecone_sdk::utils::errors::PineconeError;
     /// use std::time::Duration;
     ///
@@ -128,64 +123,41 @@ impl PineconeClient {
     /// let pinecone = pinecone_sdk::pinecone::default_client()?;
     ///
     /// // Create a pod index.
-    /// let response: Result<IndexModel, PineconeError> = pinecone.create_pod_index(
+    /// let response: Result<IndexModel, PineconeError> = pinecone.create_byoc_index(
     ///     "index_name", // Name of the index
     ///     10, // Dimension of the index
     ///     Metric::Cosine, // Distance metric
-    ///     "us-east-1", // Environment
-    ///     "p1.x1", // Pod type
-    ///     1, // Number of pods
-    ///     1, // Number of replicas
-    ///     1, // Number of shards
+    ///     "aws-us-east-1-b921", // Environment
     ///     DeletionProtection::Enabled, // Deletion protection
-    ///     Some( // Metadata fields to index
-    ///         &vec!["genre",
-    ///         "title",
-    ///         "imdb_rating"]),
-    ///     Some("example-collection"), // Source collection
     ///     WaitPolicy::WaitFor(Duration::from_secs(10)), // Timeout
-    ///     None,
-    ///     "dense".to_string(), // Vector type
+    ///     VectorType::Dense, // Vector type
+    ///     None, // tags
     /// )
     /// .await;
     /// # Ok(())
     /// # }
     /// ```
     #[allow(clippy::too_many_arguments)]
-    pub async fn create_pod_index(
+    pub async fn create_byoc_index(
         &self,
         name: &str,
         dimension: i32,
         metric: Metric,
         environment: &str,
-        pod_type: &str,
-        pods: i32,
-        replicas: i32,
-        shards: i32,
         deletion_protection: DeletionProtection,
-        metadata_indexed: Option<&[&str]>,
-        source_collection: Option<&str>,
         timeout: WaitPolicy,
-        tags: Option<std::collections::HashMap<String, String>>,
-        vector_type: String,
+        vector_type: VectorType,
+        tags: Option<HashMap<String, String>>,
     ) -> Result<IndexModel, PineconeError> {
         // create request specs
-        let indexed = metadata_indexed.map(|i| i.iter().map(|s| s.to_string()).collect());
-
-        let pod_spec = PodSpec {
+        let spec = ByocSpec {
             environment: environment.to_string(),
-            replicas: Some(replicas),
-            shards: Some(shards),
-            pod_type: pod_type.to_string(),
-            pods: Some(pods),
-            metadata_config: Some(Box::new(PodSpecMetadataConfig { indexed })),
-            source_collection: source_collection.map(|s| s.to_string()),
         };
 
         let spec = IndexSpec {
             serverless: None,
-            pod: Some(Box::new(pod_spec)),
-            byoc: None,
+            pod: None,
+            byoc: Some(Box::new(spec)),
         };
 
         let create_index_request = CreateIndexRequest {
@@ -194,12 +166,46 @@ impl PineconeClient {
             deletion_protection: Some(deletion_protection),
             metric: Some(metric.into()),
             spec: Some(Box::new(spec)),
-            tags,
             vector_type: Some(vector_type),
+            tags,
         };
 
         // make openAPI call
         let res = manage_indexes_api::create_index(&self.openapi_config, create_index_request)
+            .await
+            .map_err(PineconeError::from)?;
+
+        // poll index status
+        match self.handle_poll_index(name, timeout).await {
+            Ok(_) => Ok(res.into()),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Creates an integrated index for a model.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn create_index_for_model(
+        &self,
+        name: &str,
+        cloud: Cloud,
+        region: &str,
+        embed: CreateIndexForModelOptions,
+        deletion_protection: Option<DeletionProtection>,
+        tags: Option<HashMap<String, String>>,
+        timeout: WaitPolicy,
+    ) -> Result<IndexModel, PineconeError> {
+        let embed: CreateIndexForModelRequestEmbed = embed.into();
+
+        let request = models::CreateIndexForModelRequest {
+            name: name.to_string(),
+            cloud: cloud.into(),
+            region: region.to_string(),
+            embed: Box::new(embed),
+            deletion_protection,
+            tags,
+        };
+
+        let res = manage_indexes_api::create_index_for_model(&self.openapi_config, request)
             .await
             .map_err(PineconeError::from)?;
 
@@ -362,7 +368,7 @@ impl PineconeClient {
         deletion_protection: Option<DeletionProtection>,
         replicas: Option<i32>,
         pod_type: Option<&str>,
-        tags: Option<std::collections::HashMap<String, String>>,
+        tags: Option<HashMap<String, String>>,
         embed: Option<Box<models::ConfigureIndexRequestEmbed>>,
     ) -> Result<IndexModel, PineconeError> {
         if replicas.is_none() && pod_type.is_none() && deletion_protection.is_none() {
@@ -441,138 +447,6 @@ impl PineconeClient {
 
         Ok(())
     }
-
-    /// Creates a collection from an index.
-    ///
-    /// ### Arguments
-    /// * `name: &str` - Name of the collection to create.
-    /// * `source: &str` - Name of the index to be used as the source for the collection.
-    ///
-    /// ### Return
-    /// * `Result<CollectionModel, PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::models::CollectionModel;
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
-    ///
-    /// // Describe an index in the project.
-    /// let response: Result<CollectionModel, PineconeError> = pinecone.create_collection("collection-name", "index-name").await;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn create_collection(
-        &self,
-        name: &str,
-        source: &str,
-    ) -> Result<CollectionModel, PineconeError> {
-        let create_collection_request = CreateCollectionRequest {
-            name: name.to_string(),
-            source: source.to_string(),
-        };
-
-        // make openAPI call
-        let res =
-            manage_indexes_api::create_collection(&self.openapi_config, create_collection_request)
-                .await
-                .map_err(PineconeError::from)?;
-
-        Ok(res)
-    }
-
-    /// Describe a collection.
-    ///
-    /// ### Arguments
-    /// * `name: &str` - The name of the collection to describe.
-    ///
-    /// ### Return
-    /// * `Result<(), PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::models::CollectionModel;
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
-    ///
-    /// // Describe a collection in the project.
-    /// let collection: CollectionModel = pinecone.describe_collection("collection-name").await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn describe_collection(&self, name: &str) -> Result<CollectionModel, PineconeError> {
-        let res = manage_indexes_api::describe_collection(&self.openapi_config, name)
-            .await
-            .map_err(PineconeError::from)?;
-
-        Ok(res)
-    }
-
-    /// Lists all collections.
-    ///
-    /// This operation returns a list of all collections in a project.
-    ///
-    /// ### Return
-    /// * `Result<CollectionList, PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::models::CollectionList;
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
-    ///
-    /// // List all collections in the project.
-    /// let response: Result<CollectionList, PineconeError> = pinecone.list_collections().await;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn list_collections(&self) -> Result<CollectionList, PineconeError> {
-        // make openAPI call
-        let res = manage_indexes_api::list_collections(&self.openapi_config)
-            .await
-            .map_err(PineconeError::from)?;
-
-        Ok(res)
-    }
-
-    /// Deletes a collection.
-    ///
-    /// ### Arguments
-    /// * `name: &str` - The name of the collection to be deleted.
-    ///
-    /// ### Return
-    /// * `Result<(), PineconeError>`
-    ///
-    /// ### Example
-    /// ```no_run
-    /// use pinecone_sdk::utils::errors::PineconeError;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), PineconeError>{
-    /// let pinecone = pinecone_sdk::pinecone::default_client()?;
-    ///
-    /// // Delete a collection in the project.
-    /// let response: Result<(), PineconeError> = pinecone.delete_collection("collection-name").await;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn delete_collection(&self, name: &str) -> Result<(), PineconeError> {
-        // make openAPI call
-        manage_indexes_api::delete_collection(&self.openapi_config, name)
-            .await
-            .map_err(PineconeError::from)?;
-
-        Ok(())
-    }
 }
 
 #[cfg(test)]
@@ -580,7 +454,7 @@ mod tests {
     use super::*;
     use crate::openapi::{
         self,
-        models::{self, collection_model::Status},
+        models::{self},
     };
     use crate::pinecone::PineconeClientConfig;
     use httpmock::prelude::*;
@@ -632,8 +506,8 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect("Failed to create serverless index");
@@ -696,8 +570,8 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect("Failed to create serverless index");
@@ -750,8 +624,8 @@ mod tests {
                 "abc",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -800,8 +674,8 @@ mod tests {
                 "us-west-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -824,14 +698,14 @@ mod tests {
             then.status(422)
                 .header("content-type", "application/json")
                 .body(
-                r#"{
+                    r#"{
                     "error": {
                             "code": "INVALID_ARGUMENT",
                             "message": "Failed to deserialize the JSON body into the target type: missing field `metric` at line 1 column 16"
                         },
                     "status": 422
                 }"#,
-            );
+                );
         });
 
         let config = PineconeClientConfig {
@@ -850,8 +724,8 @@ mod tests {
                 "us-west-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect_err("Expected error when creating serverless index");
@@ -890,8 +764,8 @@ mod tests {
                 "us-east-1",
                 DeletionProtection::Enabled,
                 WaitPolicy::NoWait,
+                VectorType::Dense,
                 None,
-                "dense".to_string(),
             )
             .await
             .expect_err("Expected create_index to return an error");
@@ -967,6 +841,9 @@ mod tests {
                 pod: None,
                 byoc: None,
             },
+            vector_type: VectorType::Dense,
+            tags: None,
+            embed: None,
         };
 
         assert_eq!(index, expected);
@@ -1107,6 +984,9 @@ mod tests {
                     deletion_protection: None,
                     spec: models::IndexModelSpec::default(),
                     status: models::IndexModelStatus::default(),
+                    embed: None,
+                    tags: None,
+                    vector_type: VectorType::Dense,
                 },
                 IndexModel {
                     name: "index2".to_string(),
@@ -1116,6 +996,9 @@ mod tests {
                     deletion_protection: None,
                     spec: models::IndexModelSpec::default(),
                     status: models::IndexModelStatus::default(),
+                    embed: None,
+                    tags: None,
+                    vector_type: VectorType::Dense,
                 },
             ]),
         };
@@ -1149,342 +1032,6 @@ mod tests {
         assert!(matches!(
             list_indexes_response,
             PineconeError::InternalServerError { .. }
-        ));
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/indexes");
-            then.status(201)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                {
-                    "name": "index-name",
-                    "dimension": 1536,
-                    "metric": "euclidean",
-                    "host": "mock-host",
-                    "spec": {
-                        "pod": {
-                            "environment": "us-east-1-aws",
-                            "replicas": 1,
-                            "shards": 1,
-                            "pod_type": "p1.x1",
-                            "pods": 1,
-                            "metadata_config": {
-                                "indexed": [
-                                    "genre",
-                                    "title",
-                                    "imdb_rating"
-                                ]
-                            }
-                        }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "ScalingUpPodSize"
-                    },
-                    "vector_type": "dense"
-                }
-            "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_index_response = pinecone
-            .create_pod_index(
-                "index-name",
-                1536,
-                Metric::Euclidean,
-                "us-east-1-aws",
-                "p1.x1",
-                1,
-                1,
-                1,
-                DeletionProtection::Enabled,
-                Some(&["genre", "title", "imdb_rating"]),
-                Some("example-collection"),
-                WaitPolicy::NoWait,
-                None,
-                "dense".to_string(),
-            )
-            .await
-            .expect("Failed to create pod index");
-
-        assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, Some(1536));
-        assert_eq!(create_index_response.metric, Metric::Euclidean);
-
-        let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
-        assert_eq!(pod_spec.environment, "us-east-1-aws");
-        assert_eq!(pod_spec.pod_type, "p1.x1");
-        assert_eq!(
-            pod_spec.metadata_config.as_ref().unwrap().indexed,
-            Some(vec![
-                "genre".to_string(),
-                "title".to_string(),
-                "imdb_rating".to_string()
-            ])
-        );
-        assert_eq!(pod_spec.pods, Some(1));
-        assert_eq!(pod_spec.replicas, Some(1));
-        assert_eq!(pod_spec.shards, Some(1));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index_with_defaults() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/indexes");
-            then.status(201)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                {
-                    "name": "index-name",
-                    "dimension": 1536,
-                    "metric": "cosine",
-                    "host": "mock-host",
-                    "spec": {
-                        "pod": {
-                            "environment": "us-east-1-aws",
-                            "pod_type": "p1.x1",
-                            "pods": 1,
-                            "metadata_config": {},
-                            "replicas": 1,
-                            "shards": 1
-                        }
-                    },
-                    "status": {
-                        "ready": true,
-                        "state": "ScalingUpPodSize"
-                    },
-                    "vector_type": "dense"
-                }
-            "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_index_response = pinecone
-            .create_pod_index(
-                "index-name",
-                1536,
-                Default::default(),
-                "us-east-1-aws",
-                "p1.x1",
-                1,
-                1,
-                1,
-                DeletionProtection::Enabled,
-                None,
-                None,
-                WaitPolicy::NoWait,
-                None,
-                "dense".to_string(),
-            )
-            .await
-            .expect("Failed to create pod index");
-
-        assert_eq!(create_index_response.name, "index-name");
-        assert_eq!(create_index_response.dimension, Some(1536));
-        assert_eq!(create_index_response.metric, Metric::Cosine);
-
-        let pod_spec = create_index_response.spec.pod.as_ref().unwrap();
-        assert_eq!(pod_spec.environment, "us-east-1-aws");
-        assert_eq!(pod_spec.pod_type, "p1.x1");
-        assert_eq!(pod_spec.metadata_config.as_ref().unwrap().indexed, None);
-        assert_eq!(pod_spec.pods, Some(1));
-        assert_eq!(pod_spec.replicas, Some(1));
-        assert_eq!(pod_spec.shards, Some(1));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index_quota_exceeded() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/indexes");
-            then.status(403)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": {
-                            "code": "FORBIDDEN",
-                            "message": "Increase yoru quota or upgrade to create more indexes."
-                        },
-                        "status": 403
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_index_response = pinecone
-            .create_pod_index(
-                "index-name",
-                1536,
-                Metric::Euclidean,
-                "test-environment",
-                "p1.x1",
-                1,
-                1,
-                1,
-                DeletionProtection::Enabled,
-                None,
-                Some("example-collection"),
-                WaitPolicy::NoWait,
-                None,
-                "dense".to_string(),
-            )
-            .await
-            .expect_err("Expected create_pod_index to return an error");
-
-        assert!(matches!(
-            create_index_response,
-            PineconeError::PodQuotaExceededError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index_invalid_environment() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/indexes");
-            then.status(400)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": "Invalid environment"
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_index_response = pinecone
-            .create_pod_index(
-                "index-name",
-                1536,
-                Metric::Euclidean,
-                "invalid-environment",
-                "p1.x1",
-                1,
-                1,
-                1,
-                DeletionProtection::Enabled,
-                Some(&["genre", "title", "imdb_rating"]),
-                Some("example-collection"),
-                WaitPolicy::NoWait,
-                None,
-                "dense".to_string(),
-            )
-            .await
-            .expect_err("Expected create_pod_index to return an error");
-
-        assert!(matches!(
-            create_index_response,
-            PineconeError::BadRequestError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_pod_index_invalid_pod_type() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/indexes");
-            then.status(400)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": "Invalid pod type"
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_index_response = pinecone
-            .create_pod_index(
-                "index-name",
-                1536,
-                Metric::Euclidean,
-                "us-east-1-aws",
-                "invalid-pod-type",
-                1,
-                1,
-                1,
-                DeletionProtection::Enabled,
-                Some(&["genre", "title", "imdb_rating"]),
-                Some("example-collection"),
-                WaitPolicy::NoWait,
-                None,
-                "dense".to_string(),
-            )
-            .await
-            .expect_err("Expected create_pod_index to return an error");
-
-        assert!(matches!(
-            create_index_response,
-            PineconeError::BadRequestError { .. }
         ));
         mock.assert();
 
@@ -2050,503 +1597,6 @@ mod tests {
 
         assert!(matches!(
             delete_index_response,
-            PineconeError::InternalServerError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_collection() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/collections");
-            then.status(201)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "name": "example-collection",
-                        "size": 10000000,
-                        "status": "Initializing",
-                        "dimension": 1536,
-                        "vector_count": 120000,
-                        "environment": "us-east1-gcp"
-                    }
-                    "#,
-                );
-        });
-
-        // Construct Pinecone instance with the mock server URL
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        // Call create_collection and verify the result
-        let collection = pinecone
-            .create_collection("collection1", "index1")
-            .await
-            .expect("Failed to create collection");
-
-        let expected = CollectionModel {
-            name: "example-collection".to_string(),
-            size: Some(10000000),
-            status: Status::Initializing,
-            dimension: Some(1536),
-            vector_count: Some(120000),
-            environment: "us-east1-gcp".to_string(),
-        };
-        assert_eq!(collection, expected);
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_collection_quota_exceeded() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/collections");
-            then.status(403)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": {
-                            "code": "FORBIDDEN",
-                            "message": "Collection exceeds quota. Maximum allowed on your account is 1. Currently have 1."
-                        },
-                        "status": 403
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_collection_response = pinecone
-            .create_collection("invalid_collection", "valid-index")
-            .await
-            .expect_err("Expected create_collection to return an error");
-
-        assert!(matches!(
-            create_collection_response,
-            PineconeError::CollectionsQuotaExceededError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_collection_invalid_name() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/collections");
-            then.status(409)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": "Index not found"
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_collection_response = pinecone
-            .create_collection("invalid_collection", "valid-index")
-            .await
-            .expect_err("Expected create_collection to return an error");
-
-        assert!(matches!(
-            create_collection_response,
-            PineconeError::ResourceAlreadyExistsError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_create_collection_server_error() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST).path("/collections");
-            then.status(500);
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let create_collection_response = pinecone
-            .create_collection("collection-name", "index1")
-            .await
-            .expect_err("Expected create_collection to return an error");
-
-        assert!(matches!(
-            create_collection_response,
-            PineconeError::InternalServerError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_describe_collection() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections/collection-name");
-            then.status(200)
-                .header("content-type", "application/json")
-                .body(
-                    r#"{
-                        "dimension": 3,
-                        "environment": "us-east1-gcp",
-                        "name": "tiny-collection",
-                        "size": 3126700,
-                        "status": "Ready",
-                        "vector_count": 99
-                      }"#,
-                );
-        });
-
-        // Construct Pinecone instance with the mock server URL
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        // Call describe_collection and verify the result
-        let collection = pinecone
-            .describe_collection("collection-name")
-            .await
-            .expect("Failed to describe collection");
-
-        let expected = CollectionModel {
-            name: "tiny-collection".to_string(),
-            size: Some(3126700),
-            status: Status::Ready,
-            dimension: Some(3),
-            vector_count: Some(99),
-            environment: "us-east1-gcp".to_string(),
-        };
-
-        assert_eq!(collection, expected);
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_describe_collection_invalid_name() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections/invalid-collection");
-            then.status(404)
-                .header("content-type", "application/json")
-                .body(
-                    r#"{
-                    "error": "Collection invalid-collection not found"
-                }"#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let response = pinecone
-            .describe_collection("invalid-collection")
-            .await
-            .expect_err("Expected describe_collection to return an error");
-
-        assert!(matches!(
-            response,
-            PineconeError::CollectionNotFoundError { .. }
-        ));
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_describe_collection_server_error() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections/collection-name");
-            then.status(500);
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let response = pinecone
-            .describe_collection("collection-name")
-            .await
-            .expect_err("Expected describe_collection to return an error");
-
-        assert!(matches!(
-            response,
-            PineconeError::InternalServerError { .. }
-        ));
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_list_collections() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections");
-            then.status(200)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "collections": [
-                            {
-                                "name": "small-collection",
-                                "size": 3126700,
-                                "status": "Ready",
-                                "dimension": 3,
-                                "vector_count": 99,
-                                "environment": "us-east1-gcp"
-                            },
-                            {
-                                "name": "small-collection-new",
-                                "size": 3126700,
-                                "status": "Initializing",
-                                "dimension": 3,
-                                "vector_count": 99,
-                                "environment": "us-east1-gcp"
-                            },
-                            {
-                                "name": "big-collection",
-                                "size": 160087040000000,
-                                "status": "Ready",
-                                "dimension": 1536,
-                                "vector_count": 10000000,
-                                "environment": "us-east1-gcp"
-                            }
-                        ]
-                    }"#,
-                );
-        });
-
-        // Construct Pinecone instance with the mock server URL
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        // Call list_collections and verify the result
-        let collection_list = pinecone
-            .list_collections()
-            .await
-            .expect("Failed to list collections");
-
-        let expected = CollectionList {
-            // name: String, dimension: i32, metric: Metric, host: String, spec: models::IndexModelSpec, status: models::IndexModelStatus)
-            collections: Some(vec![
-                CollectionModel {
-                    name: "small-collection".to_string(),
-                    size: Some(3126700),
-                    status: Status::Ready,
-                    dimension: Some(3),
-                    vector_count: Some(99),
-                    environment: "us-east1-gcp".to_string(),
-                },
-                CollectionModel {
-                    name: "small-collection-new".to_string(),
-                    size: Some(3126700),
-                    status: Status::Initializing,
-                    dimension: Some(3),
-                    vector_count: Some(99),
-                    environment: "us-east1-gcp".to_string(),
-                },
-                CollectionModel {
-                    name: "big-collection".to_string(),
-                    size: Some(160087040000000),
-                    status: Status::Ready,
-                    dimension: Some(1536),
-                    vector_count: Some(10000000),
-                    environment: "us-east1-gcp".to_string(),
-                },
-            ]),
-        };
-        assert_eq!(collection_list, expected);
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_list_collections_error() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/collections");
-            then.status(500);
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        // Call list_collections and verify the result
-        let list_collections_response = pinecone
-            .list_collections()
-            .await
-            .expect_err("Expected to fail to list collections");
-
-        assert!(matches!(
-            list_collections_response,
-            PineconeError::InternalServerError { .. }
-        ));
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_delete_collection() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
-            then.status(202);
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        pinecone
-            .delete_collection("collection-name")
-            .await
-            .expect("Failed to delete collection");
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_delete_collection_not_found() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
-            then.status(404)
-                .header("content-type", "application/json")
-                .body(
-                    r#"
-                    {
-                        "error": "Collection not found"
-                    }
-                "#,
-                );
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let delete_collection_response = pinecone
-            .delete_collection("collection-name")
-            .await
-            .expect_err("Expected delete_collection to return an error");
-
-        assert!(matches!(
-            delete_collection_response,
-            PineconeError::CollectionNotFoundError { .. }
-        ));
-
-        mock.assert();
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_delete_collection_internal_error() -> Result<(), PineconeError> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(DELETE).path("/collections/collection-name");
-            then.status(500);
-        });
-
-        let config = PineconeClientConfig {
-            api_key: Some("api_key".to_string()),
-            control_plane_host: Some(server.base_url()),
-            ..Default::default()
-        };
-        let pinecone = config.client().expect("Failed to create Pinecone instance");
-
-        let delete_collection_response = pinecone
-            .delete_collection("collection-name")
-            .await
-            .expect_err("Expected delete_collection to return an error");
-
-        assert!(matches!(
-            delete_collection_response,
             PineconeError::InternalServerError { .. }
         ));
 
