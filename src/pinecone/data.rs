@@ -104,13 +104,12 @@ impl Index {
         namespace: &str,
         records: &[serde_json::Value],
     ) -> Result<(), PineconeError> {
-        let configuration = self.client.openapi_config.clone();
-
-        let client = self.client.openapi_config.client.clone();
+        let configuration = &self.client.openapi_config;
+        let client = &self.client.openapi_config.client;
 
         let uri_str = format!(
             "{}/records/namespaces/{namespace}/upsert",
-            configuration.base_path,
+            self.host,
             namespace = crate::openapi::apis::urlencode(namespace)
         );
         let mut req_builder = client.request(reqwest::Method::POST, uri_str.as_str());
@@ -141,8 +140,6 @@ impl Index {
             .map_err(|e| PineconeError::ReqwestError {
                 source: anyhow::Error::from(e),
             })?;
-
-        println!("xxxxx request {:#?}", req);
 
         let resp = client
             .execute(req)
