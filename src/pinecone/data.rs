@@ -13,6 +13,7 @@ use crate::models::{
     DescribeIndexStatsResponse, FetchResponse, ListResponse, Metadata, Namespace, QueryResponse,
     SparseValues, UpdateResponse, UpsertResponse, Vector,
 };
+use crate::openapi::apis::configuration::Configuration;
 use crate::openapi::apis::vector_operations_api::UpsertRecordsNamespaceError;
 use crate::openapi::apis::{vector_operations_api, ResponseContent};
 use crate::openapi::models::{
@@ -40,10 +41,7 @@ impl Interceptor for ApiKeyInterceptor {
 
 /// A client for interacting with a Pinecone index.
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct Index {
-    /// The name of the index.
-    host: String,
     connection: VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>,
     client: Arc<PineconeClient>,
 }
@@ -113,7 +111,7 @@ impl Index {
 
         let uri_str = format!(
             "{}/records/namespaces/{namespace}/upsert",
-            self.host,
+            configuration.base_path,
             namespace = crate::openapi::apis::urlencode(namespace)
         );
         let mut req_builder = client.request(reqwest::Method::POST, uri_str.as_str());
@@ -173,10 +171,11 @@ impl Index {
     }
 
     /// TODO
-    pub async fn search_records(
+    pub async fn search_records_by_text(
         &mut self,
         namespace: &str,
-        query: SearchRecordsRequestQuery,
+        query_text: &str,
+        top_k: u32,
         fields: Option<Vec<String>>,
         rerank: Option<SearchRecordsRequestRerank>,
     ) -> Result<SearchRecordsResponse, PineconeError> {
@@ -184,9 +183,17 @@ impl Index {
             &self.client.openapi_config,
             namespace,
             SearchRecordsRequest {
-                query: Box::new(query),
+                query: Box::new(SearchRecordsRequestQuery {
+                    inputs: Some(serde_json::json!({
+                        "text": query_text,
+                    })),
+                    top_k: top_k as i32,
+                    filter: None,
+                    vector: None,
+                    id: None,
+                }),
                 fields,
-                rerank: rerank.map(|r| Box::new(r)),
+                rerank: rerank.map(Box::new),
             },
         )
         .await?;
@@ -721,9 +728,14 @@ impl PineconeClient {
         };
 
         let index = Index {
-            host: endpoint.clone(),
-            connection: self.new_index_connection(endpoint).await?,
-            client: Arc::new(self.clone()),
+            connection: self.new_index_connection(endpoint.clone()).await?,
+            client: Arc::new(PineconeClient {
+                openapi_config: Configuration {
+                    base_path: endpoint.clone(),
+                    ..self.openapi_config.clone()
+                },
+                ..self.clone()
+            }),
         };
 
         Ok(index)
@@ -775,7 +787,7 @@ mod tests {
 
         let index = pinecone.index(server.base_url().as_str()).await.unwrap();
 
-        assert_eq!(index.host, server.base_url());
+        assert_eq!(index.client.openapi_config.base_path, server.base_url());
     }
 
     #[tokio::test]
