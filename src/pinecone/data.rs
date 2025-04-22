@@ -14,7 +14,11 @@ use crate::models::{
     SparseValues, UpdateResponse, UpsertResponse, Vector,
 };
 use crate::openapi::apis::vector_operations_api::UpsertRecordsNamespaceError;
-use crate::openapi::apis::ResponseContent;
+use crate::openapi::apis::{vector_operations_api, ResponseContent};
+use crate::openapi::models::{
+    SearchRecordsRequest, SearchRecordsRequestQuery, SearchRecordsRequestRerank,
+    SearchRecordsResponse,
+};
 use crate::protos;
 
 #[derive(Debug, Clone)]
@@ -166,6 +170,28 @@ impl Index {
                 .into(),
             ))
         }
+    }
+
+    /// TODO
+    pub async fn search_records(
+        &mut self,
+        namespace: &str,
+        query: SearchRecordsRequestQuery,
+        fields: Option<Vec<String>>,
+        rerank: Option<SearchRecordsRequestRerank>,
+    ) -> Result<SearchRecordsResponse, PineconeError> {
+        let response = vector_operations_api::search_records_namespace(
+            &self.client.openapi_config,
+            namespace,
+            SearchRecordsRequest {
+                query: Box::new(query),
+                fields,
+                rerank: rerank.map(|r| Box::new(r)),
+            },
+        )
+        .await?;
+
+        Ok(response)
     }
 
     /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
