@@ -102,7 +102,7 @@ impl Index {
     pub async fn upsert_records(
         &mut self,
         namespace: &str,
-        records: Vec<serde_json::Value>,
+        records: &[serde_json::Value],
     ) -> Result<(), PineconeError> {
         let configuration = self.client.openapi_config.clone();
 
