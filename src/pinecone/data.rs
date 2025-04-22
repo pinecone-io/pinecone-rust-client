@@ -1,6 +1,6 @@
 use crate::pinecone::PineconeClient;
 use crate::protos::vector_service_client::VectorServiceClient;
-use crate::utils::errors::PineconeError;
+use crate::utils::errors::{handle_response_error, PineconeError};
 use once_cell::sync::Lazy;
 use std::sync::Arc;
 use tonic::metadata::{Ascii, MetadataValue as TonicMetadataVal};
@@ -98,6 +98,7 @@ impl Index {
         Ok(response)
     }
 
+    /// TODO
     pub async fn upsert_records(
         &mut self,
         namespace: &str,
@@ -156,12 +157,14 @@ impl Index {
             Ok(())
         } else {
             let entity: Option<UpsertRecordsNamespaceError> = serde_json::from_str(&content).ok();
-            Err(ResponseContent {
-                status,
-                content,
-                entity,
-            }
-            .into())
+            Err(handle_response_error(
+                ResponseContent {
+                    status,
+                    content,
+                    entity,
+                }
+                .into(),
+            ))
         }
     }
 

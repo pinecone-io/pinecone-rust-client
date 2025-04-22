@@ -195,8 +195,8 @@ impl<T> From<OpenApiError<T>> for PineconeError {
     }
 }
 
-// Helper function to handle response errors
-fn handle_response_error(source: WrappedResponseContent) -> PineconeError {
+/// Helper function to handle response errors
+pub fn handle_response_error(source: WrappedResponseContent) -> PineconeError {
     let status = source.status;
     let message = source.content.clone();
 
