@@ -1,4 +1,4 @@
-use crate::pinecone::PineconeClient;
+use crate::pinecone::{PineconeClient, PINECONE_API_VERSION_KEY};
 use crate::protos::vector_service_client::VectorServiceClient;
 use crate::utils::errors::{handle_response_error, PineconeError};
 use once_cell::sync::Lazy;
@@ -141,6 +141,9 @@ impl Index {
             .map_err(|e| PineconeError::ReqwestError {
                 source: anyhow::Error::from(e),
             })?;
+
+        println!("xxxxx request {:#?}", req);
+
         let resp = client
             .execute(req)
             .await
