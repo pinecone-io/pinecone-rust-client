@@ -13,7 +13,8 @@ use crate::models::{
     DescribeIndexStatsResponse, FetchResponse, ListResponse, Metadata, Namespace, QueryResponse,
     SparseValues, UpdateResponse, UpsertResponse, Vector,
 };
-use crate::openapi::apis::vector_operations_api;
+use crate::openapi::apis::vector_operations_api::UpsertRecordsNamespaceError;
+use crate::openapi::apis::ResponseContent;
 use crate::protos;
 
 #[derive(Debug, Clone)]
@@ -95,6 +96,73 @@ impl Index {
             .into_inner();
 
         Ok(response)
+    }
+
+    pub async fn upsert_records(
+        &mut self,
+        namespace: &str,
+        records: Vec<serde_json::Value>,
+    ) -> Result<(), PineconeError> {
+        let configuration = self.client.openapi_config.clone();
+
+        let client = self.client.openapi_config.client.clone();
+
+        let uri_str = format!(
+            "{}/records/namespaces/{namespace}/upsert",
+            configuration.base_path,
+            namespace = crate::openapi::apis::urlencode(namespace)
+        );
+        let mut req_builder = client.request(reqwest::Method::POST, uri_str.as_str());
+
+        if let Some(ref user_agent) = configuration.user_agent {
+            req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
+        }
+        if let Some(ref apikey) = configuration.api_key {
+            let key = apikey.key.clone();
+            let value = match apikey.prefix {
+                Some(ref prefix) => format!("{} {}", prefix, key),
+                None => key,
+            };
+            req_builder = req_builder.header("Api-Key", value);
+        };
+        req_builder = req_builder.header(reqwest::header::CONTENT_TYPE, "application/x-ndjson");
+
+        let ndjson = records
+            .iter()
+            .map(|r| r.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        req_builder = req_builder.json(&ndjson);
+
+        let req = req_builder
+            .build()
+            .map_err(|e| PineconeError::ReqwestError {
+                source: anyhow::Error::from(e),
+            })?;
+        let resp = client
+            .execute(req)
+            .await
+            .map_err(|e| PineconeError::ReqwestError {
+                source: anyhow::Error::from(e),
+            })?;
+
+        let status = resp.status();
+        let content = resp.text().await.map_err(|e| PineconeError::ReqwestError {
+            source: anyhow::Error::from(e),
+        })?;
+
+        if !status.is_client_error() && !status.is_server_error() {
+            Ok(())
+        } else {
+            let entity: Option<UpsertRecordsNamespaceError> = serde_json::from_str(&content).ok();
+            Err(ResponseContent {
+                status,
+                content,
+                entity,
+            }
+            .into())
+        }
     }
 
     /// The list operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
