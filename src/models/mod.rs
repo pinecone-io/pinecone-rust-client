@@ -34,7 +34,8 @@ pub use crate::openapi::models::{
     index_model_status::State, CollectionList, CollectionModel, ConfigureIndexRequest,
     ConfigureIndexRequestSpec, ConfigureIndexRequestSpecPod, CreateCollectionRequest,
     DeletionProtection, EmbedRequestParameters, IndexModelSpec, IndexModelStatus, IndexSpec,
-    PodSpec, PodSpecMetadataConfig, ServerlessSpec,
+    PodSpec, PodSpecMetadataConfig, ServerlessSpec, UpsertRecord,
+    UpsertResponse as UpsertRecordResponse,
 };
 
 pub use crate::protos::{
