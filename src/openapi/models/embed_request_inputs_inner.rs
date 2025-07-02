@@ -19,6 +19,9 @@ pub struct EmbedRequestInputsInner {
 
 impl EmbedRequestInputsInner {
     pub fn new() -> EmbedRequestInputsInner {
-        EmbedRequestInputsInner { text: None }
+        EmbedRequestInputsInner {
+            text: None,
+        }
     }
 }
+

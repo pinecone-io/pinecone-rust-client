@@ -11,7 +11,7 @@
 use crate::openapi::models;
 use serde::{Deserialize, Serialize};
 
-/// EmbedRequest : Generate embeddings for inputs
+/// EmbedRequest : Generate embeddings for inputs.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmbedRequest {
     #[serde(rename = "model")]
@@ -23,7 +23,7 @@ pub struct EmbedRequest {
 }
 
 impl EmbedRequest {
-    /// Generate embeddings for inputs
+    /// Generate embeddings for inputs.
     pub fn new(model: String, inputs: Vec<models::EmbedRequestInputsInner>) -> EmbedRequest {
         EmbedRequest {
             model,
@@ -32,3 +32,4 @@ impl EmbedRequest {
         }
     }
 }
+
