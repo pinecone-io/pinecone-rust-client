@@ -14,8 +14,9 @@ pub struct Vector {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
     /// This is the vector data included in the request.
-    #[prost(float, repeated, packed = "false", tag = "2")]
+    #[prost(float, repeated, tag = "2")]
     pub values: ::prost::alloc::vec::Vec<f32>,
+    /// This is the sparse data included in the request. Can only be specified if `sparse` index.
     #[prost(message, optional, tag = "4")]
     pub sparse_values: ::core::option::Option<SparseValues>,
     /// This is the metadata included in the request.
@@ -66,7 +67,7 @@ pub mod request_union {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UpsertRequest {
-    /// An array containing the vectors to upsert. Recommended batch limit is 100 vectors.
+    /// An array containing the vectors to upsert. Recommended batch limit is up to 1000 vectors.
     #[prost(message, repeated, tag = "1")]
     pub vectors: ::prost::alloc::vec::Vec<Vector>,
     /// The namespace where you upsert vectors.
@@ -96,8 +97,7 @@ pub struct DeleteRequest {
     pub namespace: ::prost::alloc::string::String,
     /// If specified, the metadata filter here will be used to select the vectors to delete. This is mutually exclusive
     /// with specifying ids to delete in the ids param or using `delete_all=True`.
-    /// For guidance and examples, see [Filter with metadata](<https://docs.pinecone.io/guides/data/filter-with-metadata>).
-    /// Serverless indexes do not support delete by metadata. Instead, you can use the `list` operation to fetch the vector IDs based on their common ID prefix and then delete the records by ID.
+    /// For guidance and examples, see [Delete data](<https://docs.pinecone.io/guides/manage-data/delete-data#delete-records-by-metadata>).
     #[prost(message, optional, tag = "4")]
     pub filter: ::core::option::Option<::prost_types::Struct>,
 }
@@ -178,8 +178,8 @@ pub struct ListResponse {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryVector {
-    /// The query vector values. This should be the same length as the dimension of the index being queried.
-    #[prost(float, repeated, packed = "false", tag = "1")]
+    /// The query vector. This should be the same length as the dimension of the index being queried. Each request can contain either the `id` or `vector` parameter.
+    #[prost(float, repeated, tag = "1")]
     pub values: ::prost::alloc::vec::Vec<f32>,
     /// The query sparse values.
     #[prost(message, optional, tag = "5")]
@@ -204,7 +204,7 @@ pub struct QueryRequest {
     /// The number of results to return for each query.
     #[prost(uint32, tag = "2")]
     pub top_k: u32,
-    /// The filter to apply. You can use vector metadata to limit your search. See [Filter with metadata](<https://docs.pinecone.io/guides/data/filter-with-metadata>).
+    /// The filter to apply. You can use vector metadata to limit your search. See [Understanding metadata](<https://docs.pinecone.io/guides/index-data/indexing-overview#metadata>).
     #[prost(message, optional, tag = "3")]
     pub filter: ::core::option::Option<::prost_types::Struct>,
     /// Indicates whether vector values are included in the response.
@@ -213,17 +213,17 @@ pub struct QueryRequest {
     /// Indicates whether metadata is included in the response as well as the ids.
     #[prost(bool, tag = "5")]
     pub include_metadata: bool,
-    /// DEPRECATED. The query vectors. Each `query()` request can contain only one of the parameters `queries`, `vector`, or  `id`.
+    /// DEPRECATED. Use `vector` or `id` instead.
     #[deprecated]
     #[prost(message, repeated, tag = "6")]
     pub queries: ::prost::alloc::vec::Vec<QueryVector>,
-    /// The query vector. This should be the same length as the dimension of the index being queried. Each `query()` request can contain only one of the parameters `id` or `vector`.
+    /// The query vector. This should be the same length as the dimension of the index being queried. Each request can contain either the `id` or `vector` parameter.
     #[prost(float, repeated, tag = "7")]
     pub vector: ::prost::alloc::vec::Vec<f32>,
     /// The query sparse values.
     #[prost(message, optional, tag = "9")]
     pub sparse_vector: ::core::option::Option<SparseValues>,
-    /// The unique ID of the vector to be used as a query vector. Each `query()` request can contain only one of the parameters `queries`, `vector`, or  `id`.
+    /// The unique ID of the vector to be used as a query vector. Each request can contain either the `vector` or `id` parameter.
     #[prost(string, tag = "8")]
     pub id: ::prost::alloc::string::String,
 }
@@ -260,8 +260,8 @@ pub struct QueryResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Usage {
     /// The number of read units consumed by this operation.
-    #[prost(uint32, optional, tag = "1")]
-    pub read_units: ::core::option::Option<u32>,
+    #[prost(float, optional, tag = "1")]
+    pub read_units: ::core::option::Option<f32>,
 }
 /// The request for the `update` operation.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -273,6 +273,7 @@ pub struct UpdateRequest {
     /// Vector data.
     #[prost(float, repeated, tag = "2")]
     pub values: ::prost::alloc::vec::Vec<f32>,
+    /// Sparse vector data.
     #[prost(message, optional, tag = "5")]
     pub sparse_values: ::core::option::Option<SparseValues>,
     /// Metadata to set for the vector.
@@ -305,6 +306,51 @@ pub struct NamespaceSummary {
     #[prost(uint32, tag = "1")]
     pub vector_count: u32,
 }
+/// The request for the list namespaces operation.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListNamespacesRequest {
+    /// Pagination token to continue a previous listing operation
+    #[prost(string, optional, tag = "1")]
+    pub pagination_token: ::core::option::Option<::prost::alloc::string::String>,
+    /// Max number of namespaces to return
+    #[prost(uint32, optional, tag = "2")]
+    pub limit: ::core::option::Option<u32>,
+}
+/// The response for the list namespace operation.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListNamespacesResponse {
+    /// The list of namespaces belonging to this index.
+    #[prost(message, repeated, tag = "1")]
+    pub namespaces: ::prost::alloc::vec::Vec<NamespaceDescription>,
+    /// Pagination token to continue past this listing
+    #[prost(message, optional, tag = "2")]
+    pub pagination: ::core::option::Option<Pagination>,
+}
+/// The request for the describe namespace operation.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DescribeNamespaceRequest {
+    /// The namespace to describe
+    #[prost(string, tag = "1")]
+    pub namespace: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct NamespaceDescription {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(uint64, tag = "2")]
+    pub record_count: u64,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeleteNamespaceRequest {
+    /// The namespace to delete
+    #[prost(string, tag = "1")]
+    pub namespace: ::prost::alloc::string::String,
+}
 /// The response for the `describe_index_stats` operation.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -314,19 +360,25 @@ pub struct DescribeIndexStatsResponse {
     /// summary will reflect only vectors matching that expression.
     #[prost(map = "string, message", tag = "1")]
     pub namespaces: ::std::collections::HashMap<::prost::alloc::string::String, NamespaceSummary>,
-    /// The dimension of the indexed vectors.
-    #[prost(uint32, tag = "2")]
-    pub dimension: u32,
+    /// The dimension of the indexed vectors. Not specified if `sparse` index.
+    #[prost(uint32, optional, tag = "2")]
+    pub dimension: ::core::option::Option<u32>,
     /// The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%.
     ///
     /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
     ///
-    /// The index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](<https://docs.pinecone.io/reference/api/control-plane/describe_index>).
+    /// The index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](<https://docs.pinecone.io/reference/api/2024-04/control-plane/describe_index>).
     #[prost(float, tag = "3")]
     pub index_fullness: f32,
     /// The total number of vectors in the index, regardless of whether a metadata filter expression was passed
     #[prost(uint32, tag = "4")]
     pub total_vector_count: u32,
+    /// The metric of the index.
+    #[prost(string, optional, tag = "5")]
+    pub metric: ::core::option::Option<::prost::alloc::string::String>,
+    /// The type of the vector the index supports.
+    #[prost(string, optional, tag = "6")]
+    pub vector_type: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// Generated client implementations.
 pub mod vector_service_client {
@@ -416,9 +468,9 @@ pub mod vector_service_client {
         }
         /// Upsert vectors
         ///
-        /// The `upsert` operation writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
+        /// Upsert vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
         ///
-        /// For guidance and examples, see [Upsert data](https://docs.pinecone.io/guides/data/upsert-data).
+        /// For guidance, examples, and limits, see [Upsert data](https://docs.pinecone.io/guides/index-data/upsert-data).
         pub async fn upsert(
             &mut self,
             request: impl tonic::IntoRequest<super::UpsertRequest>,
@@ -438,9 +490,9 @@ pub mod vector_service_client {
         }
         /// Delete vectors
         ///
-        /// The `delete` operation deletes vectors, by id, from a single namespace.
+        /// Delete vectors by id from a single namespace.
         ///
-        /// For guidance and examples, see [Delete data](https://docs.pinecone.io/guides/data/delete-data).
+        /// For guidance and examples, see [Delete data](https://docs.pinecone.io/guides/manage-data/delete-data).
         pub async fn delete(
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteRequest>,
@@ -460,9 +512,9 @@ pub mod vector_service_client {
         }
         /// Fetch vectors
         ///
-        /// The `fetch` operation looks up and returns vectors, by ID, from a single namespace. The returned vectors include the vector data and/or metadata.
+        /// Look up and return vectors by ID from a single namespace. The returned vectors include the vector data and/or metadata.
         ///
-        /// For guidance and examples, see [Fetch data](https://docs.pinecone.io/guides/data/fetch-data).
+        /// For guidance and examples, see [Fetch data](https://docs.pinecone.io/guides/manage-data/fetch-data).
         pub async fn fetch(
             &mut self,
             request: impl tonic::IntoRequest<super::FetchRequest>,
@@ -482,11 +534,11 @@ pub mod vector_service_client {
         }
         /// List vector IDs
         ///
-        /// The `list` operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
+        /// List the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
         ///
-        /// `list` returns up to 100 IDs at a time by default in sorted order (bitwise/"C" collation). If the `limit` parameter is set, `list` returns up to that number of IDs instead. Whenever there are additional IDs to return, the response also includes a `pagination_token` that you can use to get the next batch of IDs. When the response does not include a `pagination_token`, there are no more IDs to return.
+        /// This returns up to 100 IDs at a time by default in sorted order (bitwise/"C" collation). If the `limit` parameter is set, `list` returns up to that number of IDs instead. Whenever there are additional IDs to return, the response also includes a `pagination_token` that you can use to get the next batch of IDs. When the response does not include a `pagination_token`, there are no more IDs to return.
         ///
-        /// For guidance and examples, see [List record IDs](https://docs.pinecone.io/guides/data/list-record-ids).
+        /// For guidance and examples, see [List record IDs](https://docs.pinecone.io/guides/manage-data/list-record-ids).
         ///
         /// **Note:** `list` is supported only for serverless indexes.
         pub async fn list(
@@ -506,11 +558,11 @@ pub mod vector_service_client {
                 .insert(GrpcMethod::new("VectorService", "List"));
             self.inner.unary(req, path, codec).await
         }
-        /// Query vectors
+        /// Search with a vector
         ///
-        /// The `query` operation searches a namespace, using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
+        /// Search a namespace with a query vector or record ID and return the IDs of the most similar records, along with their similarity scores.
         ///
-        /// For guidance and examples, see [Query data](https://docs.pinecone.io/guides/data/query-data).
+        /// For guidance, examples, and limits, see [Search](https://docs.pinecone.io/guides/search/search-overview).
         pub async fn query(
             &mut self,
             request: impl tonic::IntoRequest<super::QueryRequest>,
@@ -530,9 +582,9 @@ pub mod vector_service_client {
         }
         /// Update a vector
         ///
-        /// The `update` operation updates a vector in a namespace. If a value is included, it will overwrite the previous value. If a `set_metadata` is included, the values of the fields specified in it will be added or overwrite the previous value.
+        /// Update a vector in a namespace. If a value is included, it will overwrite the previous value. If a `set_metadata` is included, the values of the fields specified in it will be added or overwrite the previous value.
         ///
-        /// For guidance and examples, see [Update data](https://docs.pinecone.io/guides/data/update-data).
+        /// For guidance and examples, see [Update data](https://docs.pinecone.io/guides/manage-data/update-data).
         pub async fn update(
             &mut self,
             request: impl tonic::IntoRequest<super::UpdateRequest>,
@@ -552,11 +604,9 @@ pub mod vector_service_client {
         }
         /// Get index stats
         ///
-        /// The `describe_index_stats` operation returns statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
+        /// Return statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
         ///
         /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
-        ///
-        /// For pod-based indexes, the index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](https://docs.pinecone.io/reference/api/control-plane/describe_index).
         pub async fn describe_index_stats(
             &mut self,
             request: impl tonic::IntoRequest<super::DescribeIndexStatsRequest>,
@@ -575,6 +625,70 @@ pub mod vector_service_client {
                 .insert(GrpcMethod::new("VectorService", "DescribeIndexStats"));
             self.inner.unary(req, path, codec).await
         }
+        /// List namespaces
+        ///
+        /// Get a list of all [namespaces](https://docs.pinecone.io/guides/index-data/indexing-overview#namespaces) in a serverless index.
+        ///
+        /// Up to 100 namespaces are returned at a time by default, in sorted order (bitwise “C” collation). If the `limit` parameter is set, up to that number of namespaces are returned instead. Whenever there are additional namespaces to return, the response also includes a `pagination_token` that you can use to get the next batch of namespaces. When the response does not include a `pagination_token`, there are no more namespaces to return.
+        pub async fn list_namespaces(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListNamespacesRequest>,
+        ) -> std::result::Result<tonic::Response<super::ListNamespacesResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/VectorService/ListNamespaces");
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("VectorService", "ListNamespaces"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Describe a namespace
+        ///
+        /// Describe a [namespace](https://docs.pinecone.io/guides/index-data/indexing-overview#namespaces) in a serverless index, including the total number of vectors in the namespace.
+        pub async fn describe_namespace(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DescribeNamespaceRequest>,
+        ) -> std::result::Result<tonic::Response<super::NamespaceDescription>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/VectorService/DescribeNamespace");
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("VectorService", "DescribeNamespace"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Delete a namespace
+        ///
+        /// Delete a namespace from an index.
+        pub async fn delete_namespace(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteNamespaceRequest>,
+        ) -> std::result::Result<tonic::Response<super::DeleteResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/VectorService/DeleteNamespace");
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("VectorService", "DeleteNamespace"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -586,73 +700,94 @@ pub mod vector_service_server {
     pub trait VectorService: Send + Sync + 'static {
         /// Upsert vectors
         ///
-        /// The `upsert` operation writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
+        /// Upsert vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
         ///
-        /// For guidance and examples, see [Upsert data](https://docs.pinecone.io/guides/data/upsert-data).
+        /// For guidance, examples, and limits, see [Upsert data](https://docs.pinecone.io/guides/index-data/upsert-data).
         async fn upsert(
             &self,
             request: tonic::Request<super::UpsertRequest>,
         ) -> std::result::Result<tonic::Response<super::UpsertResponse>, tonic::Status>;
         /// Delete vectors
         ///
-        /// The `delete` operation deletes vectors, by id, from a single namespace.
+        /// Delete vectors by id from a single namespace.
         ///
-        /// For guidance and examples, see [Delete data](https://docs.pinecone.io/guides/data/delete-data).
+        /// For guidance and examples, see [Delete data](https://docs.pinecone.io/guides/manage-data/delete-data).
         async fn delete(
             &self,
             request: tonic::Request<super::DeleteRequest>,
         ) -> std::result::Result<tonic::Response<super::DeleteResponse>, tonic::Status>;
         /// Fetch vectors
         ///
-        /// The `fetch` operation looks up and returns vectors, by ID, from a single namespace. The returned vectors include the vector data and/or metadata.
+        /// Look up and return vectors by ID from a single namespace. The returned vectors include the vector data and/or metadata.
         ///
-        /// For guidance and examples, see [Fetch data](https://docs.pinecone.io/guides/data/fetch-data).
+        /// For guidance and examples, see [Fetch data](https://docs.pinecone.io/guides/manage-data/fetch-data).
         async fn fetch(
             &self,
             request: tonic::Request<super::FetchRequest>,
         ) -> std::result::Result<tonic::Response<super::FetchResponse>, tonic::Status>;
         /// List vector IDs
         ///
-        /// The `list` operation lists the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
+        /// List the IDs of vectors in a single namespace of a serverless index. An optional prefix can be passed to limit the results to IDs with a common prefix.
         ///
-        /// `list` returns up to 100 IDs at a time by default in sorted order (bitwise/"C" collation). If the `limit` parameter is set, `list` returns up to that number of IDs instead. Whenever there are additional IDs to return, the response also includes a `pagination_token` that you can use to get the next batch of IDs. When the response does not include a `pagination_token`, there are no more IDs to return.
+        /// This returns up to 100 IDs at a time by default in sorted order (bitwise/"C" collation). If the `limit` parameter is set, `list` returns up to that number of IDs instead. Whenever there are additional IDs to return, the response also includes a `pagination_token` that you can use to get the next batch of IDs. When the response does not include a `pagination_token`, there are no more IDs to return.
         ///
-        /// For guidance and examples, see [List record IDs](https://docs.pinecone.io/guides/data/list-record-ids).
+        /// For guidance and examples, see [List record IDs](https://docs.pinecone.io/guides/manage-data/list-record-ids).
         ///
         /// **Note:** `list` is supported only for serverless indexes.
         async fn list(
             &self,
             request: tonic::Request<super::ListRequest>,
         ) -> std::result::Result<tonic::Response<super::ListResponse>, tonic::Status>;
-        /// Query vectors
+        /// Search with a vector
         ///
-        /// The `query` operation searches a namespace, using a query vector. It retrieves the ids of the most similar items in a namespace, along with their similarity scores.
+        /// Search a namespace with a query vector or record ID and return the IDs of the most similar records, along with their similarity scores.
         ///
-        /// For guidance and examples, see [Query data](https://docs.pinecone.io/guides/data/query-data).
+        /// For guidance, examples, and limits, see [Search](https://docs.pinecone.io/guides/search/search-overview).
         async fn query(
             &self,
             request: tonic::Request<super::QueryRequest>,
         ) -> std::result::Result<tonic::Response<super::QueryResponse>, tonic::Status>;
         /// Update a vector
         ///
-        /// The `update` operation updates a vector in a namespace. If a value is included, it will overwrite the previous value. If a `set_metadata` is included, the values of the fields specified in it will be added or overwrite the previous value.
+        /// Update a vector in a namespace. If a value is included, it will overwrite the previous value. If a `set_metadata` is included, the values of the fields specified in it will be added or overwrite the previous value.
         ///
-        /// For guidance and examples, see [Update data](https://docs.pinecone.io/guides/data/update-data).
+        /// For guidance and examples, see [Update data](https://docs.pinecone.io/guides/manage-data/update-data).
         async fn update(
             &self,
             request: tonic::Request<super::UpdateRequest>,
         ) -> std::result::Result<tonic::Response<super::UpdateResponse>, tonic::Status>;
         /// Get index stats
         ///
-        /// The `describe_index_stats` operation returns statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
+        /// Return statistics about the contents of an index, including the vector count per namespace, the number of dimensions, and the index fullness.
         ///
         /// Serverless indexes scale automatically as needed, so index fullness is relevant only for pod-based indexes.
-        ///
-        /// For pod-based indexes, the index fullness result may be inaccurate during pod resizing; to get the status of a pod resizing process, use [`describe_index`](https://docs.pinecone.io/reference/api/control-plane/describe_index).
         async fn describe_index_stats(
             &self,
             request: tonic::Request<super::DescribeIndexStatsRequest>,
         ) -> std::result::Result<tonic::Response<super::DescribeIndexStatsResponse>, tonic::Status>;
+        /// List namespaces
+        ///
+        /// Get a list of all [namespaces](https://docs.pinecone.io/guides/index-data/indexing-overview#namespaces) in a serverless index.
+        ///
+        /// Up to 100 namespaces are returned at a time by default, in sorted order (bitwise “C” collation). If the `limit` parameter is set, up to that number of namespaces are returned instead. Whenever there are additional namespaces to return, the response also includes a `pagination_token` that you can use to get the next batch of namespaces. When the response does not include a `pagination_token`, there are no more namespaces to return.
+        async fn list_namespaces(
+            &self,
+            request: tonic::Request<super::ListNamespacesRequest>,
+        ) -> std::result::Result<tonic::Response<super::ListNamespacesResponse>, tonic::Status>;
+        /// Describe a namespace
+        ///
+        /// Describe a [namespace](https://docs.pinecone.io/guides/index-data/indexing-overview#namespaces) in a serverless index, including the total number of vectors in the namespace.
+        async fn describe_namespace(
+            &self,
+            request: tonic::Request<super::DescribeNamespaceRequest>,
+        ) -> std::result::Result<tonic::Response<super::NamespaceDescription>, tonic::Status>;
+        /// Delete a namespace
+        ///
+        /// Delete a namespace from an index.
+        async fn delete_namespace(
+            &self,
+            request: tonic::Request<super::DeleteNamespaceRequest>,
+        ) -> std::result::Result<tonic::Response<super::DeleteResponse>, tonic::Status>;
     }
     /// The `VectorService` interface is exposed by Pinecone's vector index services.
     /// This service could also be called a `gRPC` service or a `REST`-like api.
@@ -994,6 +1129,134 @@ pub mod vector_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = DescribeIndexStatsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/VectorService/ListNamespaces" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListNamespacesSvc<T: VectorService>(pub Arc<T>);
+                    impl<T: VectorService> tonic::server::UnaryService<super::ListNamespacesRequest>
+                        for ListNamespacesSvc<T>
+                    {
+                        type Response = super::ListNamespacesResponse;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListNamespacesRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as VectorService>::list_namespaces(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ListNamespacesSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/VectorService/DescribeNamespace" => {
+                    #[allow(non_camel_case_types)]
+                    struct DescribeNamespaceSvc<T: VectorService>(pub Arc<T>);
+                    impl<T: VectorService>
+                        tonic::server::UnaryService<super::DescribeNamespaceRequest>
+                        for DescribeNamespaceSvc<T>
+                    {
+                        type Response = super::NamespaceDescription;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DescribeNamespaceRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as VectorService>::describe_namespace(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DescribeNamespaceSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/VectorService/DeleteNamespace" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteNamespaceSvc<T: VectorService>(pub Arc<T>);
+                    impl<T: VectorService>
+                        tonic::server::UnaryService<super::DeleteNamespaceRequest>
+                        for DeleteNamespaceSvc<T>
+                    {
+                        type Response = super::DeleteResponse;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteNamespaceRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as VectorService>::delete_namespace(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DeleteNamespaceSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
