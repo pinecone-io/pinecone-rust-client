@@ -76,6 +76,7 @@ pub enum Code {
     UnprocessableEntity,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for Code {
     fn default() -> Code {
         Self::Ok

@@ -39,6 +39,7 @@ pub enum Cloud {
     Azure,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for Cloud {
     fn default() -> Cloud {
         Self::Gcp
