@@ -634,7 +634,12 @@ impl PineconeClient {
         host: String,
     ) -> Result<VectorServiceClient<InterceptedService<Channel, ApiKeyInterceptor>>, PineconeError>
     {
-        let tls_config = tonic::transport::ClientTlsConfig::default();
+        // tonic 0.12 no longer loads trust roots implicitly: the previous
+        // `ClientTlsConfig::default()` produced an empty root store, so every TLS
+        // handshake would fail with "invalid peer certificate: UnknownIssuer".
+        // Explicitly load the platform's native root certificates (matches the
+        // `tls-roots` feature enabled in Cargo.toml).
+        let tls_config = tonic::transport::ClientTlsConfig::default().with_native_roots();
 
         // connect to server
         let endpoint = Channel::from_shared(host)
