@@ -29,18 +29,13 @@ impl ServerlessSpec {
     }
 }
 /// The public cloud where you would like your index hosted.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Cloud {
+    #[default]
     #[serde(rename = "gcp")]
     Gcp,
     #[serde(rename = "aws")]
     Aws,
     #[serde(rename = "azure")]
     Azure,
-}
-
-impl Default for Cloud {
-    fn default() -> Cloud {
-        Self::Gcp
-    }
 }

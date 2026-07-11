@@ -59,18 +59,13 @@ impl IndexModel {
     }
 }
 /// The distance metric to be used for similarity search. You can use 'euclidean', 'cosine', or 'dotproduct'.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Metric {
+    #[default]
     #[serde(rename = "cosine")]
     Cosine,
     #[serde(rename = "euclidean")]
     Euclidean,
     #[serde(rename = "dotproduct")]
     Dotproduct,
-}
-
-impl Default for Metric {
-    fn default() -> Metric {
-        Self::Cosine
-    }
 }

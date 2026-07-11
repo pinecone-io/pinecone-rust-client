@@ -25,8 +25,9 @@ impl IndexModelStatus {
     }
 }
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum State {
+    #[default]
     #[serde(rename = "Initializing")]
     Initializing,
     #[serde(rename = "InitializationFailed")]
@@ -45,8 +46,3 @@ pub enum State {
     Ready,
 }
 
-impl Default for State {
-    fn default() -> State {
-        Self::Initializing
-    }
-}

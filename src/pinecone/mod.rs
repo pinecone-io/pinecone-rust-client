@@ -64,6 +64,7 @@ impl PineconeClientConfig {
     /// };
     /// let pinecone: PineconeClient = config.client().expect("Failed to create Pinecone instance");
     /// ```
+    #[allow(clippy::result_large_err)]
     pub fn client(self) -> Result<PineconeClient, PineconeError> {
         // get api key
         let api_key = match self.api_key {
@@ -203,6 +204,7 @@ impl TryFrom<PineconeClientConfig> for PineconeClient {
 /// // Create a Pinecone client with the API key and controller host read from environment variables.
 /// let pinecone: PineconeClient = pinecone_sdk::pinecone::default_client().expect("Failed to create Pinecone instance");
 /// ```
+#[allow(clippy::result_large_err)]
 pub fn default_client() -> Result<PineconeClient, PineconeError> {
     PineconeClientConfig::default().client()
 }

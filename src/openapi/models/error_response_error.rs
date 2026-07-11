@@ -34,8 +34,9 @@ impl ErrorResponseError {
     }
 }
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Code {
+    #[default]
     #[serde(rename = "OK")]
     Ok,
     #[serde(rename = "UNKNOWN")]
@@ -76,8 +77,3 @@ pub enum Code {
     UnprocessableEntity,
 }
 
-impl Default for Code {
-    fn default() -> Code {
-        Self::Ok
-    }
-}

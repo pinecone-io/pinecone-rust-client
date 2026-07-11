@@ -48,18 +48,13 @@ impl CollectionModel {
     }
 }
 /// The status of the collection.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Status {
+    #[default]
     #[serde(rename = "Initializing")]
     Initializing,
     #[serde(rename = "Ready")]
     Ready,
     #[serde(rename = "Terminating")]
     Terminating,
-}
-
-impl Default for Status {
-    fn default() -> Status {
-        Self::Initializing
-    }
 }
