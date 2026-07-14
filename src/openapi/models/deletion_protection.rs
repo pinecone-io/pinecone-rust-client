@@ -13,8 +13,11 @@ use serde::{Deserialize, Serialize};
 
 /// DeletionProtection : Whether [deletion protection](http://docs.pinecone.io/guides/indexes/prevent-index-deletion) is enabled/disabled for the index.
 /// Whether [deletion protection](http://docs.pinecone.io/guides/indexes/prevent-index-deletion) is enabled/disabled for the index.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum DeletionProtection {
+    #[default]
     #[serde(rename = "disabled")]
     Disabled,
     #[serde(rename = "enabled")]
@@ -27,11 +30,5 @@ impl std::fmt::Display for DeletionProtection {
             Self::Disabled => write!(f, "disabled"),
             Self::Enabled => write!(f, "enabled"),
         }
-    }
-}
-
-impl Default for DeletionProtection {
-    fn default() -> DeletionProtection {
-        Self::Disabled
     }
 }

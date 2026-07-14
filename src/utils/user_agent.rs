@@ -10,12 +10,11 @@ fn build_source_tag(source_tag: &str) -> String {
     let re = Regex::new(r"[^a-z0-9_: ]").unwrap();
     let lowercase_tag = source_tag.to_lowercase();
     let tag = re.replace_all(&lowercase_tag, "");
-    return tag
-        .trim()
+    tag.trim()
         .split(' ')
         .filter(|s| !s.is_empty())
         .collect::<Vec<&str>>()
-        .join("_");
+        .join("_")
 }
 
 /// Gets the user-agent string.
