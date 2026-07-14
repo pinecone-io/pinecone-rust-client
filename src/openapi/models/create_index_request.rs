@@ -49,7 +49,9 @@ impl CreateIndexRequest {
     }
 }
 /// The distance metric to be used for similarity search. You can use 'euclidean', 'cosine', or 'dotproduct'.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum Metric {
     #[default]
     #[serde(rename = "cosine")]

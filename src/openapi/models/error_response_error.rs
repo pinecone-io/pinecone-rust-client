@@ -34,7 +34,9 @@ impl ErrorResponseError {
     }
 }
 ///
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum Code {
     #[default]
     #[serde(rename = "OK")]
@@ -76,4 +78,3 @@ pub enum Code {
     #[serde(rename = "UNPROCESSABLE_ENTITY")]
     UnprocessableEntity,
 }
-

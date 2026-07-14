@@ -13,7 +13,9 @@ use serde::{Deserialize, Serialize};
 
 /// DeletionProtection : Whether [deletion protection](http://docs.pinecone.io/guides/indexes/prevent-index-deletion) is enabled/disabled for the index.
 /// Whether [deletion protection](http://docs.pinecone.io/guides/indexes/prevent-index-deletion) is enabled/disabled for the index.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum DeletionProtection {
     #[default]
     #[serde(rename = "disabled")]
