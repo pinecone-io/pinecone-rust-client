@@ -15,9 +15,4 @@ pub enum VectorType {
     Sparse,
     /// Text (full-text search) type
     Text,
-    /// Any vector type this client version does not know about. Deserializing
-    /// an index with a newer type must not fail calls that list or describe
-    /// indexes.
-    #[serde(other)]
-    Unknown,
 }
