@@ -1,7 +1,7 @@
 use super::{DeletionProtection, IndexModelSpec, IndexModelStatus, Metric, VectorType};
 use crate::openapi::models::index_model::IndexModel as OpenApiIndexModel;
 use crate::openapi::models::{CreateIndexForModelRequestEmbed, ModelIndexEmbed};
-use serde_with::serde_derive::Serialize;
+use serde::Serialize;
 use std::collections::HashMap;
 
 /// IndexModel : The IndexModel describes the configuration and status of a Pinecone index.
