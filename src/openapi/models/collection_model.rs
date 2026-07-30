@@ -58,6 +58,7 @@ pub enum Status {
     Terminating,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for Status {
     fn default() -> Status {
         Self::Initializing

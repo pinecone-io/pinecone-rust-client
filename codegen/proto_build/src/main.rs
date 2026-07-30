@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     tonic_build::configure()
         .out_dir(out_dir)
         .protoc_arg("--experimental_allow_proto3_optional")
-        .compile(&[proto_path], &include_dirs[..])?;
+        .compile_protos(&[proto_path], &include_dirs[..])?;
 
     Ok(())
 }

@@ -59,6 +59,7 @@ pub enum Metric {
     Dotproduct,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for Metric {
     fn default() -> Metric {
         Self::Cosine

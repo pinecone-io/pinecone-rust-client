@@ -45,6 +45,7 @@ pub enum State {
     Ready,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for State {
     fn default() -> State {
         Self::Initializing

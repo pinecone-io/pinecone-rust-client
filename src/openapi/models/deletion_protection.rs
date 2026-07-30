@@ -30,6 +30,7 @@ impl std::fmt::Display for DeletionProtection {
     }
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for DeletionProtection {
     fn default() -> DeletionProtection {
         Self::Disabled
